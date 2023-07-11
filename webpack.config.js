@@ -3,6 +3,19 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 
+const express = require('express');
+const app = express();
+
+app.use(function (req, res, next) {
+    res.setHeader(
+        'Content-Security-Policy',
+        "default-src 'self'; font-src 'self'; img-src 'self'; script-src 'self'; style-src 'self'; frame-src 'self'"
+    );
+    next();
+});
+
+app.use(express.static(path.join(__dirname + '/css')));
+
 module.exports = {
     entry: './index.js',
     output: {
