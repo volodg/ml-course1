@@ -13,6 +13,7 @@ struct Point {
 
 struct AppState {
     context: Rc<web_sys::CanvasRenderingContext2d>,
+    canvas: Rc<web_sys::HtmlCanvasElement>,
     pressed: bool,
     paths: Vec<Vec<Point>>,
 }
@@ -21,6 +22,10 @@ impl AppState {
     fn add_point(&mut self, point: Point) {
         let size = self.paths.len();
         self.paths[size - 1].push(point);
+    }
+
+    fn undo(&mut self) {
+        self.paths.pop();
     }
 }
 
@@ -54,6 +59,9 @@ extern "C" {
 }
 
 fn redraw(state: &AppState) {
+    // state.context.borrow_mut().clea
+    state.context.clear_rect(0.0, 0.0, 0.0, 0.0);
+
     for path in &state.paths {
         if path.is_empty() {
             continue;
@@ -95,25 +103,8 @@ fn handle_touch_end(app_state: &mut AppState, point: Option<Point>) {
     }
 }
 
-#[wasm_bindgen(start)]
-fn start() -> Result<(), JsValue> {
-    let document = web_sys::window().unwrap().document().unwrap();
-    let canvas = document.get_element_by_id("canvas").unwrap();
-    let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
-
-    let context = canvas
-        .get_context("2d")?
-        .unwrap()
-        .dyn_into::<web_sys::CanvasRenderingContext2d>()?;
-
-    let context = Rc::new(context);
-
-    let app_state = Rc::new(RefCell::new(AppState {
-        context,
-        pressed: false,
-        paths: Vec::new(),
-    }));
-
+fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue> {
+    let canvas = app_state.borrow().canvas.clone();
     {
         let app_state = app_state.clone();
         let closure = Closure::<dyn FnMut(_)>::new(move |event: MouseEvent| {
@@ -163,6 +154,44 @@ fn start() -> Result<(), JsValue> {
             handle_touch_end(&mut app_state.borrow_mut(), event.try_into().ok())
         });
         canvas.add_event_listener_with_callback("touchend", closure.as_ref().unchecked_ref())?;
+        closure.forget();
+    }
+
+    Ok(())
+}
+
+#[wasm_bindgen(start)]
+fn start() -> Result<(), JsValue> {
+    let document = web_sys::window().unwrap().document().unwrap();
+    let canvas = document.get_element_by_id("canvas").unwrap();
+    let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
+
+    let context = canvas
+        .get_context("2d")?
+        .unwrap()
+        .dyn_into::<web_sys::CanvasRenderingContext2d>()?;
+
+    let context = Rc::new(context);
+    let canvas = Rc::new(canvas);
+
+    let app_state = Rc::new(RefCell::new(AppState {
+        context,
+        canvas,
+        pressed: false,
+        paths: Vec::new(),
+    }));
+
+    handle_canvas_events(app_state.clone())?;
+
+    let undo_btn = document.get_element_by_id("undo").unwrap();
+    {
+        // let app_state = app_state.clone();
+        let closure = Closure::<dyn FnMut(_)>::new(move |_event: MouseEvent| {
+            log("click clicked");
+            app_state.borrow_mut().undo();
+            redraw(&app_state.borrow())
+        });
+        undo_btn.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())?;
         closure.forget();
     }
 
