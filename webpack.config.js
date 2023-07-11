@@ -14,7 +14,7 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.use(express.static(path.join(__dirname + '/css')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 module.exports = {
     entry: './index.js',
