@@ -59,8 +59,7 @@ extern "C" {
 }
 
 fn redraw(state: &AppState) {
-    // state.context.borrow_mut().clea
-    state.context.clear_rect(0.0, 0.0, 0.0, 0.0);
+    state.context.clear_rect(0.0, 0.0, state.canvas.width().into(), state.canvas.height().into());
 
     for path in &state.paths {
         if path.is_empty() {
@@ -185,9 +184,7 @@ fn start() -> Result<(), JsValue> {
 
     let undo_btn = document.get_element_by_id("undo").unwrap();
     {
-        // let app_state = app_state.clone();
         let closure = Closure::<dyn FnMut(_)>::new(move |_event: MouseEvent| {
-            log("click clicked");
             app_state.borrow_mut().undo();
             redraw(&app_state.borrow())
         });
