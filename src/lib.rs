@@ -34,33 +34,17 @@ impl From<MouseEvent> for Point {
 
 #[wasm_bindgen]
 extern "C" {
-    // Use `js_namespace` here to bind `console.log(..)` instead of just
-    // `log(..)`
     #[wasm_bindgen(js_namespace = console)]
     fn log(s: &str);
 }
 
-// fn handle_redraw(canvas: &web_sys::HtmlCanvasElement) -> Result<(), JsValue> {
-//     log("setup handle_on_draw");
-//
-//     let closure = Closure::<dyn FnMut(_)>::new(move |event: Event| {
-//         // Код обработчика события
-//         log("redraw event triggered");
-//     });
-//
-//     canvas.add_event_listener_with_callback("redraw", closure.as_ref().unchecked_ref())?;
-//     closure.forget();
-//
-//     Ok(())
-// }
-
-fn draw(state: &AppState) {
+fn redraw(state: &AppState) {
     for path in &state.paths {
         if path.is_empty() {
             continue
         }
 
-        for (from, to) in path.iter().tuples() {
+        for (from, to) in path.iter().tuple_windows() {
             state.context.begin_path();
             state.context.set_line_width(3.0);
             state.context.set_line_cap("round");
@@ -71,6 +55,26 @@ fn draw(state: &AppState) {
 
             state.context.stroke();
         }
+    }
+}
+
+fn handle_touch_start(app_state: &mut AppState) {
+    app_state.pressed = true;
+    app_state.paths.push(Vec::new());
+}
+
+fn handle_touch_move(app_state: &mut AppState, point: Point) {
+    if app_state.pressed {
+        app_state.add_point(point);
+        redraw(app_state);
+    }
+}
+
+fn handle_touch_end(app_state: &mut AppState, point: Point) {
+    if app_state.pressed {
+        app_state.pressed = false;
+        app_state.add_point(point);
+        redraw(app_state);
     }
 }
 
@@ -85,8 +89,6 @@ fn start() -> Result<(), JsValue> {
         .get_context("2d")?
         .unwrap()
         .dyn_into::<web_sys::CanvasRenderingContext2d>()?;
-    //
-    // handle_redraw(&canvas)?;
 
     let context = Rc::new(context);
 
@@ -99,8 +101,7 @@ fn start() -> Result<(), JsValue> {
     {
         let app_state = app_state.clone();
         let closure = Closure::<dyn FnMut(_)>::new(move |_event: MouseEvent| {
-            app_state.borrow_mut().pressed = true;
-            app_state.borrow_mut().paths.push(Vec::new());
+            handle_touch_start(&mut app_state.borrow_mut())
         });
         canvas.add_event_listener_with_callback("mousedown", closure.as_ref().unchecked_ref())?;
         closure.forget();
@@ -108,19 +109,14 @@ fn start() -> Result<(), JsValue> {
     {
         let app_state = app_state.clone();
         let closure = Closure::<dyn FnMut(_)>::new(move |event: MouseEvent| {
-            if app_state.borrow().pressed {
-                app_state.borrow_mut().add_point(event.into());
-                draw(&app_state.borrow());
-            }
+            handle_touch_move(&mut app_state.borrow_mut(), event.into())
         });
         canvas.add_event_listener_with_callback("mousemove", closure.as_ref().unchecked_ref())?;
         closure.forget();
     }
     {
-        let closure = Closure::<dyn FnMut(_)>::new(move |event: web_sys::MouseEvent| {
-            app_state.borrow_mut().pressed = false;
-            app_state.borrow_mut().add_point(event.into());
-            draw(&app_state.borrow());
+        let closure = Closure::<dyn FnMut(_)>::new(move |event: MouseEvent| {
+            handle_touch_end(&mut app_state.borrow_mut(), event.into())
         });
         canvas.add_event_listener_with_callback("mouseup", closure.as_ref().unchecked_ref())?;
         closure.forget();
