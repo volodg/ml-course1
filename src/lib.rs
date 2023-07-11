@@ -13,14 +13,13 @@ fn start() -> Result<(), JsValue> {
     let document = web_sys::window().unwrap().document().unwrap();
     let canvas = document.get_element_by_id("canvas").unwrap();
     let canvas: web_sys::HtmlCanvasElement = canvas
-        .dyn_into::<web_sys::HtmlCanvasElement>()
-        .map_err(|_| ())
-        .unwrap();
+        .dyn_into::<web_sys::HtmlCanvasElement>()?;
 
     let context = canvas
         .get_context("2d")?
         .unwrap()
         .dyn_into::<web_sys::CanvasRenderingContext2d>()?;
+
     let context = Rc::new(context);
     let pressed = Rc::new(Cell::new(false));
     {
@@ -42,6 +41,9 @@ fn start() -> Result<(), JsValue> {
                 context.line_to(event.offset_x() as f64, event.offset_y() as f64);
                 context.stroke();
                 context.begin_path();
+                context.set_line_width(3.0);
+                context.set_line_cap("round");
+                context.set_line_join("round");
                 context.move_to(event.offset_x() as f64, event.offset_y() as f64);
             }
         });
