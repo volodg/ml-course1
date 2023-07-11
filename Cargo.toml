@@ -24,6 +24,9 @@ features = [
     'HtmlElement',
     'MouseEvent',
     'Node',
+    'Touch',
+    'TouchEvent',
+    'TouchList',
     'Window',
 ]
 
