@@ -1,8 +1,14 @@
+use crate::canvas::StateSubscriber;
 use crate::geometry::Point;
+use crate::html::AddListener;
 use crate::html::HtmlDom;
 use crate::html::Visibility;
 use itertools::Itertools;
-use web_sys::HtmlCanvasElement;
+use std::cell::RefCell;
+use std::ops::DerefMut;
+use std::rc::Rc;
+use wasm_bindgen::JsValue;
+use web_sys::MouseEvent;
 
 struct Drawing {
     label: &'static str,
@@ -25,10 +31,6 @@ pub struct InitialState {
 }
 
 impl InitialState {
-    pub fn get_html_dom(&self) -> &HtmlDom {
-        &self.html_dom
-    }
-
     pub fn get_student(&self) -> String {
         self.html_dom.student_input.value().trim().to_owned()
     }
@@ -42,7 +44,9 @@ pub struct DrawingState {
 }
 
 impl DrawingState {
-    pub fn create(student: String, html_dom: HtmlDom) -> Self {
+    pub fn create(state: &InitialState) -> Self {
+        let student = state.get_student();
+        let html_dom = state.html_dom.clone();
         Self {
             student,
             label_index: 0,
@@ -65,6 +69,29 @@ impl DrawingState {
         self.html_dom
             .instructions_spn
             .set_inner_html(std::format!("Please draw a {label}").as_str());
+    }
+
+    pub fn subscribe_canvas_events(
+        &self,
+        app_state: &Rc<RefCell<AppState>>,
+    ) -> Result<(), JsValue> {
+        self.html_dom.canvas.subscribe(app_state)
+    }
+
+    pub fn subscribe_to_undo_btn(&self, app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
+        let undo_btn = self.html_dom.undo_btn.clone();
+        let app_state = app_state.clone();
+        undo_btn.on_click(
+            move |_event: MouseEvent| match app_state.borrow_mut().deref_mut() {
+                AppState::Initial(_) => panic!(),
+                AppState::Drawing(state) => {
+                    state.undo();
+                    state.redraw();
+                }
+                AppState::Ready(_) => panic!(),
+                AppState::Saved(_) => panic!(),
+            },
+        )
     }
 
     pub fn redraw(&self) {
@@ -164,10 +191,6 @@ impl ReadyState {
         Self { student, html_dom }
     }
 
-    pub fn get_html_dom(&self) -> &HtmlDom {
-        &self.html_dom
-    }
-
     pub fn redraw(&self) {
         self.html_dom.canvas.set_visible(false);
         self.html_dom.undo_btn.set_visible(false);
@@ -182,8 +205,10 @@ pub struct SavedState {
 }
 
 impl SavedState {
-    pub fn create(html_dom: HtmlDom) -> Self {
-        Self { html_dom }
+    pub fn create(state: &ReadyState) -> Self {
+        Self {
+            html_dom: state.html_dom.clone(),
+        }
     }
 
     pub fn redraw(&self) {
@@ -199,21 +224,6 @@ pub enum AppState {
     Drawing(DrawingState),
     Ready(ReadyState),
     Saved(SavedState),
-}
-
-impl AppState {
-    pub fn get_html_dom(&self) -> &HtmlDom {
-        match self {
-            Self::Initial(state) => &state.html_dom,
-            Self::Drawing(state) => &state.html_dom,
-            Self::Ready(state) => &state.html_dom,
-            Self::Saved(state) => &state.html_dom,
-        }
-    }
-
-    pub fn get_canvas(&self) -> &HtmlCanvasElement {
-        &self.get_html_dom().canvas
-    }
 }
 
 impl AppState {
