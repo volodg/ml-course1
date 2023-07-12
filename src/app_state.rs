@@ -1,12 +1,4 @@
-use crate::canvas::StateSubscriber;
-use crate::draw::Draw;
 use crate::geometry::Point;
-use crate::html::AddListener;
-use crate::html::HtmlDom;
-use std::cell::RefCell;
-use std::rc::Rc;
-use wasm_bindgen::JsValue;
-use web_sys::MouseEvent;
 
 pub struct Drawing {
     label: &'static str,
@@ -24,31 +16,35 @@ impl Drawing {
     }
 }
 
-pub struct InitialState {
-    html_dom: HtmlDom,
+pub struct InitialState<View: Clone> {
+    pub view: View,
 }
 
-impl InitialState {
+pub trait WithStudent {
+    fn get_student(&self) -> String;
+}
+
+impl<View: Clone + WithStudent> InitialState<View> {
     pub fn get_student(&self) -> String {
-        self.html_dom.student_input.value().trim().to_owned()
+        self.view.get_student()
     }
 }
 
-pub struct DrawingState {
+pub struct DrawingState<View> {
     pub student: String,
     label_index: usize,
-    pub html_dom: HtmlDom,
+    pub view: View,
     pub drawings: [Drawing; 8],
 }
 
-impl DrawingState {
-    pub fn create(state: &InitialState) -> Self {
+impl<View: Clone + WithStudent> DrawingState<View> {
+    pub fn create(state: &InitialState<View>) -> Self {
         let student = state.get_student();
-        let html_dom = state.html_dom.clone();
+        let view = state.view.clone();
         Self {
             student,
             label_index: 0,
-            html_dom,
+            view,
             drawings: [
                 Drawing::create("car"),
                 Drawing::create("fish"),
@@ -60,26 +56,6 @@ impl DrawingState {
                 Drawing::create("clock"),
             ],
         }
-    }
-
-    pub fn subscribe_canvas_events(
-        &self,
-        app_state: &Rc<RefCell<AppState>>,
-    ) -> Result<(), JsValue> {
-        self.html_dom.canvas.subscribe(app_state)
-    }
-
-    pub fn subscribe_to_undo_btn(&self, app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
-        let undo_btn = self.html_dom.undo_btn.clone();
-        let app_state = app_state.clone();
-        undo_btn.on_click(
-            move |_event: MouseEvent| {
-                let mut app_state = app_state.borrow_mut();
-                let state = app_state.drawing_expected_mut();
-                state.undo();
-                state.draw();
-            },
-        )
     }
 
     pub fn set_pressed(&mut self, value: bool) {
@@ -128,45 +104,45 @@ impl DrawingState {
     }
 }
 
-pub struct ReadyState {
+pub struct ReadyState<View: Clone> {
     #[allow(dead_code)]
     student: String,
-    pub html_dom: HtmlDom,
+    pub view: View,
 }
 
-impl ReadyState {
-    pub fn create(state: &DrawingState) -> Self {
+impl<View: Clone> ReadyState<View> {
+    pub fn create(state: &DrawingState<View>) -> Self {
         let student = state.student.clone();
-        let html_dom = state.html_dom.clone();
-        Self { student, html_dom }
+        let view = state.view.clone();
+        Self { student, view }
     }
 }
 
-pub struct SavedState {
-    pub html_dom: HtmlDom,
+pub struct SavedState<View> {
+    pub view: View,
 }
 
-impl SavedState {
-    pub fn create(state: &ReadyState) -> Self {
+impl<View: Clone> SavedState<View> {
+    pub fn create(state: &ReadyState<View>) -> Self {
         Self {
-            html_dom: state.html_dom.clone(),
+            view: state.view.clone(),
         }
     }
 }
 
-pub enum AppState {
-    Initial(InitialState),
-    Drawing(DrawingState),
-    Ready(ReadyState),
-    Saved(SavedState),
+pub enum AppState<View: Clone + WithStudent> {
+    Initial(InitialState<View>),
+    Drawing(DrawingState<View>),
+    Ready(ReadyState<View>),
+    Saved(SavedState<View>),
 }
 
-impl AppState {
-    pub fn create(html_dom: HtmlDom) -> Self {
-        Self::Initial(InitialState { html_dom })
+impl<View: Clone + WithStudent> AppState<View> {
+    pub fn create(view: View) -> Self {
+        Self::Initial(InitialState { view })
     }
 
-    pub fn drawing_expected_mut(&mut self) -> &mut DrawingState {
+    pub fn drawing_expected_mut(&mut self) -> &mut DrawingState<View> {
         match self {
             AppState::Initial(_) => panic!("unexpected state"),
             AppState::Drawing(state) => state,

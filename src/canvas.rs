@@ -1,6 +1,6 @@
 use crate::app_state::AppState;
 use crate::geometry::{Point, Rect};
-use crate::html::AddListener;
+use crate::html::{AddListener, HtmlDom};
 use crate::{handle_touch_end, handle_touch_move, handle_touch_start};
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -8,11 +8,11 @@ use wasm_bindgen::JsValue;
 use web_sys::{HtmlCanvasElement, MouseEvent, TouchEvent};
 
 pub trait StateSubscriber {
-    fn subscribe(&self, app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue>;
+    fn subscribe(&self, app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Result<(), JsValue>;
 }
 
 impl StateSubscriber for HtmlCanvasElement {
-    fn subscribe(&self, app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
+    fn subscribe(&self, app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Result<(), JsValue> {
         let canvas_rect: Rect = self.get_bounding_client_rect().into();
         let adjust_location = move |pos: Point| -> Point {
             Point {
