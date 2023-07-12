@@ -139,19 +139,15 @@ fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue>
     let canvas = app_state.borrow().html_dom.canvas.clone();
     {
         let app_state = app_state.clone();
-        let closure = Closure::<dyn FnMut(_)>::new(move |event: MouseEvent| {
+        canvas.add_listener("mousedown", move |event: MouseEvent| {
             handle_touch_start(&mut app_state.borrow_mut(), Some(event.into()))
-        });
-        canvas.add_event_listener_with_callback("mousedown", closure.as_ref().unchecked_ref())?;
-        closure.forget();
+        })?
     }
     {
         let app_state = app_state.clone();
-        let closure = Closure::<dyn FnMut(_)>::new(move |event: MouseEvent| {
+        canvas.add_listener("mousemove", move |event: MouseEvent| {
             handle_touch_move(&mut app_state.borrow_mut(), event.into())
-        });
-        canvas.add_event_listener_with_callback("mousemove", closure.as_ref().unchecked_ref())?;
-        closure.forget();
+        })?
     }
     {
         let app_state = app_state.clone();
