@@ -56,6 +56,16 @@ fn redraw(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
     html.undo_btn.set_visible(canvas_is_active);
     html.student_input.set_display(!canvas_is_active);
 
+    if canvas_is_active {
+        let label = LABELS[app_state.borrow().label_index];
+        log(std::format!("label: {label}").as_str());
+        app_state
+            .borrow()
+            .html_dom
+            .instructions_spn
+            .set_inner_html(std::format!("Please draw a {label}").as_str())
+    }
+
     Ok(())
 }
 
@@ -71,23 +81,18 @@ fn turn_to_active_state(app_state: &Rc<RefCell<AppState>>, student: String) -> R
     {
         let app_state = app_state.clone();
         html.advance_btn.on_click(move |_event: MouseEvent| {
-            next(&app_state)
+            next(&app_state).unwrap()
         })?;
     }
 
     redraw(&app_state)
 }
 
-fn next(app_state: &Rc<RefCell<AppState>>) {
+fn next(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
     let label_index = app_state.borrow().label_index;
     app_state.borrow_mut().label_index = (label_index + 1) % LABELS.len();
 
-    let label = LABELS[app_state.borrow().label_index];
-    app_state
-        .borrow()
-        .html_dom
-        .instructions_spn
-        .set_inner_html(std::format!("Please draw a {label}").as_str())
+    redraw(&app_state)
 }
 
 fn handle_touch_start(app_state: &mut AppState, point: Option<Point>) {
