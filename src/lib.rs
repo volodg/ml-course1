@@ -196,12 +196,10 @@ fn start() -> Result<(), JsValue> {
     {
         let undo_btn = &app_state.borrow().html_dom.undo_btn;
         let app_state = app_state.clone();
-        let closure = Closure::<dyn FnMut(_)>::new(move |_event: MouseEvent| {
+        undo_btn.add_listener("click", move |_event: MouseEvent| {
             app_state.borrow_mut().undo();
             redraw(&app_state.borrow())
-        });
-        undo_btn.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())?;
-        closure.forget();
+        })?
     }
 
     {
