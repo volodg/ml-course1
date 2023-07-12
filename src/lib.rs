@@ -2,6 +2,7 @@ mod geometry;
 mod html;
 
 use crate::geometry::{Point, Rect};
+use crate::html::Visibility;
 use itertools::Itertools;
 use std::cell::RefCell;
 use std::f64;
@@ -78,39 +79,13 @@ fn redraw(state: &AppState) {
 
     state.undo_btn.set_disabled(empty);
 
-    if state.student.is_some() {
-        state
-            .undo_btn
-            .style()
-            .set_property("visibility", "visible")
-            .unwrap();
-        state
-            .student_input
-            .style()
-            .set_property("display", "none")
-            .unwrap();
-        state
-            .advance_btn
-            .style()
-            .set_property("display", "none")
-            .unwrap();
-        state
-            .canvas
-            .style()
-            .set_property("visibility", "visible")
-            .unwrap();
-        state
-            .undo_btn
-            .style()
-            .set_property("visibility", "visible")
-            .unwrap();
-    } else {
-        state
-            .undo_btn
-            .style()
-            .set_property("display", "none")
-            .unwrap();
-    }
+    let canvas_is_active = state.student.is_some();
+
+    state.canvas.set_visible(canvas_is_active);
+    state.undo_btn.set_visible(canvas_is_active);
+
+    state.student_input.set_display(!canvas_is_active);
+    state.advance_btn.set_display(!canvas_is_active);
 }
 
 fn handle_touch_start(app_state: &mut AppState, point: Option<Point>) {
