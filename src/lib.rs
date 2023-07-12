@@ -207,7 +207,7 @@ fn start() -> Result<(), JsValue> {
     {
         let advance_btn = &app_state.borrow().html_dom.advance_btn;
         let app_state = app_state.clone();
-        let closure = Closure::<dyn FnMut(_)>::new(move |_event: MouseEvent| {
+        advance_btn.add_listener("click", move |_event: MouseEvent| {
             let student = app_state.borrow().html_dom.student_input.value().trim().to_owned();
             if student == "" {
                 alert("Please type your name");
@@ -215,9 +215,7 @@ fn start() -> Result<(), JsValue> {
                 app_state.borrow_mut().student = Some(student);
                 redraw(&app_state.borrow());
             }
-        });
-        advance_btn.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())?;
-        closure.forget();
+        })?
     }
 
     redraw(&app_state.borrow());
