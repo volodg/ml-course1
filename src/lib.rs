@@ -2,7 +2,7 @@ mod geometry;
 mod html;
 
 use crate::geometry::{Point, Rect};
-use crate::html::{Html, Visibility};
+use crate::html::{HtmlDom, Visibility};
 use itertools::Itertools;
 use std::cell::RefCell;
 use std::f64;
@@ -10,9 +10,12 @@ use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use web_sys::{window, MouseEvent, TouchEvent};
 
+#[allow(dead_code)]
+const LABELS: [&str; 8] = ["car", "fish", "house", "tree", "bicycle", "guitar", "pencil", "clock"];
+
 struct AppState {
     student: Option<String>,
-    html: Html,
+    html_dom: HtmlDom,
     pressed: bool,
     paths: Vec<Vec<Point>>,
 }
@@ -42,7 +45,7 @@ extern "C" {
 }
 
 fn redraw(state: &AppState) {
-    let html = &state.html;
+    let html = &state.html_dom;
     html.context.clear_rect(
         0.0,
         0.0,
@@ -105,7 +108,7 @@ fn handle_touch_end(app_state: &mut AppState, point: Option<Point>) {
 }
 
 fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue> {
-    let canvas_rect: Rect = app_state.borrow().html.canvas.get_bounding_client_rect().into();
+    let canvas_rect: Rect = app_state.borrow().html_dom.canvas.get_bounding_client_rect().into();
     let adjust_location = move |pos: Point| -> Point {
         Point {
             x: pos.x - canvas_rect.x,
@@ -113,7 +116,7 @@ fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue>
         }
     };
 
-    let canvas = app_state.borrow().html.canvas.clone();
+    let canvas = app_state.borrow().html_dom.canvas.clone();
     {
         let app_state = app_state.clone();
         let closure = Closure::<dyn FnMut(_)>::new(move |event: MouseEvent| {
@@ -180,7 +183,7 @@ fn alert(msg: &str) {
 fn start() -> Result<(), JsValue> {
     let app_state = Rc::new(RefCell::new(AppState {
         student: None,
-        html: Html::create()?,
+        html_dom: HtmlDom::create()?,
         pressed: false,
         paths: Vec::new(),
     }));
@@ -188,7 +191,7 @@ fn start() -> Result<(), JsValue> {
     handle_canvas_events(app_state.clone())?;
 
     {
-        let undo_btn = &app_state.borrow().html.undo_btn;
+        let undo_btn = &app_state.borrow().html_dom.undo_btn;
         let app_state = app_state.clone();
         let closure = Closure::<dyn FnMut(_)>::new(move |_event: MouseEvent| {
             app_state.borrow_mut().undo();
@@ -199,10 +202,10 @@ fn start() -> Result<(), JsValue> {
     }
 
     {
-        let advance_btn = &app_state.borrow().html.advance_btn;
+        let advance_btn = &app_state.borrow().html_dom.advance_btn;
         let app_state = app_state.clone();
         let closure = Closure::<dyn FnMut(_)>::new(move |_event: MouseEvent| {
-            let student = app_state.borrow().html.student_input.value().trim().to_owned();
+            let student = app_state.borrow().html_dom.student_input.value().trim().to_owned();
             if student == "" {
                 alert("Please type your name");
             } else {

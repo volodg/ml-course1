@@ -2,7 +2,7 @@ use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, HtmlButtonElement, HtmlCanvasElement, HtmlElement, HtmlInputElement, window};
 use wasm_bindgen::JsCast;
 
-pub struct Html {
+pub struct HtmlDom {
     pub student_input: HtmlInputElement,
     pub advance_btn: HtmlButtonElement,
     pub undo_btn: HtmlButtonElement,
@@ -10,7 +10,7 @@ pub struct Html {
     pub canvas: HtmlCanvasElement,
 }
 
-impl Html {
+impl HtmlDom {
     pub fn create() -> Result<Self, JsValue> {
         let document = window().unwrap().document().unwrap();
         let canvas = document.get_element_by_id("canvas").unwrap();
