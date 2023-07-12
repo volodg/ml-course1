@@ -1,8 +1,4 @@
-use crate::app_state::{AppState, WithStudent};
-use crate::canvas::StateSubscriber;
-use crate::draw::Draw;
-use std::cell::RefCell;
-use std::rc::Rc;
+use crate::app_state::WithStudent;
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
@@ -56,27 +52,6 @@ impl HtmlDom {
             instructions_spn,
             context,
             canvas,
-        })
-    }
-
-    pub fn subscribe_canvas_events(
-        &self,
-        app_state: &Rc<RefCell<AppState<HtmlDom>>>,
-    ) -> Result<(), JsValue> {
-        self.canvas.subscribe(app_state)
-    }
-
-    pub fn subscribe_to_undo_btn(
-        &self,
-        app_state: &Rc<RefCell<AppState<HtmlDom>>>,
-    ) -> Result<(), JsValue> {
-        let undo_btn = self.undo_btn.clone();
-        let app_state = app_state.clone();
-        undo_btn.on_click(move |_event: MouseEvent| {
-            let mut app_state = app_state.borrow_mut();
-            let state = app_state.drawing_expected_mut();
-            state.undo();
-            state.draw();
         })
     }
 }

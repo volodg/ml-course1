@@ -1,8 +1,9 @@
 mod app_state;
-mod canvas;
 mod draw;
 mod geometry;
 mod html;
+mod subscribe_html;
+mod subscribe_state;
 
 use crate::app_state::{AppState, DrawingState, ReadyState, SavedState};
 use crate::draw::Draw;
@@ -13,6 +14,7 @@ use std::ops::Deref;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use web_sys::MouseEvent;
+use crate::subscribe_state::StateSubscriber;
 
 #[wasm_bindgen]
 extern "C" {
@@ -81,8 +83,7 @@ fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Resul
                 } else {
                     let new_state = DrawingState::create(state);
                     new_state.draw();
-                    new_state.view.subscribe_canvas_events(&app_state)?;
-                    new_state.view.subscribe_to_undo_btn(&app_state)?;
+                    new_state.subscribe(&app_state)?;
 
                     Some(Action::TurnIntoDrawingState(new_state))
                 }
