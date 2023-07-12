@@ -23,6 +23,13 @@ impl AppState {
     }
 
     fn undo(&mut self) {
+        while let Some(last) = self.paths.last() {
+            if last.is_empty() {
+                self.paths.pop();
+            } else {
+                break
+            }
+        }
         self.paths.pop();
     }
 }
