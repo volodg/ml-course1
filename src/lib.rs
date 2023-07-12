@@ -26,7 +26,7 @@ extern "C" {
 fn handle_next(app_state: &Rc<RefCell<AppState<HtmlDom>>>) {
     let new_state = {
         let mut app_state = app_state.borrow_mut();
-        let state = app_state.drawing_expected_mut();
+        let state = app_state.drawing_expected_mut().expect("");
         if state.curr_path().is_empty() {
             alert("Draw something first");
             None

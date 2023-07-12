@@ -177,12 +177,12 @@ impl<View: Clone + WithStudent> AppState<View> {
         Self::Initial(state)
     }
 
-    pub fn drawing_expected_mut(&mut self) -> &mut DrawingState<View> {
+    pub fn drawing_expected_mut(&mut self) -> Option<&mut DrawingState<View>> {
         match self {
-            AppState::Initial(_) => panic!("unexpected state"),
-            AppState::Drawing(state) => state,
-            AppState::Ready(_) => panic!("unexpected state"),
-            AppState::Saved(_) => panic!("unexpected state"),
+            AppState::Initial(_) => None,
+            AppState::Drawing(state) => Some(state),
+            AppState::Ready(_) => None,
+            AppState::Saved(_) => None,
         }
     }
 }

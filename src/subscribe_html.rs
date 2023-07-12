@@ -41,7 +41,7 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
             view.canvas
                 .add_listener("mousedown", move |event: MouseEvent| {
                     let mut app_state = app_state.borrow_mut();
-                    handle_touch_start(app_state.drawing_expected_mut(), Some(event.into()))
+                    handle_touch_start(app_state.drawing_expected_mut().expect(""), Some(event.into()))
                 })?
         }
         {
@@ -49,7 +49,7 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
             view.canvas
                 .add_listener("mousemove", move |event: MouseEvent| {
                     let mut app_state = app_state.borrow_mut();
-                    handle_touch_move(app_state.drawing_expected_mut(), event.into())
+                    handle_touch_move(app_state.drawing_expected_mut().expect(""), event.into())
                 })?
         }
         {
@@ -57,7 +57,9 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
             view.document
                 .add_listener("mouseup", move |_event: MouseEvent| {
                     let mut app_state = app_state.borrow_mut();
-                    handle_touch_end(app_state.drawing_expected_mut())
+                    if let Some(state) = app_state.drawing_expected_mut() {
+                        handle_touch_end(state)
+                    }
                 })?
         }
         {
@@ -66,7 +68,7 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
                 .add_listener("touchstart", move |event: TouchEvent| {
                     let point = event.try_into().ok().map(adjust_location);
                     let mut app_state = app_state.borrow_mut();
-                    handle_touch_start(app_state.drawing_expected_mut(), point)
+                    handle_touch_start(app_state.drawing_expected_mut().expect(""), point)
                 })?
         }
         {
@@ -76,7 +78,7 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
                     let point = event.try_into().ok().map(adjust_location);
                     if let Some(point) = point {
                         let mut app_state = app_state.borrow_mut();
-                        handle_touch_move(app_state.drawing_expected_mut(), point)
+                        handle_touch_move(app_state.drawing_expected_mut().expect(""), point)
                     }
                 })?
         }
@@ -84,7 +86,9 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
             view.document
                 .add_listener("touchend", move |_event: TouchEvent| {
                     let mut app_state = app_state.borrow_mut();
-                    handle_touch_end(app_state.drawing_expected_mut())
+                    if let Some(state) = app_state.drawing_expected_mut() {
+                        handle_touch_end(state)
+                    }
                 })?
         }
 
@@ -99,7 +103,7 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
             .undo_btn
             .on_click(move |_event: MouseEvent| {
                 let mut app_state = app_state.borrow_mut();
-                let state = app_state.drawing_expected_mut();
+                let state = app_state.drawing_expected_mut().expect("");
                 state.undo();
                 state.draw();
             })
