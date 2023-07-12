@@ -9,11 +9,11 @@ use crate::app_state::{AppState, DrawingState, InitialState, ReadyState, SavedSt
 use crate::draw::Draw;
 use crate::geometry::Point;
 use crate::html::{alert, HtmlDom};
+use crate::subscribe_state::StateSubscriber;
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
-use crate::subscribe_state::StateSubscriber;
 
 #[wasm_bindgen]
 extern "C" {
@@ -82,7 +82,7 @@ fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Resul
                 } else {
                     let new_state = DrawingState::create(state);
                     new_state.draw();
-                    new_state.subscribe(&app_state)?;
+                    new_state.subscribe(app_state.clone())?;
 
                     Some(Action::TurnIntoDrawingState(new_state))
                 }
@@ -116,11 +116,9 @@ fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Resul
 fn start() -> Result<(), JsValue> {
     let html = HtmlDom::create()?;
 
-    let app_state = InitialState::create(html);
-    let app_state = AppState::create(app_state);
-    let app_state = Rc::new(RefCell::new(app_state));
+    let app_state = Rc::new(RefCell::new(AppState::create(InitialState::create(html))));
 
-    app_state.borrow().subscribe(&app_state)?;
+    app_state.borrow().subscribe(app_state.clone())?;
 
     Ok(())
 }
