@@ -1,5 +1,6 @@
 mod geometry;
 mod html;
+mod app;
 
 use crate::geometry::{Point, Rect};
 use crate::html::{alert, AddListener, HtmlDom, Visibility};
@@ -9,36 +10,7 @@ use std::f64;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use web_sys::{MouseEvent, TouchEvent};
-
-const LABELS: [&str; 8] = [
-    "car", "fish", "house", "tree", "bicycle", "guitar", "pencil", "clock",
-];
-
-struct AppState {
-    student: Option<String>,
-    label_index: usize,
-    html_dom: HtmlDom,
-    pressed: bool,
-    paths: Vec<Vec<Point>>,
-}
-
-impl AppState {
-    fn add_point(&mut self, point: Point) {
-        let size = self.paths.len();
-        self.paths[size - 1].push(point);
-    }
-
-    fn undo(&mut self) {
-        while let Some(last) = self.paths.last() {
-            if last.is_empty() {
-                self.paths.pop();
-            } else {
-                break;
-            }
-        }
-        self.paths.pop();
-    }
-}
+use crate::app::{AppState, LABELS};
 
 #[wasm_bindgen]
 extern "C" {
@@ -94,26 +66,28 @@ fn turn_to_active_state(app_state: &Rc<RefCell<AppState>>, student: String) -> R
 
     let html = &app_state.borrow().html_dom;
 
-    let label = LABELS[app_state.borrow().label_index];
-    app_state
-        .borrow()
-        .html_dom
-        .instructions_spn
-        .set_inner_html(std::format!("Please draw a {label}").as_str());
     html.advance_btn.set_inner_html("NEXT");
 
     {
         let app_state = app_state.clone();
         html.advance_btn.on_click(move |_event: MouseEvent| {
-            next(&app_state.borrow())
+            next(&app_state)
         })?;
     }
 
     redraw(&app_state)
 }
 
-fn next(_app_state: &AppState) {
-    log("NEXT clicked")
+fn next(app_state: &Rc<RefCell<AppState>>) {
+    let label_index = app_state.borrow().label_index;
+    app_state.borrow_mut().label_index = (label_index + 1) % LABELS.len();
+
+    let label = LABELS[app_state.borrow().label_index];
+    app_state
+        .borrow()
+        .html_dom
+        .instructions_spn
+        .set_inner_html(std::format!("Please draw a {label}").as_str())
 }
 
 fn handle_touch_start(app_state: &mut AppState, point: Option<Point>) {
