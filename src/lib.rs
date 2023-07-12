@@ -21,6 +21,7 @@ extern "C" {
     fn log(s: &str);
 }
 
+// TODO call only for a drawing state
 fn redraw(app_state: &AppState) -> Result<(), JsValue> {
     match app_state {
         AppState::Initial(_) => (),
@@ -56,14 +57,7 @@ fn redraw(app_state: &AppState) -> Result<(), JsValue> {
 
             html.undo_btn.set_disabled(empty);
         }
-        AppState::Ready(state) => {
-            let html = state.get_html_dom();
-            html.canvas.set_visible(false); // TODO
-            html.undo_btn.set_visible(false);
-
-            html.instructions_spn.set_inner_html("Thank you!");
-            html.advance_btn.set_inner_html("SAVE");
-        }
+        AppState::Ready(_) => (),
         AppState::Saved(_) => (),
     }
 
@@ -111,7 +105,7 @@ fn turn_into_drawing_state(
 fn handle_next(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
     enum Action {
         Redraw(String),
-        NewState(AppState),
+        IntoReady(ReadyState),
     }
 
     let new_state = {
@@ -122,10 +116,10 @@ fn handle_next(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
                     alert("Draw something first");
                     None
                 } else if !state.increment_index() {
-                    Some(Action::NewState(AppState::Ready(ReadyState::create(
+                    Some(Action::IntoReady(ReadyState::create(
                         state.student.clone(),
                         state.get_html_dom().clone(),
-                    ))))
+                    )))
                 } else {
                     Some(Action::Redraw(state.get_current_label().to_owned()))
                 }
@@ -137,11 +131,21 @@ fn handle_next(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
 
     if let Some(new_state) = new_state {
         match new_state {
-            Action::NewState(state) => *app_state.borrow_mut() = state,
-            Action::Redraw(label) => app_state.borrow().get_html_dom().draw_a_task_label(label),
-        };
+            Action::IntoReady(state) => {
+                let html = state.get_html_dom();
+                html.canvas.set_visible(false);
+                html.undo_btn.set_visible(false);
 
-        redraw(app_state.borrow().deref())?
+                html.instructions_spn.set_inner_html("Thank you!");
+                html.advance_btn.set_inner_html("SAVE");
+
+                *app_state.borrow_mut() = AppState::Ready(state)
+            },
+            Action::Redraw(label) => {
+                app_state.borrow().get_html_dom().draw_a_task_label(label);
+                redraw(app_state.borrow().deref())?
+            },
+        };
     }
 
     Ok(())
