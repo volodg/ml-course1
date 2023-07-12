@@ -1,6 +1,10 @@
-use wasm_bindgen::JsValue;
-use web_sys::{CanvasRenderingContext2d, HtmlButtonElement, HtmlCanvasElement, HtmlElement, HtmlInputElement, HtmlSpanElement, window};
+use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
+use wasm_bindgen::JsValue;
+use web_sys::{
+    window, CanvasRenderingContext2d, HtmlButtonElement, HtmlCanvasElement, HtmlElement,
+    HtmlInputElement, HtmlSpanElement,
+};
 
 pub struct HtmlDom {
     pub student_input: HtmlInputElement,
@@ -76,5 +80,31 @@ impl Visibility for HtmlElement {
 pub fn alert(msg: &str) {
     if let Some(window) = window() {
         let _ = window.alert_with_message(msg);
+    }
+}
+
+pub trait AddListener {
+    fn add_listener<Event: wasm_bindgen::convert::FromWasmAbi + 'static, F>(
+        &self,
+        name: &str,
+        listener: F,
+    ) -> Result<(), JsValue>
+    where
+        F: FnMut(Event) + 'static;
+}
+
+impl AddListener for HtmlElement {
+    fn add_listener<Event: wasm_bindgen::convert::FromWasmAbi + 'static, F>(
+        &self,
+        name: &str,
+        mut listener: F,
+    ) -> Result<(), JsValue>
+    where
+        F: FnMut(Event) + 'static,
+    {
+        let closure = Closure::<dyn FnMut(_)>::new(move |event: Event| listener(event));
+        self.add_event_listener_with_callback(name, closure.as_ref().unchecked_ref())?;
+        closure.forget();
+        Ok(())
     }
 }
