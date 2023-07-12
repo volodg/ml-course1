@@ -15,12 +15,13 @@ impl Save for ReadyState<HtmlDom> {
     type View = HtmlDom;
 
     fn save(&self) -> Result<SavedState<Self::View>, JsValue> {
-        let document = self.get_view().document;
+        let document = &self.get_view().document;
         let element = document.create_element("a")?.dyn_into::<HtmlElement>()?;
 
         let drawings: Vec<_> = self.drawings.iter().map(|x| x.get_paths()).collect();
 
-        let json = serde_json::to_string(&drawings).unwrap();
+        let json = serde_json::to_string(&drawings)
+            .map_err(|err| JsValue::from_str(std::format!("json error: {}", err).as_str()))?;
         let json = encode_uri_component(json.as_str());
 
         let attribute = std::format!("data:text/plain;charset=utf-8,{}", json);
@@ -33,12 +34,7 @@ impl Save for ReadyState<HtmlDom> {
 
         _ = document.body().unwrap().append_child(&element);
         element.click();
-        _ = self
-            .get_view()
-            .document
-            .body()
-            .unwrap()
-            .remove_child(&element);
+        _ = document.body().unwrap().remove_child(&element);
 
         Ok(SavedState::create(self))
     }
