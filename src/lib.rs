@@ -1,9 +1,11 @@
 mod app;
+mod canvas;
 mod geometry;
 mod html;
 
 use crate::app::{AppState, DrawingState, ReadyState};
-use crate::geometry::{Point, Rect};
+use crate::canvas::subscribe_canvas_events;
+use crate::geometry::Point;
 use crate::html::{alert, AddListener, HtmlDom, Visibility};
 use itertools::Itertools;
 use std::cell::RefCell;
@@ -11,7 +13,7 @@ use std::f64;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
-use web_sys::{MouseEvent, TouchEvent};
+use web_sys::MouseEvent;
 
 #[wasm_bindgen]
 extern "C" {
@@ -68,8 +70,11 @@ fn redraw(app_state: &AppState) -> Result<(), JsValue> {
     Ok(())
 }
 
-fn turn_to_active_state(app_state: &Rc<RefCell<AppState>>, student: String) -> Result<(), JsValue> {
-    let turn_into_active = {
+fn turn_into_active_state(
+    app_state: &Rc<RefCell<AppState>>,
+    student: String,
+) -> Result<(), JsValue> {
+    {
         match app_state.borrow().deref() {
             AppState::Initial(state) => {
                 let html = state.get_html_dom();
@@ -77,48 +82,42 @@ fn turn_to_active_state(app_state: &Rc<RefCell<AppState>>, student: String) -> R
                 html.undo_btn.set_visible(true);
                 html.student_input.set_display(false);
                 html.advance_btn.set_inner_html("NEXT");
-
-                let app_state = app_state.clone();
-                html.advance_btn
-                    .on_click(move |_event: MouseEvent| next(&app_state).unwrap())?;
-
-                true
             }
-            AppState::Drawing(_) => false,
-            AppState::Ready(_) => false,
+            AppState::Drawing(_) => panic!(),
+            AppState::Ready(_) => panic!(),
         }
     };
 
-    if turn_into_active {
-        subscribe_canvas_events(&app_state)?;
-        let html = app_state.borrow().get_html_dom().clone();
-        *app_state.borrow_mut() = AppState::Drawing(DrawingState::create(student, html));
-        redraw(app_state.borrow().deref())?
-    }
+    subscribe_canvas_events(&app_state)?;
+    subscribe_to_undo_btn(&app_state)?;
+
+    let html = app_state.borrow().get_html_dom().clone();
+    *app_state.borrow_mut() = AppState::Drawing(DrawingState::create(student, html));
+    redraw(app_state.borrow().deref())?;
 
     Ok(())
 }
 
-fn next(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
-    enum State {
+fn handle_next(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
+    enum Action {
         Redraw,
         NewState(AppState),
     }
 
     let new_state = {
         match app_state.borrow_mut().deref_mut() {
-            AppState::Initial(_) => None,
+            AppState::Initial(_) => panic!(),
             AppState::Drawing(state) => {
                 if state.curr_path().is_empty() {
                     alert("Draw something first");
                     None
                 } else if !state.increment_index() {
-                    Some(State::NewState(AppState::Ready(ReadyState::create(
+                    Some(Action::NewState(AppState::Ready(ReadyState::create(
                         state.student.clone(),
                         state.get_html_dom().clone(),
                     ))))
                 } else {
-                    Some(State::Redraw)
+                    Some(Action::Redraw)
                 }
             }
             AppState::Ready(_) => None,
@@ -127,8 +126,8 @@ fn next(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
 
     if let Some(new_state) = new_state {
         match new_state {
-            State::NewState(state) => *app_state.borrow_mut() = state,
-            State::Redraw => (),
+            Action::NewState(state) => *app_state.borrow_mut() = state,
+            Action::Redraw => (),
         }
 
         redraw(app_state.borrow().deref())?
@@ -199,112 +198,72 @@ fn handle_touch_end(
     Ok(())
 }
 
-fn subscribe_canvas_events(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
-    let canvas_rect: Rect = app_state
-        .borrow()
-        .get_html_dom()
-        .canvas
-        .get_bounding_client_rect()
-        .into();
-    let adjust_location = move |pos: Point| -> Point {
-        Point {
-            x: pos.x - canvas_rect.x,
-            y: pos.y - canvas_rect.y,
+fn subscribe_to_undo_btn(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
+    let undo_btn = app_state.borrow().get_html_dom().undo_btn.clone();
+    let app_state = app_state.clone();
+    undo_btn.on_click(move |_event: MouseEvent| {
+        {
+            match app_state.borrow_mut().deref_mut() {
+                AppState::Initial(_) => panic!(),
+                AppState::Drawing(state) => {
+                    state.undo();
+                    true
+                }
+                AppState::Ready(_) => panic!(),
+            }
+        };
+
+        redraw(app_state.borrow().deref()).unwrap()
+    })
+}
+
+fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
+    enum Action {
+        Register(String),
+        Next,
+    }
+
+    let action = {
+        match app_state.borrow().deref() {
+            AppState::Initial(state) => {
+                Some(Action::Register(state.get_html_dom().student_input.value().trim().to_owned()))
+            }
+            AppState::Drawing(_) => {
+                Some(Action::Next)
+            },
+            AppState::Ready(_) => None,
         }
     };
 
-    let canvas = app_state.borrow().get_html_dom().canvas.clone();
-    {
-        let app_state = app_state.clone();
-        canvas.add_listener("mousedown", move |event: MouseEvent| {
-            handle_touch_start(&mut app_state.borrow_mut(), Some(event.into()))
-        })?
-    }
-    {
-        let app_state = app_state.clone();
-        canvas.add_listener("mousemove", move |event: MouseEvent| {
-            handle_touch_move(&app_state, event.into()).unwrap()
-        })?
-    }
-    {
-        let app_state = app_state.clone();
-        canvas.add_listener("mouseup", move |event: MouseEvent| {
-            handle_touch_end(&app_state, Some(event.into())).unwrap()
-        })?
-    }
-    {
-        let app_state = app_state.clone();
-        canvas.add_listener("touchstart", move |event: TouchEvent| {
-            let point = event.try_into().ok().map(adjust_location);
-            handle_touch_start(&mut app_state.borrow_mut(), point)
-        })?
-    }
-    {
-        let app_state = app_state.clone();
-        canvas.add_listener("touchmove", move |event: TouchEvent| {
-            let point = event.try_into().ok().map(adjust_location);
-            if let Some(point) = point {
-                handle_touch_move(&app_state, point).unwrap()
-            }
-        })?
-    }
-    {
-        let app_state = app_state.clone();
-        canvas.add_listener("touchend", move |event: TouchEvent| {
-            let point = event.try_into().ok().map(adjust_location);
-            handle_touch_end(&app_state, point).unwrap()
-        })?
+    if let Some(action) = action {
+        match action {
+            Action::Register(student) => {
+                if student.is_empty() {
+                    alert("Please type your name")
+                } else {
+                    turn_into_active_state(&app_state, student)?
+                }
+            },
+            Action::Next => handle_next(&app_state)?
+        }
     }
 
     Ok(())
+}
+
+fn subscribe_to_advance_btn(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
+    let advance_btn = app_state.borrow().get_html_dom().advance_btn.clone();
+    let app_state = app_state.clone();
+    advance_btn.on_click(move |_event: MouseEvent| {
+        handle_advance_btn_click(&app_state).unwrap()
+    })
 }
 
 #[wasm_bindgen(start)]
 fn start() -> Result<(), JsValue> {
     let app_state = Rc::new(RefCell::new(AppState::create(HtmlDom::create()?)));
 
-    {
-        let undo_btn = app_state.borrow().get_html_dom().undo_btn.clone();
-        let app_state = app_state.clone();
-        undo_btn.on_click(move |_event: MouseEvent| {
-            {
-                match app_state.borrow_mut().deref_mut() {
-                    AppState::Initial(_) => panic!(),
-                    AppState::Drawing(state) => {
-                        state.undo();
-                        true
-                    }
-                    AppState::Ready(_) => panic!(),
-                }
-            };
-
-            redraw(app_state.borrow().deref()).unwrap()
-        })?
-    }
-
-    {
-        let advance_btn = app_state.borrow().get_html_dom().advance_btn.clone();
-        let app_state = app_state.clone();
-        advance_btn.on_click(move |_event: MouseEvent| {
-            let student = {
-                match app_state.borrow().deref() {
-                    AppState::Initial(state) => {
-                        Some(state.get_html_dom().student_input.value().trim().to_owned())
-                    }
-                    AppState::Drawing(_) => None,
-                    AppState::Ready(_) => None,
-                }
-            };
-
-            if let Some(student) = student {
-                if student.is_empty() {
-                    alert("Please type your name");
-                } else {
-                    turn_to_active_state(&app_state, student).unwrap();
-                }
-            }
-        })?
-    }
+    subscribe_to_advance_btn(&app_state)?;
 
     redraw(app_state.borrow().deref())?;
 
