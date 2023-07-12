@@ -1,5 +1,7 @@
+use serde::Serialize;
 use web_sys::{DomRect, MouseEvent, TouchEvent};
 
+#[derive(Clone, Serialize)]
 pub struct Point {
     pub x: i32,
     pub y: i32,

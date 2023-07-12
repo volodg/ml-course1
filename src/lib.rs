@@ -2,9 +2,9 @@ mod app_state;
 mod draw;
 mod geometry;
 mod html;
+mod html_state;
 mod subscribe_html;
 mod subscribe_state;
-mod html_state;
 
 use crate::app_state::{AppState, DrawingState, InitialState, ReadyState, SavedState};
 use crate::draw::Draw;
@@ -91,7 +91,7 @@ fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Resul
             }
             AppState::Drawing(_) => Some(Action::HandleNext),
             AppState::Ready(state) => {
-                let new_state = state.save();
+                let new_state = state.save()?;
                 new_state.draw();
                 Some(Action::TurnIntoSavedState(new_state))
             }

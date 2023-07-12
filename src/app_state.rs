@@ -2,6 +2,7 @@ use crate::geometry::Point;
 
 const DRAWING_SIZE: usize = 8;
 
+#[derive(Clone)]
 pub struct Drawing {
     label: &'static str,
     pressed: bool,
@@ -15,6 +16,10 @@ impl Drawing {
             pressed: false,
             paths: vec![],
         }
+    }
+
+    pub fn get_paths(&self) -> &Vec<Vec<Point>> {
+        &self.paths
     }
 }
 
@@ -124,13 +129,19 @@ pub struct ReadyState<View: Clone> {
     #[allow(dead_code)]
     student: String,
     view: View,
+    pub drawings: [Drawing; DRAWING_SIZE],
 }
 
 impl<View: Clone> ReadyState<View> {
     pub fn create(state: &DrawingState<View>) -> Self {
         let student = state.student.clone();
         let view = state.view.clone();
-        Self { student, view }
+        let drawings = state.drawings.clone();
+        Self {
+            student,
+            view,
+            drawings,
+        }
     }
 
     pub fn get_view(&self) -> &View {
