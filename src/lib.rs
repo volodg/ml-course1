@@ -151,11 +151,9 @@ fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue>
     }
     {
         let app_state = app_state.clone();
-        let closure = Closure::<dyn FnMut(_)>::new(move |event: MouseEvent| {
+        canvas.add_listener("mouseup", move |event: MouseEvent| {
             handle_touch_end(&mut app_state.borrow_mut(), Some(event.into()))
-        });
-        canvas.add_event_listener_with_callback("mouseup", closure.as_ref().unchecked_ref())?;
-        closure.forget();
+        })?
     }
     {
         let app_state = app_state.clone();
