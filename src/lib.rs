@@ -13,13 +13,51 @@ use web_sys::{
     MouseEvent, TouchEvent,
 };
 
-struct AppState {
-    student: Option<String>,
+struct Html {
     student_input: HtmlInputElement,
     advance_btn: HtmlButtonElement,
     undo_btn: HtmlButtonElement,
     context: CanvasRenderingContext2d,
     canvas: HtmlCanvasElement,
+}
+
+impl Html {
+    fn create() -> Result<Self, JsValue> {
+        let document = window().unwrap().document().unwrap();
+        let canvas = document.get_element_by_id("canvas").unwrap();
+        let canvas = canvas.dyn_into::<HtmlCanvasElement>()?;
+
+        let context = canvas
+            .get_context("2d")?
+            .unwrap()
+            .dyn_into::<CanvasRenderingContext2d>()?;
+
+        let undo_btn = document
+            .get_element_by_id("undo")
+            .unwrap()
+            .dyn_into::<HtmlButtonElement>()?;
+        let student_input = document
+            .get_element_by_id("student")
+            .unwrap()
+            .dyn_into::<HtmlInputElement>()?;
+        let advance_btn = document
+            .get_element_by_id("advanceBtn")
+            .unwrap()
+            .dyn_into::<HtmlButtonElement>()?;
+
+        Ok(Self {
+            student_input,
+            advance_btn,
+            undo_btn,
+            context,
+            canvas,
+        })
+    }
+}
+
+struct AppState {
+    student: Option<String>,
+    html: Html,
     pressed: bool,
     paths: Vec<Vec<Point>>,
 }
@@ -49,11 +87,12 @@ extern "C" {
 }
 
 fn redraw(state: &AppState) {
-    state.context.clear_rect(
+    let html = &state.html;
+    html.context.clear_rect(
         0.0,
         0.0,
-        state.canvas.width().into(),
-        state.canvas.height().into(),
+        html.canvas.width().into(),
+        html.canvas.height().into(),
     );
 
     let mut empty = true;
@@ -65,27 +104,26 @@ fn redraw(state: &AppState) {
         empty = false;
 
         for (from, to) in path.iter().tuple_windows() {
-            state.context.begin_path();
-            state.context.set_line_width(3.0);
-            state.context.set_line_cap("round");
-            state.context.set_line_join("round");
+            html.context.begin_path();
+            html.context.set_line_width(3.0);
+            html.context.set_line_cap("round");
+            html.context.set_line_join("round");
 
-            state.context.move_to(from.x as f64, from.y as f64);
-            state.context.line_to(to.x as f64, to.y as f64);
+            html.context.move_to(from.x as f64, from.y as f64);
+            html.context.line_to(to.x as f64, to.y as f64);
 
-            state.context.stroke();
+            html.context.stroke();
         }
     }
 
-    state.undo_btn.set_disabled(empty);
+    html.undo_btn.set_disabled(empty);
 
     let canvas_is_active = state.student.is_some();
 
-    state.canvas.set_visible(canvas_is_active);
-    state.undo_btn.set_visible(canvas_is_active);
-
-    state.student_input.set_display(!canvas_is_active);
-    state.advance_btn.set_display(!canvas_is_active);
+    html.canvas.set_visible(canvas_is_active);
+    html.undo_btn.set_visible(canvas_is_active);
+    html.student_input.set_display(!canvas_is_active);
+    html.advance_btn.set_display(!canvas_is_active);
 }
 
 fn handle_touch_start(app_state: &mut AppState, point: Option<Point>) {
@@ -112,7 +150,7 @@ fn handle_touch_end(app_state: &mut AppState, point: Option<Point>) {
 }
 
 fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue> {
-    let canvas_rect: Rect = app_state.borrow().canvas.get_bounding_client_rect().into();
+    let canvas_rect: Rect = app_state.borrow().html.canvas.get_bounding_client_rect().into();
     let adjust_location = move |pos: Point| -> Point {
         Point {
             x: pos.x - canvas_rect.x,
@@ -120,7 +158,7 @@ fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue>
         }
     };
 
-    let canvas = app_state.borrow().canvas.clone();
+    let canvas = app_state.borrow().html.canvas.clone();
     {
         let app_state = app_state.clone();
         let closure = Closure::<dyn FnMut(_)>::new(move |event: MouseEvent| {
@@ -185,35 +223,9 @@ fn alert(msg: &str) {
 
 #[wasm_bindgen(start)]
 fn start() -> Result<(), JsValue> {
-    let document = web_sys::window().unwrap().document().unwrap();
-    let canvas = document.get_element_by_id("canvas").unwrap();
-    let canvas = canvas.dyn_into::<HtmlCanvasElement>()?;
-
-    let context = canvas
-        .get_context("2d")?
-        .unwrap()
-        .dyn_into::<CanvasRenderingContext2d>()?;
-
-    let undo_btn = document
-        .get_element_by_id("undo")
-        .unwrap()
-        .dyn_into::<HtmlButtonElement>()?;
-    let student_input = document
-        .get_element_by_id("student")
-        .unwrap()
-        .dyn_into::<HtmlInputElement>()?;
-    let advance_btn = document
-        .get_element_by_id("advanceBtn")
-        .unwrap()
-        .dyn_into::<HtmlButtonElement>()?;
-
     let app_state = Rc::new(RefCell::new(AppState {
         student: None,
-        student_input,
-        advance_btn: advance_btn.clone(),
-        undo_btn: undo_btn.clone(),
-        context,
-        canvas,
+        html: Html::create()?,
         pressed: false,
         paths: Vec::new(),
     }));
@@ -221,6 +233,7 @@ fn start() -> Result<(), JsValue> {
     handle_canvas_events(app_state.clone())?;
 
     {
+        let undo_btn = &app_state.borrow().html.undo_btn;
         let app_state = app_state.clone();
         let closure = Closure::<dyn FnMut(_)>::new(move |_event: MouseEvent| {
             app_state.borrow_mut().undo();
@@ -231,9 +244,10 @@ fn start() -> Result<(), JsValue> {
     }
 
     {
+        let advance_btn = &app_state.borrow().html.advance_btn;
         let app_state = app_state.clone();
         let closure = Closure::<dyn FnMut(_)>::new(move |_event: MouseEvent| {
-            let student = app_state.borrow().student_input.value().trim().to_owned();
+            let student = app_state.borrow().html.student_input.value().trim().to_owned();
             if student == "" {
                 alert("Please type your name");
             } else {
