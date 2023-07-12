@@ -84,6 +84,11 @@ fn turn_to_active_state(app_state: &Rc<RefCell<AppState>>, student: String) -> R
 }
 
 fn next(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
+    if app_state.borrow().paths.is_empty() {
+        alert("Draw something first");
+        return Ok(())
+    }
+
     app_state.borrow_mut().increment_index();
 
     redraw(&app_state)
