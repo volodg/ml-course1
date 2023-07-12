@@ -1,7 +1,7 @@
 use crate::geometry::Point;
 use crate::html::HtmlDom;
 
-pub const LABELS: [&str; 8] = [
+const LABELS: [&str; 8] = [
     "car", "fish", "house", "tree", "bicycle", "guitar", "pencil", "clock",
 ];
 
@@ -28,5 +28,13 @@ impl AppState {
             }
         }
         self.paths.pop();
+    }
+
+    pub fn get_current_label(&self) -> &str {
+        LABELS[self.label_index]
+    }
+
+    pub fn increment_index(&mut self) {
+        self.label_index = (self.label_index + 1) % LABELS.len();
     }
 }
