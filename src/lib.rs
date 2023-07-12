@@ -86,13 +86,6 @@ fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue>
         }
     };
 
-    // fn adjust_location(rect: &Rect, pos: Point) -> Point {
-    //     Point {
-    //         x: pos.x - rect.x,
-    //         y: pos.y - rect.y,
-    //     }
-    // }
-
     let canvas = app_state.borrow().canvas.clone();
     {
         let app_state = app_state.clone();

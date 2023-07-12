@@ -21,8 +21,8 @@ impl TryFrom<TouchEvent> for Point {
     fn try_from(event: TouchEvent) -> Result<Self, Self::Error> {
         match event.touches().get(0) {
             Some(touch) => Ok(Self {
-                x: touch.screen_x(),
-                y: touch.screen_y(),
+                x: touch.client_x(),
+                y: touch.client_y(),
             }),
             None => Err(())
         }
