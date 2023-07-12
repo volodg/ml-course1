@@ -1,5 +1,7 @@
 use crate::geometry::Point;
 
+const DRAWING_SIZE: usize = 8;
+
 pub struct Drawing {
     label: &'static str,
     pressed: bool,
@@ -17,12 +19,16 @@ impl Drawing {
 }
 
 pub struct InitialState<View: Clone> {
-    pub view: View,
+    view: View,
 }
 
 impl<View: Clone> InitialState<View> {
     pub fn create(view: View) -> Self {
         Self { view }
+    }
+
+    pub fn get_view(&self) -> &View {
+        &self.view
     }
 }
 
@@ -39,8 +45,8 @@ impl<View: Clone + WithStudent> InitialState<View> {
 pub struct DrawingState<View> {
     pub student: String,
     label_index: usize,
-    pub view: View,
-    pub drawings: [Drawing; 8],
+    view: View,
+    pub drawings: [Drawing; DRAWING_SIZE],
 }
 
 impl<View: Clone + WithStudent> DrawingState<View> {
@@ -62,6 +68,10 @@ impl<View: Clone + WithStudent> DrawingState<View> {
                 Drawing::create("clock"),
             ],
         }
+    }
+
+    pub fn get_view(&self) -> &View {
+        &self.view
     }
 
     pub fn set_pressed(&mut self, value: bool) {
@@ -113,7 +123,7 @@ impl<View: Clone + WithStudent> DrawingState<View> {
 pub struct ReadyState<View: Clone> {
     #[allow(dead_code)]
     student: String,
-    pub view: View,
+    view: View,
 }
 
 impl<View: Clone> ReadyState<View> {
@@ -122,10 +132,14 @@ impl<View: Clone> ReadyState<View> {
         let view = state.view.clone();
         Self { student, view }
     }
+
+    pub fn get_view(&self) -> &View {
+        &self.view
+    }
 }
 
 pub struct SavedState<View> {
-    pub view: View,
+    view: View,
 }
 
 impl<View: Clone> SavedState<View> {
@@ -133,6 +147,10 @@ impl<View: Clone> SavedState<View> {
         Self {
             view: state.view.clone(),
         }
+    }
+
+    pub fn get_view(&self) -> &View {
+        &self.view
     }
 }
 

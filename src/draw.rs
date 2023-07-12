@@ -8,7 +8,7 @@ pub trait Draw {
 
 impl Draw for DrawingState<HtmlDom> {
     fn draw(&self) {
-        let view = &self.view;
+        let view = self.get_view();
         view.canvas.set_visible(true);
         view.undo_btn.set_visible(true);
         view.student_input.set_display(false);
@@ -52,7 +52,7 @@ impl Draw for DrawingState<HtmlDom> {
 
 impl Draw for ReadyState<HtmlDom> {
     fn draw(&self) {
-        let view = &self.view;
+        let view = self.get_view();
         view.canvas.set_visible(false);
         view.undo_btn.set_visible(false);
 
@@ -63,7 +63,7 @@ impl Draw for ReadyState<HtmlDom> {
 
 impl Draw for SavedState<HtmlDom> {
     fn draw(&self) {
-        let view = &self.view;
+        let view = self.get_view();
         view.advance_btn.set_display(false);
         view.instructions_spn.set_inner_html(
             "Take you downloaded file and place it along side the others in the dataset!",

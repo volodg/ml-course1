@@ -27,7 +27,8 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
         &self,
         app_state: Rc<RefCell<AppState<HtmlDom>>>,
     ) -> Result<(), JsValue> {
-        let canvas_rect: Rect = self.view.canvas.get_bounding_client_rect().into();
+        let view = self.get_view();
+        let canvas_rect: Rect = view.canvas.get_bounding_client_rect().into();
         let adjust_location = move |pos: Point| -> Point {
             Point {
                 x: pos.x - canvas_rect.x,
@@ -37,7 +38,7 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
 
         {
             let app_state = app_state.clone();
-            self.view
+            view
                 .canvas
                 .add_listener("mousedown", move |event: MouseEvent| {
                     let mut app_state = app_state.borrow_mut();
@@ -46,7 +47,7 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
         }
         {
             let app_state = app_state.clone();
-            self.view
+            view
                 .canvas
                 .add_listener("mousemove", move |event: MouseEvent| {
                     let mut app_state = app_state.borrow_mut();
@@ -55,7 +56,7 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
         }
         {
             let app_state = app_state.clone();
-            self.view
+            view
                 .canvas
                 .add_listener("mouseup", move |event: MouseEvent| {
                     let mut app_state = app_state.borrow_mut();
@@ -64,7 +65,7 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
         }
         {
             let app_state = app_state.clone();
-            self.view
+            view
                 .canvas
                 .add_listener("touchstart", move |event: TouchEvent| {
                     let point = event.try_into().ok().map(adjust_location);
@@ -74,7 +75,7 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
         }
         {
             let app_state = app_state.clone();
-            self.view
+            view
                 .canvas
                 .add_listener("touchmove", move |event: TouchEvent| {
                     let point = event.try_into().ok().map(adjust_location);
@@ -85,7 +86,7 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
                 })?
         }
         {
-            self.view
+            view
                 .canvas
                 .add_listener("touchend", move |event: TouchEvent| {
                     let point = event.try_into().ok().map(adjust_location);
@@ -101,7 +102,7 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
         &self,
         app_state: Rc<RefCell<AppState<HtmlDom>>>,
     ) -> Result<(), JsValue> {
-        self.view.undo_btn.on_click(move |_event: MouseEvent| {
+        self.get_view().undo_btn.on_click(move |_event: MouseEvent| {
             let mut app_state = app_state.borrow_mut();
             let state = app_state.drawing_expected_mut();
             state.undo();
@@ -119,7 +120,7 @@ impl StateSubscriber for DrawingState<HtmlDom> {
 
 impl StateSubscriber for InitialState<HtmlDom> {
     fn subscribe(&self, app_state: Rc<RefCell<AppState<HtmlDom>>>) -> Result<(), JsValue> {
-        self.view
+        self.get_view()
             .advance_btn
             .on_click(move |_event: MouseEvent| handle_advance_btn_click(&app_state).unwrap())
     }

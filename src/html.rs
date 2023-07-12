@@ -2,13 +2,11 @@ use crate::app_state::WithStudent;
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_sys::{
-    window, CanvasRenderingContext2d, HtmlButtonElement, HtmlCanvasElement, HtmlElement,
-    HtmlInputElement, HtmlSpanElement, MouseEvent,
-};
+use web_sys::{window, CanvasRenderingContext2d, HtmlButtonElement, HtmlCanvasElement, HtmlElement, HtmlInputElement, HtmlSpanElement, MouseEvent, Document};
 
 #[derive(Clone)]
 pub struct HtmlDom {
+    pub document: Document,
     pub student_input: HtmlInputElement,
     pub advance_btn: HtmlButtonElement,
     pub undo_btn: HtmlButtonElement,
@@ -46,6 +44,7 @@ impl HtmlDom {
             .dyn_into::<HtmlSpanElement>()?;
 
         Ok(Self {
+            document,
             student_input,
             advance_btn,
             undo_btn,
