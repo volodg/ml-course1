@@ -1,12 +1,16 @@
 mod geometry;
+mod html;
 
+use crate::geometry::{Point, Rect};
 use itertools::Itertools;
 use std::cell::RefCell;
 use std::f64;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
-use web_sys::{CanvasRenderingContext2d, HtmlButtonElement, HtmlCanvasElement, HtmlInputElement, MouseEvent, TouchEvent, window};
-use crate::geometry::{Point, Rect};
+use web_sys::{
+    window, CanvasRenderingContext2d, HtmlButtonElement, HtmlCanvasElement, HtmlInputElement,
+    MouseEvent, TouchEvent,
+};
 
 struct AppState {
     student: Option<String>,
@@ -30,7 +34,7 @@ impl AppState {
             if last.is_empty() {
                 self.paths.pop();
             } else {
-                break
+                break;
             }
         }
         self.paths.pop();
@@ -44,7 +48,12 @@ extern "C" {
 }
 
 fn redraw(state: &AppState) {
-    state.context.clear_rect(0.0, 0.0, state.canvas.width().into(), state.canvas.height().into());
+    state.context.clear_rect(
+        0.0,
+        0.0,
+        state.canvas.width().into(),
+        state.canvas.height().into(),
+    );
 
     let mut empty = true;
 
@@ -70,13 +79,37 @@ fn redraw(state: &AppState) {
     state.undo_btn.set_disabled(empty);
 
     if state.student.is_some() {
-        state.undo_btn.style().set_property("visibility", "visible").unwrap();
-        state.student_input.style().set_property("display", "none").unwrap();
-        state.advance_btn.style().set_property("display", "none").unwrap();
-        state.canvas.style().set_property("visibility", "visible").unwrap();
-        state.undo_btn.style().set_property("visibility", "visible").unwrap();
+        state
+            .undo_btn
+            .style()
+            .set_property("visibility", "visible")
+            .unwrap();
+        state
+            .student_input
+            .style()
+            .set_property("display", "none")
+            .unwrap();
+        state
+            .advance_btn
+            .style()
+            .set_property("display", "none")
+            .unwrap();
+        state
+            .canvas
+            .style()
+            .set_property("visibility", "visible")
+            .unwrap();
+        state
+            .undo_btn
+            .style()
+            .set_property("visibility", "visible")
+            .unwrap();
     } else {
-        state.undo_btn.style().set_property("display", "none").unwrap();
+        state
+            .undo_btn
+            .style()
+            .set_property("display", "none")
+            .unwrap();
     }
 }
 
@@ -186,9 +219,18 @@ fn start() -> Result<(), JsValue> {
         .unwrap()
         .dyn_into::<CanvasRenderingContext2d>()?;
 
-    let undo_btn = document.get_element_by_id("undo").unwrap().dyn_into::<HtmlButtonElement>()?;
-    let student_input = document.get_element_by_id("student").unwrap().dyn_into::<HtmlInputElement>()?;
-    let advance_btn = document.get_element_by_id("advanceBtn").unwrap().dyn_into::<HtmlButtonElement>()?;
+    let undo_btn = document
+        .get_element_by_id("undo")
+        .unwrap()
+        .dyn_into::<HtmlButtonElement>()?;
+    let student_input = document
+        .get_element_by_id("student")
+        .unwrap()
+        .dyn_into::<HtmlInputElement>()?;
+    let advance_btn = document
+        .get_element_by_id("advanceBtn")
+        .unwrap()
+        .dyn_into::<HtmlButtonElement>()?;
 
     let app_state = Rc::new(RefCell::new(AppState {
         student: None,

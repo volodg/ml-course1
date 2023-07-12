@@ -24,7 +24,7 @@ impl TryFrom<TouchEvent> for Point {
                 x: touch.client_x(),
                 y: touch.client_y(),
             }),
-            None => Err(())
+            None => Err(()),
         }
     }
 }
