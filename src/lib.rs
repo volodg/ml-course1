@@ -84,22 +84,34 @@ fn redraw(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
     html.undo_btn.set_visible(canvas_is_active);
     html.student_input.set_display(!canvas_is_active);
 
-    if canvas_is_active {
-        let label = LABELS[app_state.borrow().label_index];
-        app_state
-            .borrow()
-            .html_dom
-            .instructions_spn
-            .set_inner_html(std::format!("Please draw a {label}").as_str());
-        html.advance_btn.set_inner_html("NEXT");
+    Ok(())
+}
 
+fn turn_to_active_state(app_state: &Rc<RefCell<AppState>>, student: String) -> Result<(), JsValue> {
+    if app_state.borrow().student.is_some() {
+        return Ok(());
+    }
+
+    app_state.borrow_mut().student = Some(student);
+
+    let html = &app_state.borrow().html_dom;
+
+    let label = LABELS[app_state.borrow().label_index];
+    app_state
+        .borrow()
+        .html_dom
+        .instructions_spn
+        .set_inner_html(std::format!("Please draw a {label}").as_str());
+    html.advance_btn.set_inner_html("NEXT");
+
+    {
         let app_state = app_state.clone();
         html.advance_btn.on_click(move |_event: MouseEvent| {
             next(&app_state.borrow())
-        })?
+        })?;
     }
 
-    Ok(())
+    redraw(&app_state)
 }
 
 fn next(_app_state: &AppState) {
@@ -225,8 +237,7 @@ fn start() -> Result<(), JsValue> {
             if student.is_empty() {
                 alert("Please type your name");
             } else {
-                app_state.borrow_mut().student = Some(student);
-                redraw(&app_state).unwrap();
+                turn_to_active_state(&app_state, student).unwrap();
             }
         })?
     }
