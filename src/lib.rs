@@ -7,7 +7,7 @@ use crate::app::{AppState, DrawingState, ReadyState, SavedState};
 use crate::geometry::Point;
 use crate::html::{alert, AddListener, HtmlDom};
 use std::cell::RefCell;
-use std::ops::{Deref, DerefMut};
+use std::ops::Deref;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use web_sys::MouseEvent;
@@ -54,25 +54,16 @@ fn handle_touch_move(state: &mut DrawingState, point: Point) {
 }
 
 fn handle_touch_end(
-    app_state: &Rc<RefCell<AppState>>,
+    state: &mut DrawingState,
     point: Option<Point>,
-) -> Result<(), JsValue> {
-    match app_state.borrow_mut().deref_mut() {
-        AppState::Initial(_) => panic!(),
-        AppState::Drawing(state) => {
-            if state.is_pressed() {
-                state.set_pressed(false);
-                if let Some(point) = point {
-                    state.add_point(point);
-                    state.redraw()
-                }
-            }
+) {
+    if state.is_pressed() {
+        state.set_pressed(false);
+        if let Some(point) = point {
+            state.add_point(point);
+            state.redraw()
         }
-        AppState::Ready(_) => panic!(),
-        AppState::Saved(_) => panic!(),
     }
-
-    Ok(())
 }
 
 fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {

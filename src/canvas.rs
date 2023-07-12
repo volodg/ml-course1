@@ -38,7 +38,8 @@ impl StateSubscriber for HtmlCanvasElement {
         {
             let app_state = app_state.clone();
             self.add_listener("mouseup", move |event: MouseEvent| {
-                handle_touch_end(&app_state, Some(event.into())).unwrap()
+                let mut app_state = app_state.borrow_mut();
+                handle_touch_end(app_state.drawing_expected_mut(), Some(event.into()))
             })?
         }
         {
@@ -63,7 +64,8 @@ impl StateSubscriber for HtmlCanvasElement {
             let app_state = app_state.clone();
             self.add_listener("touchend", move |event: TouchEvent| {
                 let point = event.try_into().ok().map(adjust_location);
-                handle_touch_end(&app_state, point).unwrap()
+                let mut app_state = app_state.borrow_mut();
+                handle_touch_end(app_state.drawing_expected_mut(), point)
             })?
         }
 
