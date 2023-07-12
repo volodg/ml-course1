@@ -5,12 +5,13 @@ use std::cell::RefCell;
 use std::f64;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
-use web_sys::{MouseEvent, TouchEvent};
+use web_sys::{CanvasRenderingContext2d, HtmlButtonElement, HtmlCanvasElement, MouseEvent, TouchEvent};
 use crate::geometry::{Point, Rect};
 
 struct AppState {
-    context: Rc<web_sys::CanvasRenderingContext2d>,
-    canvas: Rc<web_sys::HtmlCanvasElement>,
+    undo_btn: HtmlButtonElement,
+    context: CanvasRenderingContext2d,
+    canvas: HtmlCanvasElement,
     pressed: bool,
     paths: Vec<Vec<Point>>,
 }
@@ -35,10 +36,13 @@ extern "C" {
 fn redraw(state: &AppState) {
     state.context.clear_rect(0.0, 0.0, state.canvas.width().into(), state.canvas.height().into());
 
+    let mut empty = true;
+
     for path in &state.paths {
         if path.is_empty() {
             continue;
         }
+        empty = false;
 
         for (from, to) in path.iter().tuple_windows() {
             state.context.begin_path();
@@ -52,6 +56,8 @@ fn redraw(state: &AppState) {
             state.context.stroke();
         }
     }
+
+    state.undo_btn.set_disabled(empty);
 }
 
 fn handle_touch_start(app_state: &mut AppState, point: Option<Point>) {
@@ -147,24 +153,27 @@ fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue>
 fn start() -> Result<(), JsValue> {
     let document = web_sys::window().unwrap().document().unwrap();
     let canvas = document.get_element_by_id("canvas").unwrap();
-    let canvas = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
+    let canvas = canvas.dyn_into::<HtmlCanvasElement>()?;
 
     let context = canvas
         .get_context("2d")?
         .unwrap()
-        .dyn_into::<web_sys::CanvasRenderingContext2d>()?;
+        .dyn_into::<CanvasRenderingContext2d>()?;
+
+    let undo_btn = document.get_element_by_id("undo").unwrap().dyn_into::<HtmlButtonElement>()?;
 
     let app_state = Rc::new(RefCell::new(AppState {
-        context: Rc::new(context),
-        canvas: Rc::new(canvas),
+        undo_btn: undo_btn.clone(),
+        context,
+        canvas,
         pressed: false,
         paths: Vec::new(),
     }));
 
     handle_canvas_events(app_state.clone())?;
 
-    let undo_btn = document.get_element_by_id("undo").unwrap();
     {
+        let app_state = app_state.clone();
         let closure = Closure::<dyn FnMut(_)>::new(move |_event: MouseEvent| {
             app_state.borrow_mut().undo();
             redraw(&app_state.borrow())
@@ -172,6 +181,8 @@ fn start() -> Result<(), JsValue> {
         undo_btn.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())?;
         closure.forget();
     }
+
+    redraw(&app_state.borrow());
 
     Ok(())
 }
