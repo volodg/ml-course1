@@ -29,7 +29,7 @@ fn redraw(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
 
     let mut empty = true;
 
-    for path in &app_state.borrow().paths {
+    for path in app_state.borrow().curr_path() {
         if path.is_empty() {
             continue;
         }
@@ -84,9 +84,9 @@ fn turn_to_active_state(app_state: &Rc<RefCell<AppState>>, student: String) -> R
 }
 
 fn next(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
-    if app_state.borrow().paths.is_empty() {
+    if app_state.borrow().curr_path().is_empty() {
         alert("Draw something first");
-        return Ok(())
+        return Ok(());
     }
 
     app_state.borrow_mut().increment_index();
@@ -97,7 +97,7 @@ fn next(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
 fn handle_touch_start(app_state: &mut AppState, point: Option<Point>) {
     app_state.pressed = true;
     let path = point.map(|x| vec![x]).unwrap_or(vec![]);
-    app_state.paths.push(path);
+    app_state.add_path(path);
 }
 
 fn handle_touch_move(app_state: &Rc<RefCell<AppState>>, point: Point) -> Result<(), JsValue> {
@@ -183,13 +183,7 @@ fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue>
 
 #[wasm_bindgen(start)]
 fn start() -> Result<(), JsValue> {
-    let app_state = Rc::new(RefCell::new(AppState {
-        student: None,
-        label_index: 0,
-        html_dom: HtmlDom::create()?,
-        pressed: false,
-        paths: Vec::new(),
-    }));
+    let app_state = Rc::new(RefCell::new(AppState::create(HtmlDom::create()?)));
 
     handle_canvas_events(app_state.clone())?;
 
@@ -228,4 +222,12 @@ fn start() -> Result<(), JsValue> {
     redraw(&app_state)?;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_add() {
+        assert!(true);
+    }
 }
