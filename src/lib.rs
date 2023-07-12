@@ -5,10 +5,13 @@ use std::cell::RefCell;
 use std::f64;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
-use web_sys::{CanvasRenderingContext2d, HtmlButtonElement, HtmlCanvasElement, MouseEvent, TouchEvent};
+use web_sys::{CanvasRenderingContext2d, HtmlButtonElement, HtmlCanvasElement, HtmlInputElement, MouseEvent, TouchEvent, window};
 use crate::geometry::{Point, Rect};
 
 struct AppState {
+    student: Option<String>,
+    student_input: HtmlInputElement,
+    advance_btn: HtmlButtonElement,
     undo_btn: HtmlButtonElement,
     context: CanvasRenderingContext2d,
     canvas: HtmlCanvasElement,
@@ -65,6 +68,16 @@ fn redraw(state: &AppState) {
     }
 
     state.undo_btn.set_disabled(empty);
+
+    if state.student.is_some() {
+        state.undo_btn.style().set_property("visibility", "visible").unwrap();
+        state.student_input.style().set_property("display", "none").unwrap();
+        state.advance_btn.style().set_property("display", "none").unwrap();
+        state.canvas.style().set_property("visibility", "visible").unwrap();
+        state.undo_btn.style().set_property("visibility", "visible").unwrap();
+    } else {
+        state.undo_btn.style().set_property("display", "none").unwrap();
+    }
 }
 
 fn handle_touch_start(app_state: &mut AppState, point: Option<Point>) {
@@ -156,6 +169,12 @@ fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue>
     Ok(())
 }
 
+fn alert(msg: &str) {
+    if let Some(window) = window() {
+        let _ = window.alert_with_message(msg);
+    }
+}
+
 #[wasm_bindgen(start)]
 fn start() -> Result<(), JsValue> {
     let document = web_sys::window().unwrap().document().unwrap();
@@ -168,8 +187,13 @@ fn start() -> Result<(), JsValue> {
         .dyn_into::<CanvasRenderingContext2d>()?;
 
     let undo_btn = document.get_element_by_id("undo").unwrap().dyn_into::<HtmlButtonElement>()?;
+    let student_input = document.get_element_by_id("student").unwrap().dyn_into::<HtmlInputElement>()?;
+    let advance_btn = document.get_element_by_id("advanceBtn").unwrap().dyn_into::<HtmlButtonElement>()?;
 
     let app_state = Rc::new(RefCell::new(AppState {
+        student: None,
+        student_input,
+        advance_btn: advance_btn.clone(),
         undo_btn: undo_btn.clone(),
         context,
         canvas,
@@ -186,6 +210,21 @@ fn start() -> Result<(), JsValue> {
             redraw(&app_state.borrow())
         });
         undo_btn.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())?;
+        closure.forget();
+    }
+
+    {
+        let app_state = app_state.clone();
+        let closure = Closure::<dyn FnMut(_)>::new(move |_event: MouseEvent| {
+            let student = app_state.borrow().student_input.value().trim().to_owned();
+            if student == "" {
+                alert("Please type your name");
+            } else {
+                app_state.borrow_mut().student = Some(student);
+                redraw(&app_state.borrow());
+            }
+        });
+        advance_btn.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())?;
         closure.forget();
     }
 

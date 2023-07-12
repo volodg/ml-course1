@@ -9,13 +9,15 @@
 <div id="content">
     <h1>Data Creator</h1>
     <div>
-        <label for="student"></label><input id="student" type="text" placeholder="type your name"/>
-        <button id="advanceBtn" onclick="start">START</button>
+        <label for="student">
+            <input id="student" type="text" placeholder="type your name"/>
+            <button id="advanceBtn">START</button>
+        </label>
     </div>
     <br>
     <div id="sketchPadContainer" style="visibility: hidden">
         <canvas id="canvas" height="400" width="400"
-                style="background-color: white; box-shadow: 0px 0px 10px 2px black"></canvas>
+                style="background-color: white; box-shadow: 0 0 10px 2px black"></canvas>
     </div>
     <br>
     <button id="undo">UNDO</button>
