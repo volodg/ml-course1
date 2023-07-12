@@ -1,4 +1,4 @@
-use crate::app::AppState;
+use crate::app_state::AppState;
 use crate::geometry::{Point, Rect};
 use crate::html::AddListener;
 use crate::{handle_touch_end, handle_touch_move, handle_touch_start};

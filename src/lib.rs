@@ -1,9 +1,10 @@
-mod app;
+mod app_state;
 mod canvas;
+mod draw;
 mod geometry;
 mod html;
 
-use crate::app::{AppState, DrawingState, ReadyState, SavedState};
+use crate::app_state::{AppState, DrawingState, ReadyState, SavedState};
 use crate::geometry::Point;
 use crate::html::{alert, AddListener, HtmlDom};
 use std::cell::RefCell;
@@ -11,6 +12,7 @@ use std::ops::Deref;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use web_sys::MouseEvent;
+use crate::draw::Draw;
 
 #[wasm_bindgen]
 extern "C" {
@@ -27,10 +29,10 @@ fn handle_next(app_state: &Rc<RefCell<AppState>>) {
             None
         } else if !state.increment_index() {
             let new_state = ReadyState::create(state);
-            new_state.redraw();
+            new_state.draw();
             Some(new_state)
         } else {
-            state.redraw();
+            state.draw();
             None
         }
     };
@@ -49,19 +51,16 @@ fn handle_touch_start(state: &mut DrawingState, point: Option<Point>) {
 fn handle_touch_move(state: &mut DrawingState, point: Point) {
     if state.is_pressed() {
         state.add_point(point);
-        state.redraw()
+        state.draw()
     }
 }
 
-fn handle_touch_end(
-    state: &mut DrawingState,
-    point: Option<Point>,
-) {
+fn handle_touch_end(state: &mut DrawingState, point: Option<Point>) {
     if state.is_pressed() {
         state.set_pressed(false);
         if let Some(point) = point {
             state.add_point(point);
-            state.redraw()
+            state.draw()
         }
     }
 }
@@ -81,7 +80,7 @@ fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsV
                     None
                 } else {
                     let new_state = DrawingState::create(state);
-                    new_state.redraw();
+                    new_state.draw();
                     new_state.subscribe_canvas_events(&app_state)?;
                     new_state.subscribe_to_undo_btn(&app_state)?;
 
@@ -91,7 +90,7 @@ fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsV
             AppState::Drawing(_) => Some(Action::HandleNext),
             AppState::Ready(state) => {
                 let new_state = SavedState::create(state);
-                new_state.redraw();
+                new_state.draw();
                 Some(Action::TurnIntoSavedState(new_state))
             }
             AppState::Saved(_) => panic!(),
@@ -100,9 +99,13 @@ fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsV
 
     if let Some(action) = action {
         match action {
-            Action::TurnIntoDrawingState(new_state) => *app_state.borrow_mut() = AppState::Drawing(new_state),
+            Action::TurnIntoDrawingState(new_state) => {
+                *app_state.borrow_mut() = AppState::Drawing(new_state)
+            }
             Action::HandleNext => handle_next(&app_state),
-            Action::TurnIntoSavedState(new_state) => *app_state.borrow_mut() = AppState::Saved(new_state),
+            Action::TurnIntoSavedState(new_state) => {
+                *app_state.borrow_mut() = AppState::Saved(new_state)
+            }
         }
     }
 
