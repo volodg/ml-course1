@@ -2,58 +2,13 @@ mod geometry;
 mod html;
 
 use crate::geometry::{Point, Rect};
-use crate::html::Visibility;
+use crate::html::{Html, Visibility};
 use itertools::Itertools;
 use std::cell::RefCell;
 use std::f64;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
-use web_sys::{
-    window, CanvasRenderingContext2d, HtmlButtonElement, HtmlCanvasElement, HtmlInputElement,
-    MouseEvent, TouchEvent,
-};
-
-struct Html {
-    student_input: HtmlInputElement,
-    advance_btn: HtmlButtonElement,
-    undo_btn: HtmlButtonElement,
-    context: CanvasRenderingContext2d,
-    canvas: HtmlCanvasElement,
-}
-
-impl Html {
-    fn create() -> Result<Self, JsValue> {
-        let document = window().unwrap().document().unwrap();
-        let canvas = document.get_element_by_id("canvas").unwrap();
-        let canvas = canvas.dyn_into::<HtmlCanvasElement>()?;
-
-        let context = canvas
-            .get_context("2d")?
-            .unwrap()
-            .dyn_into::<CanvasRenderingContext2d>()?;
-
-        let undo_btn = document
-            .get_element_by_id("undo")
-            .unwrap()
-            .dyn_into::<HtmlButtonElement>()?;
-        let student_input = document
-            .get_element_by_id("student")
-            .unwrap()
-            .dyn_into::<HtmlInputElement>()?;
-        let advance_btn = document
-            .get_element_by_id("advanceBtn")
-            .unwrap()
-            .dyn_into::<HtmlButtonElement>()?;
-
-        Ok(Self {
-            student_input,
-            advance_btn,
-            undo_btn,
-            context,
-            canvas,
-        })
-    }
-}
+use web_sys::{window, MouseEvent, TouchEvent};
 
 struct AppState {
     student: Option<String>,
