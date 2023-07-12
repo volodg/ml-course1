@@ -88,9 +88,7 @@ fn redraw(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
 }
 
 fn turn_to_active_state(app_state: &Rc<RefCell<AppState>>, student: String) -> Result<(), JsValue> {
-    if app_state.borrow().student.is_some() {
-        return Ok(());
-    }
+    assert!(app_state.borrow().student.is_none());
 
     app_state.borrow_mut().student = Some(student);
 
@@ -227,6 +225,10 @@ fn start() -> Result<(), JsValue> {
         let advance_btn = &app_state.borrow().html_dom.advance_btn;
         let app_state = app_state.clone();
         advance_btn.on_click(move |_event: MouseEvent| {
+            if app_state.borrow().student.is_some() {
+                return;
+            }
+
             let student = app_state
                 .borrow()
                 .html_dom
