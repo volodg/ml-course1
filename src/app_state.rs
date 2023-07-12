@@ -20,6 +20,12 @@ pub struct InitialState<View: Clone> {
     pub view: View,
 }
 
+impl<View: Clone> InitialState<View> {
+    pub fn create(view: View) -> Self {
+        Self { view }
+    }
+}
+
 pub trait WithStudent {
     fn get_student(&self) -> String;
 }
@@ -138,8 +144,8 @@ pub enum AppState<View: Clone + WithStudent> {
 }
 
 impl<View: Clone + WithStudent> AppState<View> {
-    pub fn create(view: View) -> Self {
-        Self::Initial(InitialState { view })
+    pub fn create(state: InitialState<View>) -> Self {
+        Self::Initial(state)
     }
 
     pub fn drawing_expected_mut(&mut self) -> &mut DrawingState<View> {

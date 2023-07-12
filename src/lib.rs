@@ -5,15 +5,14 @@ mod html;
 mod subscribe_html;
 mod subscribe_state;
 
-use crate::app_state::{AppState, DrawingState, ReadyState, SavedState};
+use crate::app_state::{AppState, DrawingState, InitialState, ReadyState, SavedState};
 use crate::draw::Draw;
 use crate::geometry::Point;
-use crate::html::{alert, AddListener, HtmlDom};
+use crate::html::{alert, HtmlDom};
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
-use web_sys::MouseEvent;
 use crate::subscribe_state::StateSubscriber;
 
 #[wasm_bindgen]
@@ -113,21 +112,15 @@ fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Resul
     Ok(())
 }
 
-fn subscribe_to_advance_btn(
-    app_state: &Rc<RefCell<AppState<HtmlDom>>>,
-    html: &HtmlDom,
-) -> Result<(), JsValue> {
-    let advance_btn = &html.advance_btn;
-    let app_state = app_state.clone();
-    advance_btn.on_click(move |_event: MouseEvent| handle_advance_btn_click(&app_state).unwrap())
-}
-
 #[wasm_bindgen(start)]
 fn start() -> Result<(), JsValue> {
     let html = HtmlDom::create()?;
-    let app_state = Rc::new(RefCell::new(AppState::create(html.clone())));
 
-    subscribe_to_advance_btn(&app_state, &html)?;
+    let app_state = InitialState::create(html);
+    let app_state = AppState::create(app_state);
+    let app_state = Rc::new(RefCell::new(app_state));
+
+    app_state.borrow().subscribe(&app_state)?;
 
     Ok(())
 }

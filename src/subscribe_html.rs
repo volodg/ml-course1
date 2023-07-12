@@ -1,4 +1,4 @@
-use crate::app_state::{AppState, DrawingState};
+use crate::app_state::{AppState, DrawingState, InitialState};
 use crate::draw::Draw;
 use crate::html::AddListener;
 use crate::html::HtmlDom;
@@ -8,7 +8,7 @@ use std::rc::Rc;
 use wasm_bindgen::JsValue;
 use web_sys::{MouseEvent, TouchEvent};
 use crate::geometry::{Point, Rect};
-use crate::{handle_touch_end, handle_touch_move, handle_touch_start};
+use crate::{handle_advance_btn_click, handle_touch_end, handle_touch_move, handle_touch_start};
 
 trait SubscribeDrawings {
     fn subscribe_canvas_events(
@@ -105,5 +105,24 @@ impl StateSubscriber for DrawingState<HtmlDom> {
     fn subscribe(&self, app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Result<(), JsValue> {
         self.subscribe_canvas_events(app_state)?;
         self.subscribe_to_undo_btn(app_state)
+    }
+}
+
+impl StateSubscriber for InitialState<HtmlDom> {
+    fn subscribe(&self, app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Result<(), JsValue> {
+        let advance_btn = &self.view.advance_btn;
+        let app_state = app_state.clone();
+        advance_btn.on_click(move |_event: MouseEvent| handle_advance_btn_click(&app_state).unwrap())
+    }
+}
+
+impl StateSubscriber for AppState<HtmlDom> {
+    fn subscribe(&self, app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Result<(), JsValue> {
+        match self {
+            AppState::Initial(state) => state.subscribe(app_state),
+            AppState::Drawing(state) => state.subscribe(app_state),
+            AppState::Ready(_) => Ok(()),
+            AppState::Saved(_) => Ok(()),
+        }
     }
 }
