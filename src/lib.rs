@@ -95,13 +95,13 @@ fn next(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
 }
 
 fn handle_touch_start(app_state: &mut AppState, point: Option<Point>) {
-    app_state.pressed = true;
+    app_state.set_pressed(true);
     let path = point.map(|x| vec![x]).unwrap_or(vec![]);
     app_state.add_path(path);
 }
 
 fn handle_touch_move(app_state: &Rc<RefCell<AppState>>, point: Point) -> Result<(), JsValue> {
-    if app_state.borrow().pressed {
+    if app_state.borrow().is_pressed() {
         app_state.borrow_mut().add_point(point);
         redraw(app_state)?;
     }
@@ -112,8 +112,8 @@ fn handle_touch_end(
     app_state: &Rc<RefCell<AppState>>,
     point: Option<Point>,
 ) -> Result<(), JsValue> {
-    if app_state.borrow().pressed {
-        app_state.borrow_mut().pressed = false;
+    if app_state.borrow().is_pressed() {
+        app_state.borrow_mut().set_pressed(false);
         if let Some(point) = point {
             app_state.borrow_mut().add_point(point);
         }

@@ -3,14 +3,24 @@ use crate::html::HtmlDom;
 
 struct Drawing {
     label: &'static str,
+    pub pressed: bool,
     paths: Vec<Vec<Point>>,
+}
+
+impl Drawing {
+    fn create(label: &'static str) -> Self {
+        Self {
+            label,
+            pressed: false,
+            paths: vec![],
+        }
+    }
 }
 
 pub struct AppState {
     pub student: Option<String>,
     pub label_index: usize,
     pub html_dom: HtmlDom,
-    pub pressed: bool,
     drawings: [Drawing; 8],
 }
 
@@ -20,42 +30,25 @@ impl AppState {
             student: None,
             label_index: 0,
             html_dom,
-            pressed: false,
             drawings: [
-                Drawing {
-                    label: "car",
-                    paths: vec![],
-                },
-                Drawing {
-                    label: "fish",
-                    paths: vec![],
-                },
-                Drawing {
-                    label: "house",
-                    paths: vec![],
-                },
-                Drawing {
-                    label: "tree",
-                    paths: vec![],
-                },
-                Drawing {
-                    label: "bicycle",
-                    paths: vec![],
-                },
-                Drawing {
-                    label: "guitar",
-                    paths: vec![],
-                },
-                Drawing {
-                    label: "pencil",
-                    paths: vec![],
-                },
-                Drawing {
-                    label: "clock",
-                    paths: vec![],
-                },
+                Drawing::create("car"),
+                Drawing::create("fish"),
+                Drawing::create("house"),
+                Drawing::create("tree"),
+                Drawing::create("bicycle"),
+                Drawing::create("guitar"),
+                Drawing::create("pencil"),
+                Drawing::create("clock"),
             ],
         }
+    }
+
+    pub fn set_pressed(&mut self, value: bool) {
+        self.drawings[self.label_index].pressed = value
+    }
+
+    pub fn is_pressed(&self) -> bool {
+        self.drawings[self.label_index].pressed
     }
 
     pub fn curr_path(&self) -> &Vec<Vec<Point>> {
