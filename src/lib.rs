@@ -2,15 +2,17 @@ mod geometry;
 mod html;
 
 use crate::geometry::{Point, Rect};
-use crate::html::{alert, HtmlDom, Visibility};
+use crate::html::{alert, AddListener, HtmlDom, Visibility};
 use itertools::Itertools;
 use std::cell::RefCell;
 use std::f64;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
-use web_sys::{MouseEvent, TouchEvent, HtmlElement};
+use web_sys::{MouseEvent, TouchEvent};
 
-const LABELS: [&str; 8] = ["car", "fish", "house", "tree", "bicycle", "guitar", "pencil", "clock"];
+const LABELS: [&str; 8] = [
+    "car", "fish", "house", "tree", "bicycle", "guitar", "pencil", "clock",
+];
 
 struct AppState {
     student: Option<String>,
@@ -84,7 +86,10 @@ fn redraw(state: &AppState) {
 
     if canvas_is_active {
         let label = LABELS[state.label_index];
-        state.html_dom.instructions_spn.set_inner_html(std::format!("Please draw a {label}").as_str());
+        state
+            .html_dom
+            .instructions_spn
+            .set_inner_html(std::format!("Please draw a {label}").as_str());
         html.advance_btn.set_inner_html("NEXT");
     }
 }
@@ -112,23 +117,13 @@ fn handle_touch_end(app_state: &mut AppState, point: Option<Point>) {
     }
 }
 
-trait AddListener {
-    fn add_listener<Event: wasm_bindgen::convert::FromWasmAbi + 'static, F>(&self, name: &str, listener: F) -> Result<(), JsValue> where F: FnMut(Event) + 'static;
-}
-
-impl AddListener for HtmlElement {
-    fn add_listener<Event: wasm_bindgen::convert::FromWasmAbi + 'static, F>(&self, name: &str, mut listener: F) -> Result<(), JsValue> where F: FnMut(Event) + 'static {
-        let closure = Closure::<dyn FnMut(_)>::new(move |event: Event| {
-            listener(event)
-        });
-        self.add_event_listener_with_callback(name, closure.as_ref().unchecked_ref())?;
-        closure.forget();
-        Ok(())
-    }
-}
-
 fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue> {
-    let canvas_rect: Rect = app_state.borrow().html_dom.canvas.get_bounding_client_rect().into();
+    let canvas_rect: Rect = app_state
+        .borrow()
+        .html_dom
+        .canvas
+        .get_bounding_client_rect()
+        .into();
     let adjust_location = move |pos: Point| -> Point {
         Point {
             x: pos.x - canvas_rect.x,
@@ -196,7 +191,7 @@ fn start() -> Result<(), JsValue> {
     {
         let undo_btn = &app_state.borrow().html_dom.undo_btn;
         let app_state = app_state.clone();
-        undo_btn.add_listener("click", move |_event: MouseEvent| {
+        undo_btn.on_click(move |_event: MouseEvent| {
             app_state.borrow_mut().undo();
             redraw(&app_state.borrow())
         })?
@@ -205,8 +200,14 @@ fn start() -> Result<(), JsValue> {
     {
         let advance_btn = &app_state.borrow().html_dom.advance_btn;
         let app_state = app_state.clone();
-        advance_btn.add_listener("click", move |_event: MouseEvent| {
-            let student = app_state.borrow().html_dom.student_input.value().trim().to_owned();
+        advance_btn.on_click(move |_event: MouseEvent| {
+            let student = app_state
+                .borrow()
+                .html_dom
+                .student_input
+                .value()
+                .trim()
+                .to_owned();
             if student == "" {
                 alert("Please type your name");
             } else {

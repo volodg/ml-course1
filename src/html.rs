@@ -3,7 +3,7 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{
     window, CanvasRenderingContext2d, HtmlButtonElement, HtmlCanvasElement, HtmlElement,
-    HtmlInputElement, HtmlSpanElement,
+    HtmlInputElement, HtmlSpanElement, MouseEvent,
 };
 
 pub struct HtmlDom {
@@ -91,6 +91,10 @@ pub trait AddListener {
     ) -> Result<(), JsValue>
     where
         F: FnMut(Event) + 'static;
+
+    fn on_click<F>(&self, listener: F) -> Result<(), JsValue>
+    where
+        F: FnMut(MouseEvent) + 'static;
 }
 
 impl AddListener for HtmlElement {
@@ -106,5 +110,12 @@ impl AddListener for HtmlElement {
         self.add_event_listener_with_callback(name, closure.as_ref().unchecked_ref())?;
         closure.forget();
         Ok(())
+    }
+
+    fn on_click<F>(&self, listener: F) -> Result<(), JsValue>
+    where
+        F: FnMut(MouseEvent) + 'static,
+    {
+        self.add_listener("click", listener)
     }
 }
