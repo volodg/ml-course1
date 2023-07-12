@@ -157,23 +157,19 @@ fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue>
     }
     {
         let app_state = app_state.clone();
-        let closure = Closure::<dyn FnMut(_)>::new(move |event: TouchEvent| {
+        canvas.add_listener("touchstart", move |event: TouchEvent| {
             let point = event.try_into().ok().map(adjust_location);
             handle_touch_start(&mut app_state.borrow_mut(), point)
-        });
-        canvas.add_event_listener_with_callback("touchstart", closure.as_ref().unchecked_ref())?;
-        closure.forget();
+        })?
     }
     {
         let app_state = app_state.clone();
-        let closure = Closure::<dyn FnMut(_)>::new(move |event: TouchEvent| {
+        canvas.add_listener("touchmove", move |event: TouchEvent| {
             let point = event.try_into().ok().map(adjust_location);
             if let Some(point) = point {
                 handle_touch_move(&mut app_state.borrow_mut(), point)
             }
-        });
-        canvas.add_event_listener_with_callback("touchmove", closure.as_ref().unchecked_ref())?;
-        closure.forget();
+        })?
     }
     {
         let closure = Closure::<dyn FnMut(_)>::new(move |event: TouchEvent| {
