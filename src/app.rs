@@ -3,7 +3,7 @@ use crate::html::HtmlDom;
 
 struct Drawing {
     label: &'static str,
-    pub pressed: bool,
+    pressed: bool,
     paths: Vec<Vec<Point>>,
 }
 
@@ -17,17 +17,27 @@ impl Drawing {
     }
 }
 
-pub struct AppState {
-    pub student: Option<String>,
-    pub label_index: usize,
-    pub html_dom: HtmlDom,
+pub struct InitialState {
+    html_dom: HtmlDom,
+}
+
+impl InitialState {
+    pub fn get_html_dom(&self) -> &HtmlDom {
+        &self.html_dom
+    }
+}
+
+pub struct DrawingState {
+    pub student: String,
+    label_index: usize,
+    html_dom: HtmlDom,
     drawings: [Drawing; 8],
 }
 
-impl AppState {
-    pub fn create(html_dom: HtmlDom) -> Self {
+impl DrawingState {
+    pub fn create(student: String, html_dom: HtmlDom) -> Self {
         Self {
-            student: None,
+            student,
             label_index: 0,
             html_dom,
             drawings: [
@@ -41,6 +51,10 @@ impl AppState {
                 Drawing::create("clock"),
             ],
         }
+    }
+
+    pub fn get_html_dom(&self) -> &HtmlDom {
+        &self.html_dom
     }
 
     pub fn set_pressed(&mut self, value: bool) {
@@ -83,7 +97,46 @@ impl AppState {
         self.drawings[self.label_index].label
     }
 
-    pub fn increment_index(&mut self) {
-        self.label_index = (self.label_index + 1) % self.drawings.len()
+    pub fn increment_index(&mut self) -> bool {
+        self.label_index += 1;
+        self.label_index < self.drawings.len()
+    }
+}
+
+pub struct ReadyState {
+    #[allow(dead_code)]
+    student: String,
+    html_dom: HtmlDom,
+}
+
+impl ReadyState {
+    pub fn create(student: String, html_dom: HtmlDom) -> Self {
+        Self { student, html_dom }
+    }
+
+    pub fn get_html_dom(&self) -> &HtmlDom {
+        &self.html_dom
+    }
+}
+
+pub enum AppState {
+    Initial(InitialState),
+    Drawing(DrawingState),
+    Ready(ReadyState),
+}
+
+impl AppState {
+    pub fn get_html_dom(&self) -> &HtmlDom {
+        match self {
+            Self::Initial(state) => &state.html_dom,
+            Self::Drawing(state) => &state.html_dom,
+            Self::Ready(state) => &state.html_dom,
+        }
+    }
+}
+
+impl AppState {
+    pub fn create(html_dom: HtmlDom) -> Self {
+        Self::Initial(InitialState { html_dom })
     }
 }

@@ -6,6 +6,7 @@ use web_sys::{
     HtmlInputElement, HtmlSpanElement, MouseEvent,
 };
 
+#[derive(Clone)]
 pub struct HtmlDom {
     pub student_input: HtmlInputElement,
     pub advance_btn: HtmlButtonElement,
