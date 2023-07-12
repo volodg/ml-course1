@@ -46,8 +46,8 @@ extern "C" {
     fn log(s: &str);
 }
 
-fn redraw(state: &AppState) {
-    let html = &state.html_dom;
+fn redraw(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
+    let html = &app_state.borrow().html_dom;
     html.context.clear_rect(
         0.0,
         0.0,
@@ -57,7 +57,7 @@ fn redraw(state: &AppState) {
 
     let mut empty = true;
 
-    for path in &state.paths {
+    for path in &app_state.borrow().paths {
         if path.is_empty() {
             continue;
         }
@@ -78,20 +78,32 @@ fn redraw(state: &AppState) {
 
     html.undo_btn.set_disabled(empty);
 
-    let canvas_is_active = state.student.is_some();
+    let canvas_is_active = app_state.borrow().student.is_some();
 
     html.canvas.set_visible(canvas_is_active);
     html.undo_btn.set_visible(canvas_is_active);
     html.student_input.set_display(!canvas_is_active);
 
     if canvas_is_active {
-        let label = LABELS[state.label_index];
-        state
+        let label = LABELS[app_state.borrow().label_index];
+        app_state
+            .borrow()
             .html_dom
             .instructions_spn
             .set_inner_html(std::format!("Please draw a {label}").as_str());
         html.advance_btn.set_inner_html("NEXT");
+
+        let app_state = app_state.clone();
+        html.advance_btn.on_click(move |_event: MouseEvent| {
+            next(&app_state.borrow())
+        })?
     }
+
+    Ok(())
+}
+
+fn next(_app_state: &AppState) {
+    log("NEXT clicked")
 }
 
 fn handle_touch_start(app_state: &mut AppState, point: Option<Point>) {
@@ -100,21 +112,23 @@ fn handle_touch_start(app_state: &mut AppState, point: Option<Point>) {
     app_state.paths.push(path);
 }
 
-fn handle_touch_move(app_state: &mut AppState, point: Point) {
-    if app_state.pressed {
-        app_state.add_point(point);
-        redraw(app_state);
+fn handle_touch_move(app_state: &Rc<RefCell<AppState>>, point: Point) -> Result<(), JsValue> {
+    if app_state.borrow().pressed {
+        app_state.borrow_mut().add_point(point);
+        redraw(app_state)?;
     }
+    Ok(())
 }
 
-fn handle_touch_end(app_state: &mut AppState, point: Option<Point>) {
-    if app_state.pressed {
-        app_state.pressed = false;
+fn handle_touch_end(app_state: &Rc<RefCell<AppState>>, point: Option<Point>) -> Result<(), JsValue> {
+    if app_state.borrow().pressed {
+        app_state.borrow_mut().pressed = false;
         if let Some(point) = point {
-            app_state.add_point(point);
+            app_state.borrow_mut().add_point(point);
         }
-        redraw(app_state);
+        redraw(app_state)?;
     }
+    Ok(())
 }
 
 fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue> {
@@ -141,13 +155,13 @@ fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue>
     {
         let app_state = app_state.clone();
         canvas.add_listener("mousemove", move |event: MouseEvent| {
-            handle_touch_move(&mut app_state.borrow_mut(), event.into())
+            handle_touch_move(&app_state, event.into()).unwrap()
         })?
     }
     {
         let app_state = app_state.clone();
         canvas.add_listener("mouseup", move |event: MouseEvent| {
-            handle_touch_end(&mut app_state.borrow_mut(), Some(event.into()))
+            handle_touch_end(&app_state, Some(event.into())).unwrap()
         })?
     }
     {
@@ -162,14 +176,14 @@ fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue>
         canvas.add_listener("touchmove", move |event: TouchEvent| {
             let point = event.try_into().ok().map(adjust_location);
             if let Some(point) = point {
-                handle_touch_move(&mut app_state.borrow_mut(), point)
+                handle_touch_move(&app_state, point).unwrap()
             }
         })?
     }
     {
         canvas.add_listener("touchend", move |event: TouchEvent| {
             let point = event.try_into().ok().map(adjust_location);
-            handle_touch_end(&mut app_state.borrow_mut(), point)
+            handle_touch_end(&app_state, point).unwrap()
         })?
     }
 
@@ -193,7 +207,7 @@ fn start() -> Result<(), JsValue> {
         let app_state = app_state.clone();
         undo_btn.on_click(move |_event: MouseEvent| {
             app_state.borrow_mut().undo();
-            redraw(&app_state.borrow())
+            redraw(&app_state).unwrap()
         })?
     }
 
@@ -208,16 +222,16 @@ fn start() -> Result<(), JsValue> {
                 .value()
                 .trim()
                 .to_owned();
-            if student == "" {
+            if student.is_empty() {
                 alert("Please type your name");
             } else {
                 app_state.borrow_mut().student = Some(student);
-                redraw(&app_state.borrow());
+                redraw(&app_state).unwrap();
             }
         })?
     }
 
-    redraw(&app_state.borrow());
+    redraw(&app_state)?;
 
     Ok(())
 }
