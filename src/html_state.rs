@@ -32,9 +32,10 @@ impl Save for ReadyState<HtmlDom> {
 
         element.set_display(false);
 
-        _ = document.body().unwrap().append_child(&element);
+        let body = document.body().unwrap();
+        _ = body.append_child(&element);
         element.click();
-        _ = document.body().unwrap().remove_child(&element);
+        _ = body.remove_child(&element);
 
         Ok(SavedState::create(self))
     }
