@@ -21,47 +21,36 @@ extern "C" {
     fn log(s: &str);
 }
 
-// TODO call only for a drawing state
-fn redraw(app_state: &AppState) -> Result<(), JsValue> {
-    match app_state {
-        AppState::Initial(_) => (),
-        AppState::Drawing(state) => {
-            let html = state.get_html_dom();
-            html.context.clear_rect(
-                0.0,
-                0.0,
-                html.canvas.width().into(),
-                html.canvas.height().into(),
-            );
+fn redraw_points(html: &HtmlDom, state: &DrawingState) {
+    html.context.clear_rect(
+        0.0,
+        0.0,
+        html.canvas.width().into(),
+        html.canvas.height().into(),
+    );
 
-            let mut empty = true;
+    let mut empty = true;
 
-            for path in state.curr_path() {
-                if path.is_empty() {
-                    continue;
-                }
-                empty = false;
-
-                for (from, to) in path.iter().tuple_windows() {
-                    html.context.begin_path();
-                    html.context.set_line_width(3.0);
-                    html.context.set_line_cap("round");
-                    html.context.set_line_join("round");
-
-                    html.context.move_to(from.x as f64, from.y as f64);
-                    html.context.line_to(to.x as f64, to.y as f64);
-
-                    html.context.stroke();
-                }
-            }
-
-            html.undo_btn.set_disabled(empty);
+    for path in state.curr_path() {
+        if path.is_empty() {
+            continue;
         }
-        AppState::Ready(_) => (),
-        AppState::Saved(_) => (),
+        empty = false;
+
+        for (from, to) in path.iter().tuple_windows() {
+            html.context.begin_path();
+            html.context.set_line_width(3.0);
+            html.context.set_line_cap("round");
+            html.context.set_line_join("round");
+
+            html.context.move_to(from.x as f64, from.y as f64);
+            html.context.line_to(to.x as f64, to.y as f64);
+
+            html.context.stroke();
+        }
     }
 
-    Ok(())
+    html.undo_btn.set_disabled(empty)
 }
 
 fn turn_into_saved_state(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
@@ -91,20 +80,18 @@ fn turn_into_drawing_state(
     subscribe_canvas_events(&app_state)?;
     subscribe_to_undo_btn(&app_state)?;
 
-    let new_state = DrawingState::create(student, html);
+    let new_state = DrawingState::create(student, html.clone());
     let label = new_state.get_current_label().to_owned();
     app_state.borrow().get_html_dom().draw_a_task_label(label);
+    redraw_points(&html, &new_state);
 
     *app_state.borrow_mut() = AppState::Drawing(new_state);
-
-    redraw(app_state.borrow().deref())?;
 
     Ok(())
 }
 
-fn handle_next(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
+fn handle_next(app_state: &Rc<RefCell<AppState>>) {
     enum Action {
-        Redraw(String),
         IntoReady(ReadyState),
     }
 
@@ -116,12 +103,23 @@ fn handle_next(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
                     alert("Draw something first");
                     None
                 } else if !state.increment_index() {
+                    let html = state.get_html_dom();
+                    html.canvas.set_visible(false);
+                    html.undo_btn.set_visible(false);
+
+                    html.instructions_spn.set_inner_html("Thank you!");
+                    html.advance_btn.set_inner_html("SAVE");
+
                     Some(Action::IntoReady(ReadyState::create(
                         state.student.clone(),
-                        state.get_html_dom().clone(),
+                        html.clone(),
                     )))
                 } else {
-                    Some(Action::Redraw(state.get_current_label().to_owned()))
+                    let label = state.get_current_label().to_owned();
+                    let html = state.get_html_dom();
+                    html.draw_a_task_label(label);
+                    redraw_points(html, state);
+                    None
                 }
             }
             AppState::Ready(_) => None,
@@ -131,24 +129,9 @@ fn handle_next(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
 
     if let Some(new_state) = new_state {
         match new_state {
-            Action::IntoReady(state) => {
-                let html = state.get_html_dom();
-                html.canvas.set_visible(false);
-                html.undo_btn.set_visible(false);
-
-                html.instructions_spn.set_inner_html("Thank you!");
-                html.advance_btn.set_inner_html("SAVE");
-
-                *app_state.borrow_mut() = AppState::Ready(state)
-            },
-            Action::Redraw(label) => {
-                app_state.borrow().get_html_dom().draw_a_task_label(label);
-                redraw(app_state.borrow().deref())?
-            },
+            Action::IntoReady(state) => *app_state.borrow_mut() = AppState::Ready(state),
         };
     }
-
-    Ok(())
 }
 
 fn handle_touch_start(app_state: &mut AppState, point: Option<Point>) {
@@ -165,23 +148,17 @@ fn handle_touch_start(app_state: &mut AppState, point: Option<Point>) {
 }
 
 fn handle_touch_move(app_state: &Rc<RefCell<AppState>>, point: Point) -> Result<(), JsValue> {
-    {
-        match app_state.borrow_mut().deref_mut() {
-            AppState::Initial(_) => panic!(),
-            AppState::Drawing(state) => {
-                if state.is_pressed() {
-                    state.add_point(point);
-                    true
-                } else {
-                    false
-                }
+    match app_state.borrow_mut().deref_mut() {
+        AppState::Initial(_) => panic!(),
+        AppState::Drawing(state) => {
+            if state.is_pressed() {
+                state.add_point(point);
+                redraw_points(state.get_html_dom(), state);
             }
-            AppState::Ready(_) => panic!(),
-            AppState::Saved(_) => panic!(),
         }
-    };
-
-    redraw(app_state.borrow().deref())?;
+        AppState::Ready(_) => panic!(),
+        AppState::Saved(_) => panic!(),
+    }
 
     Ok(())
 }
@@ -190,28 +167,20 @@ fn handle_touch_end(
     app_state: &Rc<RefCell<AppState>>,
     point: Option<Point>,
 ) -> Result<(), JsValue> {
-    {
-        match app_state.borrow_mut().deref_mut() {
-            AppState::Initial(_) => panic!(),
-            AppState::Drawing(state) => {
-                if state.is_pressed() {
-                    state.set_pressed(false);
-                    if let Some(point) = point {
-                        state.add_point(point);
-                        true
-                    } else {
-                        false
-                    }
-                } else {
-                    false
+    match app_state.borrow_mut().deref_mut() {
+        AppState::Initial(_) => panic!(),
+        AppState::Drawing(state) => {
+            if state.is_pressed() {
+                state.set_pressed(false);
+                if let Some(point) = point {
+                    state.add_point(point);
+                    redraw_points(state.get_html_dom(), state)
                 }
             }
-            AppState::Ready(_) => panic!(),
-            AppState::Saved(_) => panic!(),
         }
-    };
-
-    redraw(app_state.borrow().deref())?;
+        AppState::Ready(_) => panic!(),
+        AppState::Saved(_) => panic!(),
+    }
 
     Ok(())
 }
@@ -219,21 +188,17 @@ fn handle_touch_end(
 fn subscribe_to_undo_btn(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
     let undo_btn = app_state.borrow().get_html_dom().undo_btn.clone();
     let app_state = app_state.clone();
-    undo_btn.on_click(move |_event: MouseEvent| {
-        {
-            match app_state.borrow_mut().deref_mut() {
-                AppState::Initial(_) => panic!(),
-                AppState::Drawing(state) => {
-                    state.undo();
-                    true
-                }
-                AppState::Ready(_) => panic!(),
-                AppState::Saved(_) => panic!(),
+    undo_btn.on_click(
+        move |_event: MouseEvent| match app_state.borrow_mut().deref_mut() {
+            AppState::Initial(_) => panic!(),
+            AppState::Drawing(state) => {
+                state.undo();
+                redraw_points(state.get_html_dom(), state)
             }
-        };
-
-        redraw(app_state.borrow().deref()).unwrap()
-    })
+            AppState::Ready(_) => panic!(),
+            AppState::Saved(_) => panic!(),
+        },
+    )
 }
 
 fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
@@ -263,7 +228,7 @@ fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsV
                     turn_into_drawing_state(&app_state, student)?
                 }
             }
-            Action::Next => handle_next(&app_state)?,
+            Action::Next => handle_next(&app_state),
             Action::Save => turn_into_saved_state(&app_state)?,
         }
     }
@@ -282,8 +247,6 @@ fn start() -> Result<(), JsValue> {
     let app_state = Rc::new(RefCell::new(AppState::create(HtmlDom::create()?)));
 
     subscribe_to_advance_btn(&app_state)?;
-
-    redraw(app_state.borrow().deref())?;
 
     Ok(())
 }

@@ -113,10 +113,6 @@ impl ReadyState {
     pub fn create(student: String, html_dom: HtmlDom) -> Self {
         Self { student, html_dom }
     }
-
-    pub fn get_html_dom(&self) -> &HtmlDom {
-        &self.html_dom
-    }
 }
 
 pub struct SavedState {
