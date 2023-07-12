@@ -15,11 +15,8 @@ impl Save for ReadyState<HtmlDom> {
     type View = HtmlDom;
 
     fn save(&self) -> Result<SavedState<Self::View>, JsValue> {
-        let element = self
-            .get_view()
-            .document
-            .create_element("a")?
-            .dyn_into::<HtmlElement>()?;
+        let document = self.get_view().document;
+        let element = document.create_element("a")?.dyn_into::<HtmlElement>()?;
 
         let drawings: Vec<_> = self.drawings.iter().map(|x| x.get_paths()).collect();
 
@@ -34,12 +31,7 @@ impl Save for ReadyState<HtmlDom> {
 
         element.set_display(false);
 
-        _ = self
-            .get_view()
-            .document
-            .body()
-            .unwrap()
-            .append_child(&element);
+        _ = document.body().unwrap().append_child(&element);
         element.click();
         _ = self
             .get_view()
