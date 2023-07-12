@@ -58,13 +58,9 @@ fn handle_touch_move(state: &mut DrawingState<HtmlDom>, point: Point) {
     }
 }
 
-fn handle_touch_end(state: &mut DrawingState<HtmlDom>, point: Option<Point>) {
+fn handle_touch_end(state: &mut DrawingState<HtmlDom>) {
     if state.is_pressed() {
         state.set_pressed(false);
-        if let Some(point) = point {
-            state.add_point(point);
-            state.draw()
-        }
     }
 }
 

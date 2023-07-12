@@ -54,10 +54,10 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
         }
         {
             let app_state = app_state.clone();
-            view.canvas
-                .add_listener("mouseup", move |event: MouseEvent| {
+            view.document
+                .add_listener("mouseup", move |_event: MouseEvent| {
                     let mut app_state = app_state.borrow_mut();
-                    handle_touch_end(app_state.drawing_expected_mut(), Some(event.into()))
+                    handle_touch_end(app_state.drawing_expected_mut())
                 })?
         }
         {
@@ -81,11 +81,10 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
                 })?
         }
         {
-            view.canvas
-                .add_listener("touchend", move |event: TouchEvent| {
-                    let point = event.try_into().ok().map(adjust_location);
+            view.document
+                .add_listener("touchend", move |_event: TouchEvent| {
                     let mut app_state = app_state.borrow_mut();
-                    handle_touch_end(app_state.drawing_expected_mut(), point)
+                    handle_touch_end(app_state.drawing_expected_mut())
                 })?
         }
 

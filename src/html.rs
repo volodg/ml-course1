@@ -2,7 +2,10 @@ use crate::app_state::WithStudent;
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_sys::{window, CanvasRenderingContext2d, Document, HtmlButtonElement, HtmlCanvasElement, HtmlElement, HtmlInputElement, HtmlSpanElement, MouseEvent};
+use web_sys::{
+    window, CanvasRenderingContext2d, Document, EventTarget, HtmlButtonElement, HtmlCanvasElement,
+    HtmlElement, HtmlInputElement, HtmlSpanElement, MouseEvent,
+};
 
 #[derive(Clone)]
 pub struct HtmlDom {
@@ -104,7 +107,7 @@ pub trait AddListener {
         F: FnMut(MouseEvent) + 'static;
 }
 
-impl AddListener for HtmlElement {
+impl AddListener for EventTarget {
     fn add_listener<Event: wasm_bindgen::convert::FromWasmAbi + 'static, F>(
         &self,
         name: &str,
