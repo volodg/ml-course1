@@ -1,15 +1,12 @@
+mod geometry;
+
 use itertools::Itertools;
 use std::cell::RefCell;
 use std::f64;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use web_sys::{MouseEvent, TouchEvent};
-
-#[derive(Debug)]
-struct Point {
-    x: i32,
-    y: i32,
-}
+use crate::geometry::{Point, Rect};
 
 struct AppState {
     context: Rc<web_sys::CanvasRenderingContext2d>,
@@ -26,29 +23,6 @@ impl AppState {
 
     fn undo(&mut self) {
         self.paths.pop();
-    }
-}
-
-impl From<MouseEvent> for Point {
-    fn from(event: MouseEvent) -> Self {
-        Self {
-            x: event.offset_x(),
-            y: event.offset_y(),
-        }
-    }
-}
-
-impl TryFrom<TouchEvent> for Point {
-    type Error = ();
-
-    fn try_from(event: TouchEvent) -> Result<Self, Self::Error> {
-        match event.touches().get(0) {
-            Some(touch) => Ok(Self {
-                x: touch.screen_x(),
-                y: touch.screen_y(),
-            }),
-            None => Err(())
-        }
     }
 }
 
@@ -80,9 +54,10 @@ fn redraw(state: &AppState) {
     }
 }
 
-fn handle_touch_start(app_state: &mut AppState, point: Point) {
+fn handle_touch_start(app_state: &mut AppState, point: Option<Point>) {
     app_state.pressed = true;
-    app_state.paths.push(vec![point]);
+    let path = point.map(|x| vec![x]).unwrap_or(vec![]);
+    app_state.paths.push(path);
 }
 
 fn handle_touch_move(app_state: &mut AppState, point: Point) {
@@ -103,11 +78,26 @@ fn handle_touch_end(app_state: &mut AppState, point: Option<Point>) {
 }
 
 fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue> {
+    let canvas_rect: Rect = app_state.borrow().canvas.get_bounding_client_rect().into();
+    let adjust_location = move |pos: Point| -> Point {
+        Point {
+            x: pos.x - canvas_rect.x,
+            y: pos.y - canvas_rect.y,
+        }
+    };
+
+    // fn adjust_location(rect: &Rect, pos: Point) -> Point {
+    //     Point {
+    //         x: pos.x - rect.x,
+    //         y: pos.y - rect.y,
+    //     }
+    // }
+
     let canvas = app_state.borrow().canvas.clone();
     {
         let app_state = app_state.clone();
         let closure = Closure::<dyn FnMut(_)>::new(move |event: MouseEvent| {
-            handle_touch_start(&mut app_state.borrow_mut(), event.into())
+            handle_touch_start(&mut app_state.borrow_mut(), Some(event.into()))
         });
         canvas.add_event_listener_with_callback("mousedown", closure.as_ref().unchecked_ref())?;
         closure.forget();
@@ -131,9 +121,8 @@ fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue>
     {
         let app_state = app_state.clone();
         let closure = Closure::<dyn FnMut(_)>::new(move |event: TouchEvent| {
-            if let Some(point) = event.try_into().ok() {
-                handle_touch_start(&mut app_state.borrow_mut(), point)
-            }
+            let point = event.try_into().ok().map(adjust_location);
+            handle_touch_start(&mut app_state.borrow_mut(), point)
         });
         canvas.add_event_listener_with_callback("touchstart", closure.as_ref().unchecked_ref())?;
         closure.forget();
@@ -141,7 +130,8 @@ fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue>
     {
         let app_state = app_state.clone();
         let closure = Closure::<dyn FnMut(_)>::new(move |event: TouchEvent| {
-            if let Some(point) = event.try_into().ok() {
+            let point = event.try_into().ok().map(adjust_location);
+            if let Some(point) = point {
                 handle_touch_move(&mut app_state.borrow_mut(), point)
             }
         });
@@ -149,8 +139,10 @@ fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue>
         closure.forget();
     }
     {
+        // let canvas_rect = canvas_rect.clone();
         let closure = Closure::<dyn FnMut(_)>::new(move |event: TouchEvent| {
-            handle_touch_end(&mut app_state.borrow_mut(), event.try_into().ok())
+            let point = event.try_into().ok().map(adjust_location);
+            handle_touch_end(&mut app_state.borrow_mut(), point)
         });
         canvas.add_event_listener_with_callback("touchend", closure.as_ref().unchecked_ref())?;
         closure.forget();
