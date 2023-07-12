@@ -91,6 +91,6 @@ impl AppState {
     }
 
     pub fn increment_index(&mut self) {
-        self.label_index = (self.label_index + 1) % self.curr_path_mut().len();
+        self.label_index = (self.label_index + 1) % self.drawings.len()
     }
 }
