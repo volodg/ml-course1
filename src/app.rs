@@ -230,4 +230,13 @@ impl AppState {
     pub fn create(html_dom: HtmlDom) -> Self {
         Self::Initial(InitialState { html_dom })
     }
+
+    pub fn drawing_expected_mut(&mut self) -> &mut DrawingState {
+        match self {
+            AppState::Initial(_) => panic!("unexpected state"),
+            AppState::Drawing(state) => state,
+            AppState::Ready(_) => panic!("unexpected state"),
+            AppState::Saved(_) => panic!("unexpected state"),
+        }
+    }
 }

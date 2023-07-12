@@ -24,13 +24,15 @@ impl StateSubscriber for HtmlCanvasElement {
         {
             let app_state = app_state.clone();
             self.add_listener("mousedown", move |event: MouseEvent| {
-                handle_touch_start(&mut app_state.borrow_mut(), Some(event.into()))
+                let mut app_state = app_state.borrow_mut();
+                handle_touch_start(app_state.drawing_expected_mut(), Some(event.into()))
             })?
         }
         {
             let app_state = app_state.clone();
             self.add_listener("mousemove", move |event: MouseEvent| {
-                handle_touch_move(&app_state, event.into()).unwrap()
+                let mut app_state = app_state.borrow_mut();
+                handle_touch_move(app_state.drawing_expected_mut(), event.into())
             })?
         }
         {
@@ -43,7 +45,8 @@ impl StateSubscriber for HtmlCanvasElement {
             let app_state = app_state.clone();
             self.add_listener("touchstart", move |event: TouchEvent| {
                 let point = event.try_into().ok().map(adjust_location);
-                handle_touch_start(&mut app_state.borrow_mut(), point)
+                let mut app_state = app_state.borrow_mut();
+                handle_touch_start(app_state.drawing_expected_mut(), point)
             })?
         }
         {
@@ -51,7 +54,8 @@ impl StateSubscriber for HtmlCanvasElement {
             self.add_listener("touchmove", move |event: TouchEvent| {
                 let point = event.try_into().ok().map(adjust_location);
                 if let Some(point) = point {
-                    handle_touch_move(&app_state, point).unwrap()
+                    let mut app_state = app_state.borrow_mut();
+                    handle_touch_move(app_state.drawing_expected_mut(), point)
                 }
             })?
         }

@@ -19,65 +19,38 @@ extern "C" {
 }
 
 fn handle_next(app_state: &Rc<RefCell<AppState>>) {
-    enum Action {
-        IntoReady(ReadyState),
-    }
-
     let new_state = {
-        match app_state.borrow_mut().deref_mut() {
-            AppState::Initial(_) => panic!(),
-            AppState::Drawing(state) => {
-                if state.curr_path().is_empty() {
-                    alert("Draw something first");
-                    None
-                } else if !state.increment_index() {
-                    let new_state = ReadyState::create(state);
-                    new_state.redraw();
-                    Some(Action::IntoReady(new_state))
-                } else {
-                    state.redraw();
-                    None
-                }
-            }
-            AppState::Ready(_) => None,
-            AppState::Saved(_) => panic!(),
+        let mut app_state = app_state.borrow_mut();
+        let state = app_state.drawing_expected_mut();
+        if state.curr_path().is_empty() {
+            alert("Draw something first");
+            None
+        } else if !state.increment_index() {
+            let new_state = ReadyState::create(state);
+            new_state.redraw();
+            Some(new_state)
+        } else {
+            state.redraw();
+            None
         }
     };
 
     if let Some(new_state) = new_state {
-        match new_state {
-            Action::IntoReady(new_state) => *app_state.borrow_mut() = AppState::Ready(new_state),
-        };
+        *app_state.borrow_mut() = AppState::Ready(new_state)
     }
 }
 
-fn handle_touch_start(app_state: &mut AppState, point: Option<Point>) {
-    match app_state {
-        AppState::Initial(_) => panic!(),
-        AppState::Drawing(state) => {
-            state.set_pressed(true);
-            let path = point.map(|x| vec![x]).unwrap_or(vec![]);
-            state.add_path(path);
-        }
-        AppState::Ready(_) => panic!(),
-        AppState::Saved(_) => panic!(),
-    }
+fn handle_touch_start(state: &mut DrawingState, point: Option<Point>) {
+    state.set_pressed(true);
+    let path = point.map(|x| vec![x]).unwrap_or(vec![]);
+    state.add_path(path);
 }
 
-fn handle_touch_move(app_state: &Rc<RefCell<AppState>>, point: Point) -> Result<(), JsValue> {
-    match app_state.borrow_mut().deref_mut() {
-        AppState::Initial(_) => panic!(),
-        AppState::Drawing(state) => {
-            if state.is_pressed() {
-                state.add_point(point);
-                state.redraw()
-            }
-        }
-        AppState::Ready(_) => panic!(),
-        AppState::Saved(_) => panic!(),
+fn handle_touch_move(state: &mut DrawingState, point: Point) {
+    if state.is_pressed() {
+        state.add_point(point);
+        state.redraw()
     }
-
-    Ok(())
 }
 
 fn handle_touch_end(
