@@ -64,6 +64,9 @@ fn redraw(app_state: &AppState) -> Result<(), JsValue> {
             let html = state.get_html_dom();
             html.canvas.set_visible(false);
             html.undo_btn.set_visible(false);
+
+            html.instructions_spn.set_inner_html("Thank you!");
+            html.advance_btn.set_inner_html("SAVE");
         }
     }
 
@@ -231,7 +234,10 @@ fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsV
             AppState::Drawing(_) => {
                 Some(Action::Next)
             },
-            AppState::Ready(_) => None,
+            AppState::Ready(_) => {
+                log("TODO Save");
+                None
+            },
         }
     };
 
