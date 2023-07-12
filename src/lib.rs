@@ -172,12 +172,10 @@ fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue>
         })?
     }
     {
-        let closure = Closure::<dyn FnMut(_)>::new(move |event: TouchEvent| {
+        canvas.add_listener("touchend", move |event: TouchEvent| {
             let point = event.try_into().ok().map(adjust_location);
             handle_touch_end(&mut app_state.borrow_mut(), point)
-        });
-        canvas.add_event_listener_with_callback("touchend", closure.as_ref().unchecked_ref())?;
-        closure.forget();
+        })?
     }
 
     Ok(())
