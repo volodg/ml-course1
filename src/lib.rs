@@ -7,9 +7,7 @@ use crate::app::{AppState, DrawingState, ReadyState, SavedState};
 use crate::canvas::subscribe_canvas_events;
 use crate::geometry::Point;
 use crate::html::{alert, AddListener, HtmlDom, Visibility};
-use itertools::Itertools;
 use std::cell::RefCell;
-use std::f64;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
@@ -19,38 +17,6 @@ use web_sys::MouseEvent;
 extern "C" {
     #[wasm_bindgen(js_namespace = console)]
     fn log(s: &str);
-}
-
-fn redraw_points(html: &HtmlDom, state: &DrawingState) {
-    html.context.clear_rect(
-        0.0,
-        0.0,
-        html.canvas.width().into(),
-        html.canvas.height().into(),
-    );
-
-    let mut empty = true;
-
-    for path in state.curr_path() {
-        if path.is_empty() {
-            continue;
-        }
-        empty = false;
-
-        for (from, to) in path.iter().tuple_windows() {
-            html.context.begin_path();
-            html.context.set_line_width(3.0);
-            html.context.set_line_cap("round");
-            html.context.set_line_join("round");
-
-            html.context.move_to(from.x as f64, from.y as f64);
-            html.context.line_to(to.x as f64, to.y as f64);
-
-            html.context.stroke();
-        }
-    }
-
-    html.undo_btn.set_disabled(empty)
 }
 
 fn turn_into_saved_state(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
@@ -81,9 +47,7 @@ fn turn_into_drawing_state(
     subscribe_to_undo_btn(&app_state)?;
 
     let new_state = DrawingState::create(student, html.clone());
-    let label = new_state.get_current_label().to_owned();
-    app_state.borrow().get_html_dom().draw_a_task_label(label);
-    redraw_points(&html, &new_state);
+    new_state.redraw();
 
     *app_state.borrow_mut() = AppState::Drawing(new_state);
 
@@ -115,10 +79,7 @@ fn handle_next(app_state: &Rc<RefCell<AppState>>) {
                         html.clone(),
                     )))
                 } else {
-                    let label = state.get_current_label().to_owned();
-                    let html = state.get_html_dom();
-                    html.draw_a_task_label(label);
-                    redraw_points(html, state);
+                    state.redraw();
                     None
                 }
             }
@@ -153,7 +114,7 @@ fn handle_touch_move(app_state: &Rc<RefCell<AppState>>, point: Point) -> Result<
         AppState::Drawing(state) => {
             if state.is_pressed() {
                 state.add_point(point);
-                redraw_points(state.get_html_dom(), state);
+                state.redraw()
             }
         }
         AppState::Ready(_) => panic!(),
@@ -174,7 +135,7 @@ fn handle_touch_end(
                 state.set_pressed(false);
                 if let Some(point) = point {
                     state.add_point(point);
-                    redraw_points(state.get_html_dom(), state)
+                    state.redraw()
                 }
             }
         }
@@ -193,7 +154,7 @@ fn subscribe_to_undo_btn(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValu
             AppState::Initial(_) => panic!(),
             AppState::Drawing(state) => {
                 state.undo();
-                redraw_points(state.get_html_dom(), state)
+                state.redraw();
             }
             AppState::Ready(_) => panic!(),
             AppState::Saved(_) => panic!(),

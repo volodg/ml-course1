@@ -53,11 +53,6 @@ impl HtmlDom {
             canvas,
         })
     }
-
-    pub fn draw_a_task_label(&self, label: String) {
-        self.instructions_spn
-            .set_inner_html(std::format!("Please draw a {label}").as_str());
-    }
 }
 
 pub trait Visibility {
