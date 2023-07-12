@@ -2,19 +2,19 @@ mod geometry;
 mod html;
 
 use crate::geometry::{Point, Rect};
-use crate::html::{HtmlDom, Visibility};
+use crate::html::{alert, HtmlDom, Visibility};
 use itertools::Itertools;
 use std::cell::RefCell;
 use std::f64;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
-use web_sys::{window, MouseEvent, TouchEvent};
+use web_sys::{MouseEvent, TouchEvent, HtmlElement};
 
-#[allow(dead_code)]
 const LABELS: [&str; 8] = ["car", "fish", "house", "tree", "bicycle", "guitar", "pencil", "clock"];
 
 struct AppState {
     student: Option<String>,
+    label_index: usize,
     html_dom: HtmlDom,
     pressed: bool,
     paths: Vec<Vec<Point>>,
@@ -81,7 +81,12 @@ fn redraw(state: &AppState) {
     html.canvas.set_visible(canvas_is_active);
     html.undo_btn.set_visible(canvas_is_active);
     html.student_input.set_display(!canvas_is_active);
-    html.advance_btn.set_display(!canvas_is_active);
+
+    if canvas_is_active {
+        let label = LABELS[state.label_index];
+        state.html_dom.instructions_spn.set_inner_html(std::format!("Please draw a {label}").as_str());
+        html.advance_btn.set_inner_html("NEXT");
+    }
 }
 
 fn handle_touch_start(app_state: &mut AppState, point: Option<Point>) {
@@ -104,6 +109,21 @@ fn handle_touch_end(app_state: &mut AppState, point: Option<Point>) {
             app_state.add_point(point);
         }
         redraw(app_state);
+    }
+}
+
+trait AddListener {
+    fn add_listener<Event: wasm_bindgen::convert::FromWasmAbi + 'static, F>(&self, name: &str, listener: F) -> Result<(), JsValue> where F: FnMut(Event) + 'static;
+}
+
+impl AddListener for HtmlElement {
+    fn add_listener<Event: wasm_bindgen::convert::FromWasmAbi + 'static, F>(&self, name: &str, mut listener: F) -> Result<(), JsValue> where F: FnMut(Event) + 'static {
+        let closure = Closure::<dyn FnMut(_)>::new(move |event: Event| {
+            listener(event)
+        });
+        self.add_event_listener_with_callback(name, closure.as_ref().unchecked_ref())?;
+        closure.forget();
+        Ok(())
     }
 }
 
@@ -173,16 +193,11 @@ fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue>
     Ok(())
 }
 
-fn alert(msg: &str) {
-    if let Some(window) = window() {
-        let _ = window.alert_with_message(msg);
-    }
-}
-
 #[wasm_bindgen(start)]
 fn start() -> Result<(), JsValue> {
     let app_state = Rc::new(RefCell::new(AppState {
         student: None,
+        label_index: 0,
         html_dom: HtmlDom::create()?,
         pressed: false,
         paths: Vec::new(),

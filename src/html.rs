@@ -1,11 +1,12 @@
 use wasm_bindgen::JsValue;
-use web_sys::{CanvasRenderingContext2d, HtmlButtonElement, HtmlCanvasElement, HtmlElement, HtmlInputElement, window};
+use web_sys::{CanvasRenderingContext2d, HtmlButtonElement, HtmlCanvasElement, HtmlElement, HtmlInputElement, HtmlSpanElement, window};
 use wasm_bindgen::JsCast;
 
 pub struct HtmlDom {
     pub student_input: HtmlInputElement,
     pub advance_btn: HtmlButtonElement,
     pub undo_btn: HtmlButtonElement,
+    pub instructions_spn: HtmlSpanElement,
     pub context: CanvasRenderingContext2d,
     pub canvas: HtmlCanvasElement,
 }
@@ -33,11 +34,16 @@ impl HtmlDom {
             .get_element_by_id("advanceBtn")
             .unwrap()
             .dyn_into::<HtmlButtonElement>()?;
+        let instructions_spn = document
+            .get_element_by_id("instructions")
+            .unwrap()
+            .dyn_into::<HtmlSpanElement>()?;
 
         Ok(Self {
             student_input,
             advance_btn,
             undo_btn,
+            instructions_spn,
             context,
             canvas,
         })
@@ -64,5 +70,11 @@ impl Visibility for HtmlElement {
         } else {
             self.style().set_property("display", "none").unwrap();
         }
+    }
+}
+
+pub fn alert(msg: &str) {
+    if let Some(window) = window() {
+        let _ = window.alert_with_message(msg);
     }
 }
