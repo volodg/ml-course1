@@ -147,19 +147,16 @@ fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue>
 fn start() -> Result<(), JsValue> {
     let document = web_sys::window().unwrap().document().unwrap();
     let canvas = document.get_element_by_id("canvas").unwrap();
-    let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
+    let canvas = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
 
     let context = canvas
         .get_context("2d")?
         .unwrap()
         .dyn_into::<web_sys::CanvasRenderingContext2d>()?;
 
-    let context = Rc::new(context);
-    let canvas = Rc::new(canvas);
-
     let app_state = Rc::new(RefCell::new(AppState {
-        context,
-        canvas,
+        context: Rc::new(context),
+        canvas: Rc::new(canvas),
         pressed: false,
         paths: Vec::new(),
     }));
