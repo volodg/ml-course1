@@ -119,10 +119,21 @@ impl ReadyState {
     }
 }
 
+pub struct SavedState {
+    html_dom: HtmlDom,
+}
+
+impl SavedState {
+    pub fn create(html_dom: HtmlDom) -> Self {
+        Self { html_dom }
+    }
+}
+
 pub enum AppState {
     Initial(InitialState),
     Drawing(DrawingState),
     Ready(ReadyState),
+    Saved(SavedState),
 }
 
 impl AppState {
@@ -131,6 +142,7 @@ impl AppState {
             Self::Initial(state) => &state.html_dom,
             Self::Drawing(state) => &state.html_dom,
             Self::Ready(state) => &state.html_dom,
+            Self::Saved(state) => &state.html_dom,
         }
     }
 }

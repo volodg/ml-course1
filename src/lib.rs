@@ -3,7 +3,7 @@ mod canvas;
 mod geometry;
 mod html;
 
-use crate::app::{AppState, DrawingState, ReadyState};
+use crate::app::{AppState, DrawingState, ReadyState, SavedState};
 use crate::canvas::subscribe_canvas_events;
 use crate::geometry::Point;
 use crate::html::{alert, AddListener, HtmlDom, Visibility};
@@ -55,47 +55,54 @@ fn redraw(app_state: &AppState) -> Result<(), JsValue> {
             }
 
             html.undo_btn.set_disabled(empty);
-
-            html.instructions_spn.set_inner_html(
-                std::format!("Please draw a {}", state.get_current_label()).as_str(),
-            )
         }
         AppState::Ready(state) => {
             let html = state.get_html_dom();
-            html.canvas.set_visible(false);
+            html.canvas.set_visible(false); // TODO
             html.undo_btn.set_visible(false);
 
             html.instructions_spn.set_inner_html("Thank you!");
             html.advance_btn.set_inner_html("SAVE");
         }
+        AppState::Saved(_) => (),
     }
 
     Ok(())
 }
 
-fn turn_into_active_state(
+fn turn_into_saved_state(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
+    let html = app_state.borrow().get_html_dom().clone();
+
+    html.advance_btn.set_display(false);
+    html.instructions_spn.set_inner_html(
+        "Take you downloaded file and place it along side the others in the dataset!",
+    );
+
+    *app_state.borrow_mut() = AppState::Saved(SavedState::create(html));
+
+    Ok(())
+}
+
+fn turn_into_drawing_state(
     app_state: &Rc<RefCell<AppState>>,
     student: String,
 ) -> Result<(), JsValue> {
-    {
-        match app_state.borrow().deref() {
-            AppState::Initial(state) => {
-                let html = state.get_html_dom();
-                html.canvas.set_visible(true);
-                html.undo_btn.set_visible(true);
-                html.student_input.set_display(false);
-                html.advance_btn.set_inner_html("NEXT");
-            }
-            AppState::Drawing(_) => panic!(),
-            AppState::Ready(_) => panic!(),
-        }
-    };
+    let html = app_state.borrow().get_html_dom().clone();
+
+    html.canvas.set_visible(true);
+    html.undo_btn.set_visible(true);
+    html.student_input.set_display(false);
+    html.advance_btn.set_inner_html("NEXT");
 
     subscribe_canvas_events(&app_state)?;
     subscribe_to_undo_btn(&app_state)?;
 
-    let html = app_state.borrow().get_html_dom().clone();
-    *app_state.borrow_mut() = AppState::Drawing(DrawingState::create(student, html));
+    let new_state = DrawingState::create(student, html);
+    let label = new_state.get_current_label().to_owned();
+    app_state.borrow().get_html_dom().draw_a_task_label(label);
+
+    *app_state.borrow_mut() = AppState::Drawing(new_state);
+
     redraw(app_state.borrow().deref())?;
 
     Ok(())
@@ -103,7 +110,7 @@ fn turn_into_active_state(
 
 fn handle_next(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
     enum Action {
-        Redraw,
+        Redraw(String),
         NewState(AppState),
     }
 
@@ -120,18 +127,19 @@ fn handle_next(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
                         state.get_html_dom().clone(),
                     ))))
                 } else {
-                    Some(Action::Redraw)
+                    Some(Action::Redraw(state.get_current_label().to_owned()))
                 }
             }
             AppState::Ready(_) => None,
+            AppState::Saved(_) => panic!(),
         }
     };
 
     if let Some(new_state) = new_state {
         match new_state {
             Action::NewState(state) => *app_state.borrow_mut() = state,
-            Action::Redraw => (),
-        }
+            Action::Redraw(label) => app_state.borrow().get_html_dom().draw_a_task_label(label),
+        };
 
         redraw(app_state.borrow().deref())?
     }
@@ -148,6 +156,7 @@ fn handle_touch_start(app_state: &mut AppState, point: Option<Point>) {
             state.add_path(path);
         }
         AppState::Ready(_) => panic!(),
+        AppState::Saved(_) => panic!(),
     }
 }
 
@@ -164,6 +173,7 @@ fn handle_touch_move(app_state: &Rc<RefCell<AppState>>, point: Point) -> Result<
                 }
             }
             AppState::Ready(_) => panic!(),
+            AppState::Saved(_) => panic!(),
         }
     };
 
@@ -193,6 +203,7 @@ fn handle_touch_end(
                 }
             }
             AppState::Ready(_) => panic!(),
+            AppState::Saved(_) => panic!(),
         }
     };
 
@@ -213,6 +224,7 @@ fn subscribe_to_undo_btn(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValu
                     true
                 }
                 AppState::Ready(_) => panic!(),
+                AppState::Saved(_) => panic!(),
             }
         };
 
@@ -224,20 +236,17 @@ fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsV
     enum Action {
         Register(String),
         Next,
+        Save,
     }
 
     let action = {
         match app_state.borrow().deref() {
-            AppState::Initial(state) => {
-                Some(Action::Register(state.get_html_dom().student_input.value().trim().to_owned()))
-            }
-            AppState::Drawing(_) => {
-                Some(Action::Next)
-            },
-            AppState::Ready(_) => {
-                log("TODO Save");
-                None
-            },
+            AppState::Initial(state) => Some(Action::Register(
+                state.get_html_dom().student_input.value().trim().to_owned(),
+            )),
+            AppState::Drawing(_) => Some(Action::Next),
+            AppState::Ready(_) => Some(Action::Save),
+            AppState::Saved(_) => panic!(),
         }
     };
 
@@ -247,10 +256,11 @@ fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsV
                 if student.is_empty() {
                     alert("Please type your name")
                 } else {
-                    turn_into_active_state(&app_state, student)?
+                    turn_into_drawing_state(&app_state, student)?
                 }
-            },
-            Action::Next => handle_next(&app_state)?
+            }
+            Action::Next => handle_next(&app_state)?,
+            Action::Save => turn_into_saved_state(&app_state)?,
         }
     }
 
@@ -260,9 +270,7 @@ fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsV
 fn subscribe_to_advance_btn(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
     let advance_btn = app_state.borrow().get_html_dom().advance_btn.clone();
     let app_state = app_state.clone();
-    advance_btn.on_click(move |_event: MouseEvent| {
-        handle_advance_btn_click(&app_state).unwrap()
-    })
+    advance_btn.on_click(move |_event: MouseEvent| handle_advance_btn_click(&app_state).unwrap())
 }
 
 #[wasm_bindgen(start)]
