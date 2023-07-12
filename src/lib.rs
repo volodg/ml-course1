@@ -139,24 +139,20 @@ fn next(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
 
 fn handle_touch_start(app_state: &mut AppState, point: Option<Point>) {
     match app_state {
-        AppState::Initial(_) => {
-            // TODO panic!()
-        }
+        AppState::Initial(_) => panic!(),
         AppState::Drawing(state) => {
             state.set_pressed(true);
             let path = point.map(|x| vec![x]).unwrap_or(vec![]);
             state.add_path(path);
         }
-        AppState::Ready(_) => {
-            // TODO panic!()
-        }
+        AppState::Ready(_) => panic!(),
     }
 }
 
 fn handle_touch_move(app_state: &Rc<RefCell<AppState>>, point: Point) -> Result<(), JsValue> {
-    let redraw_it = {
+    {
         match app_state.borrow_mut().deref_mut() {
-            AppState::Initial(_) => false,
+            AppState::Initial(_) => panic!(),
             AppState::Drawing(state) => {
                 if state.is_pressed() {
                     state.add_point(point);
@@ -165,13 +161,11 @@ fn handle_touch_move(app_state: &Rc<RefCell<AppState>>, point: Point) -> Result<
                     false
                 }
             }
-            AppState::Ready(_) => false,
+            AppState::Ready(_) => panic!(),
         }
     };
 
-    if redraw_it {
-        redraw(app_state.borrow().deref())?;
-    }
+    redraw(app_state.borrow().deref())?;
 
     Ok(())
 }
@@ -180,27 +174,27 @@ fn handle_touch_end(
     app_state: &Rc<RefCell<AppState>>,
     point: Option<Point>,
 ) -> Result<(), JsValue> {
-    let redraw_it = {
+    {
         match app_state.borrow_mut().deref_mut() {
-            AppState::Initial(_) => false,
+            AppState::Initial(_) => panic!(),
             AppState::Drawing(state) => {
                 if state.is_pressed() {
                     state.set_pressed(false);
                     if let Some(point) = point {
                         state.add_point(point);
+                        true
+                    } else {
+                        false
                     }
-                    true
                 } else {
                     false
                 }
             }
-            AppState::Ready(_) => false,
+            AppState::Ready(_) => panic!(),
         }
     };
 
-    if redraw_it {
-        redraw(app_state.borrow().deref())?;
-    }
+    redraw(app_state.borrow().deref())?;
 
     Ok(())
 }
@@ -273,20 +267,18 @@ fn start() -> Result<(), JsValue> {
         let undo_btn = app_state.borrow().get_html_dom().undo_btn.clone();
         let app_state = app_state.clone();
         undo_btn.on_click(move |_event: MouseEvent| {
-            let redraw_it = {
+            {
                 match app_state.borrow_mut().deref_mut() {
-                    AppState::Initial(_) => false,
+                    AppState::Initial(_) => panic!(),
                     AppState::Drawing(state) => {
                         state.undo();
                         true
                     }
-                    AppState::Ready(_) => false,
+                    AppState::Ready(_) => panic!(),
                 }
             };
 
-            if redraw_it {
-                redraw(app_state.borrow().deref()).unwrap()
-            }
+            redraw(app_state.borrow().deref()).unwrap()
         })?
     }
 
