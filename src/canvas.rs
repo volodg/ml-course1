@@ -8,7 +8,7 @@ use wasm_bindgen::JsValue;
 use web_sys::{MouseEvent, TouchEvent};
 
 pub fn subscribe_canvas_events(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
-    let canvas = app_state.borrow().get_html_dom().canvas.clone();
+    let canvas = app_state.borrow().get_canvas().clone();
     let canvas_rect: Rect = canvas.get_bounding_client_rect().into();
     let adjust_location = move |pos: Point| -> Point {
         Point {

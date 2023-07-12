@@ -1,6 +1,8 @@
-use itertools::Itertools;
 use crate::geometry::Point;
 use crate::html::HtmlDom;
+use crate::html::Visibility;
+use itertools::Itertools;
+use web_sys::HtmlCanvasElement;
 
 struct Drawing {
     label: &'static str,
@@ -25,6 +27,10 @@ pub struct InitialState {
 impl InitialState {
     pub fn get_html_dom(&self) -> &HtmlDom {
         &self.html_dom
+    }
+
+    pub fn get_student(&self) -> String {
+        self.html_dom.student_input.value().trim().to_owned()
     }
 }
 
@@ -56,11 +62,17 @@ impl DrawingState {
 
     fn redraw_a_task_label(&self) {
         let label = self.get_current_label();
-        self.html_dom.instructions_spn
+        self.html_dom
+            .instructions_spn
             .set_inner_html(std::format!("Please draw a {label}").as_str());
     }
 
     pub fn redraw(&self) {
+        self.html_dom.canvas.set_visible(true);
+        self.html_dom.undo_btn.set_visible(true);
+        self.html_dom.student_input.set_display(false);
+        self.html_dom.advance_btn.set_inner_html("NEXT");
+
         self.html_dom.context.clear_rect(
             0.0,
             0.0,
@@ -91,10 +103,6 @@ impl DrawingState {
 
         self.html_dom.undo_btn.set_disabled(empty);
         self.redraw_a_task_label()
-    }
-
-    pub fn get_html_dom(&self) -> &HtmlDom {
-        &self.html_dom
     }
 
     pub fn set_pressed(&mut self, value: bool) {
@@ -150,8 +158,22 @@ pub struct ReadyState {
 }
 
 impl ReadyState {
-    pub fn create(student: String, html_dom: HtmlDom) -> Self {
+    pub fn create(state: &DrawingState) -> Self {
+        let student = state.student.clone();
+        let html_dom = state.html_dom.clone();
         Self { student, html_dom }
+    }
+
+    pub fn get_html_dom(&self) -> &HtmlDom {
+        &self.html_dom
+    }
+
+    pub fn redraw(&self) {
+        self.html_dom.canvas.set_visible(false);
+        self.html_dom.undo_btn.set_visible(false);
+
+        self.html_dom.instructions_spn.set_inner_html("Thank you!");
+        self.html_dom.advance_btn.set_inner_html("SAVE");
     }
 }
 
@@ -162,6 +184,13 @@ pub struct SavedState {
 impl SavedState {
     pub fn create(html_dom: HtmlDom) -> Self {
         Self { html_dom }
+    }
+
+    pub fn redraw(&self) {
+        self.html_dom.advance_btn.set_display(false);
+        self.html_dom.instructions_spn.set_inner_html(
+            "Take you downloaded file and place it along side the others in the dataset!",
+        );
     }
 }
 
@@ -180,6 +209,10 @@ impl AppState {
             Self::Ready(state) => &state.html_dom,
             Self::Saved(state) => &state.html_dom,
         }
+    }
+
+    pub fn get_canvas(&self) -> &HtmlCanvasElement {
+        &self.get_html_dom().canvas
     }
 }
 

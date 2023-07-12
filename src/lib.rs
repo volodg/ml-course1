@@ -6,7 +6,7 @@ mod html;
 use crate::app::{AppState, DrawingState, ReadyState, SavedState};
 use crate::canvas::subscribe_canvas_events;
 use crate::geometry::Point;
-use crate::html::{alert, AddListener, HtmlDom, Visibility};
+use crate::html::{alert, AddListener, HtmlDom};
 use std::cell::RefCell;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
@@ -19,34 +19,25 @@ extern "C" {
     fn log(s: &str);
 }
 
-fn turn_into_saved_state(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
-    let html = app_state.borrow().get_html_dom().clone();
+fn turn_into_saved_state(
+    app_state: &Rc<RefCell<AppState>>,
+    html_dom: HtmlDom,
+) {
+    let new_state = SavedState::create(html_dom);
+    new_state.redraw();
 
-    html.advance_btn.set_display(false);
-    html.instructions_spn.set_inner_html(
-        "Take you downloaded file and place it along side the others in the dataset!",
-    );
-
-    *app_state.borrow_mut() = AppState::Saved(SavedState::create(html));
-
-    Ok(())
+    *app_state.borrow_mut() = AppState::Saved(new_state)
 }
 
 fn turn_into_drawing_state(
     app_state: &Rc<RefCell<AppState>>,
     student: String,
+    html_dom: HtmlDom
 ) -> Result<(), JsValue> {
-    let html = app_state.borrow().get_html_dom().clone();
-
-    html.canvas.set_visible(true);
-    html.undo_btn.set_visible(true);
-    html.student_input.set_display(false);
-    html.advance_btn.set_inner_html("NEXT");
-
     subscribe_canvas_events(&app_state)?;
     subscribe_to_undo_btn(&app_state)?;
 
-    let new_state = DrawingState::create(student, html.clone());
+    let new_state = DrawingState::create(student, html_dom);
     new_state.redraw();
 
     *app_state.borrow_mut() = AppState::Drawing(new_state);
@@ -67,17 +58,9 @@ fn handle_next(app_state: &Rc<RefCell<AppState>>) {
                     alert("Draw something first");
                     None
                 } else if !state.increment_index() {
-                    let html = state.get_html_dom();
-                    html.canvas.set_visible(false);
-                    html.undo_btn.set_visible(false);
-
-                    html.instructions_spn.set_inner_html("Thank you!");
-                    html.advance_btn.set_inner_html("SAVE");
-
-                    Some(Action::IntoReady(ReadyState::create(
-                        state.student.clone(),
-                        html.clone(),
-                    )))
+                    let new_state = ReadyState::create(state);
+                    new_state.redraw();
+                    Some(Action::IntoReady(new_state))
                 } else {
                     state.redraw();
                     None
@@ -164,33 +147,33 @@ fn subscribe_to_undo_btn(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValu
 
 fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
     enum Action {
-        Register(String),
+        Register(String, HtmlDom),
         Next,
-        Save,
+        Save(HtmlDom),
     }
 
     let action = {
         match app_state.borrow().deref() {
             AppState::Initial(state) => Some(Action::Register(
-                state.get_html_dom().student_input.value().trim().to_owned(),
+                state.get_student(), state.get_html_dom().clone()
             )),
             AppState::Drawing(_) => Some(Action::Next),
-            AppState::Ready(_) => Some(Action::Save),
+            AppState::Ready(state) => Some(Action::Save(state.get_html_dom().clone())),
             AppState::Saved(_) => panic!(),
         }
     };
 
     if let Some(action) = action {
         match action {
-            Action::Register(student) => {
+            Action::Register(student, html) => {
                 if student.is_empty() {
                     alert("Please type your name")
                 } else {
-                    turn_into_drawing_state(&app_state, student)?
+                    turn_into_drawing_state(&app_state, student, html)?
                 }
             }
             Action::Next => handle_next(&app_state),
-            Action::Save => turn_into_saved_state(&app_state)?,
+            Action::Save(html) => turn_into_saved_state(&app_state, html),
         }
     }
 
