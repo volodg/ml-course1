@@ -139,7 +139,6 @@ fn handle_canvas_events(app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue>
         closure.forget();
     }
     {
-        // let canvas_rect = canvas_rect.clone();
         let closure = Closure::<dyn FnMut(_)>::new(move |event: TouchEvent| {
             let point = event.try_into().ok().map(adjust_location);
             handle_touch_end(&mut app_state.borrow_mut(), point)
