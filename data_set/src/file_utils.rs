@@ -39,7 +39,7 @@ fn file_to_drawing_data(file_name: &PathBuf) -> Result<SortedDrawingData, std::i
         drawings,
     } = result;
 
-    let mut drawings = drawings.into_iter().collect::<Vec<_>>();
+    let mut drawings = drawings.into_iter().filter(|x| !x.1.is_empty()).collect::<Vec<_>>();
     drawings.sort_by(|a, b| a.0.cmp(&b.0));
 
     let result = SortedDrawingData {
