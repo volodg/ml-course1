@@ -23,15 +23,41 @@ fn file_to_drawing_data(file_name: &PathBuf) -> Result<DrawingData, std::io::Err
     })
 }
 
+struct Sample {
+    #[allow(dead_code)]
+    id: usize,
+    #[allow(dead_code)]
+    label: String,
+    #[allow(dead_code)]
+    student_name: String,
+    #[allow(dead_code)]
+    student_id: u64,
+}
+
 fn main() -> Result<(), std::io::Error> {
     let entries: Vec<_> = std::fs::read_dir(RAW_DIR)?
         .flat_map(|x| x)
         .map(|res| res.path())
         .flat_map(|file_name| {
             file_to_drawing_data(&file_name)
+        })
+        .collect();
+
+    let samples: Vec<_> = entries
+        .iter()
+        .zip(1..)
+        .flat_map(|(record, id)| {
+            record.get_drawings().iter().map(move |(label, _)| {
+                Sample {
+                    id,
+                    label: label.to_owned(),
+                    student_name: record.get_student().to_owned(),
+                    student_id: record.get_session(),
+                }
+            })
         }).collect();
 
-    println!("Valid entries count {:?}", entries.len());
+    println!("Valid entries count {:?}", samples.len());
 
     Ok(())
 }

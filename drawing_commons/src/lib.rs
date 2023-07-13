@@ -18,6 +18,18 @@ impl DrawingData {
             drawings,
         }
     }
+
+    pub fn get_student(&self) -> &String {
+        &self.student
+    }
+
+    pub fn get_session(&self) -> u64 {
+        self.session
+    }
+
+    pub fn get_drawings(&self) -> &Drawings {
+        &self.drawings
+    }
 }
 
 #[cfg(test)]
