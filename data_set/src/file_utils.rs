@@ -68,7 +68,7 @@ pub fn store_samples(inputs: &Vec<DrawingData>) -> Result<(), std::io::Error> {
     std::fs::write(SAMPLES, json)
 }
 
-fn get_drawings_by_id(inputs: &Vec<DrawingData>) -> HashMap<u64, Vec<Vec<[i32; 2]>>> {
+pub fn get_drawings_by_id(inputs: &Vec<DrawingData>) -> HashMap<u64, Vec<Vec<[i32; 2]>>> {
     inputs
         .iter()
         .flat_map(|record| {
@@ -82,9 +82,7 @@ fn get_drawings_by_id(inputs: &Vec<DrawingData>) -> HashMap<u64, Vec<Vec<[i32; 2
         .collect()
 }
 
-pub fn store_drawings(inputs: &Vec<DrawingData>) -> Result<(), std::io::Error> {
-    let drawings = get_drawings_by_id(&inputs);
-
+pub fn store_drawings_as_json(drawings: &HashMap<u64, Vec<Vec<[i32; 2]>>>) -> Result<(), std::io::Error> {
     for (id, drawings) in drawings {
         let json = serde_json::to_string(&drawings)
             .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
