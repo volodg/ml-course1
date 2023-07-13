@@ -19,12 +19,6 @@ use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use web_commons::html::alert;
 
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-}
-
 fn handle_next(app_state: &Rc<RefCell<AppState<HtmlDom>>>) {
     let new_state = {
         let mut app_state = app_state.borrow_mut();

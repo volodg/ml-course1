@@ -1,7 +1,9 @@
 use wasm_bindgen::prelude::*;
+use web_commons::log;
 
 #[wasm_bindgen(start)]
 fn start() -> Result<(), JsValue> {
+    log("Hi from Rust");
     Ok(())
 }
 

@@ -714,6 +714,7 @@ dependencies = [
  "serde_json",
  "wasm-bindgen",
  "web-sys",
+ "web_commons",
 ]
 
 [[package]]
