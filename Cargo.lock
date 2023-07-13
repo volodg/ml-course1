@@ -155,7 +155,6 @@ name = "data_set"
 version = "0.1.0"
 dependencies = [
  "commons",
- "const_format",
  "drawing_commons",
  "raqote",
  "serde",
@@ -214,6 +213,7 @@ dependencies = [
 name = "drawing_commons"
 version = "0.1.0"
 dependencies = [
+ "const_format",
  "serde",
  "serde_json",
 ]

@@ -1,5 +1,21 @@
+use const_format::concatcp;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+const DATA_DIR: &str = "./data";
+pub const RAW_DIR: &str = concatcp!(DATA_DIR, "/raw");
+const DATASET_DIR: &str = concatcp!(DATA_DIR, "/dataset");
+pub const JSON_DIR: &str = concatcp!(DATASET_DIR, "/json");
+pub const IMG_DIR: &str = concatcp!(DATASET_DIR, "/img");
+pub const SAMPLES: &str = concatcp!(DATASET_DIR, "/samples.json");
+
+#[derive(Deserialize, Serialize)]
+pub struct Sample {
+    pub id: usize,
+    pub label: String,
+    pub student_name: String,
+    pub student_id: u64,
+}
 
 type Drawings = HashMap<String, Vec<Vec<[i32; 2]>>>;
 
@@ -34,8 +50,6 @@ impl DrawingData {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn it_works() {
         let result = 2 + 2;

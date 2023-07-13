@@ -1,20 +1,11 @@
 use crate::draw::generate_image_file;
-use const_format::concatcp;
-use drawing_commons::DrawingData;
-use serde::Serialize;
+use drawing_commons::{DrawingData, IMG_DIR, JSON_DIR, RAW_DIR, Sample, SAMPLES};
 use std::collections::HashMap;
 use std::io::{stdout, ErrorKind, Write};
 use std::path::PathBuf;
 use termion::clear;
 use termion::cursor::Goto;
 use termion::raw::IntoRawMode;
-
-const DATA_DIR: &str = "./data";
-const RAW_DIR: &str = concatcp!(DATA_DIR, "/raw");
-const DATASET_DIR: &str = concatcp!(DATA_DIR, "/dataset");
-const JSON_DIR: &str = concatcp!(DATASET_DIR, "/json");
-const IMG_DIR: &str = concatcp!(DATASET_DIR, "/img");
-const SAMPLES: &str = concatcp!(DATASET_DIR, "/samples.json");
 
 pub type Paths = Vec<Vec<[i32; 2]>>;
 type SortedDrawings = Vec<(String, Paths)>;
@@ -58,14 +49,6 @@ pub fn read_drawing_data() -> Result<Vec<SortedDrawingData>, std::io::Error> {
         .map(|res| res.path())
         .flat_map(|file_name| file_to_drawing_data(&file_name))
         .collect())
-}
-
-#[derive(Serialize)]
-pub struct Sample {
-    id: usize,
-    label: String,
-    student_name: String,
-    student_id: u64,
 }
 
 fn get_samples(inputs: &Vec<SortedDrawingData>) -> Vec<Sample> {
