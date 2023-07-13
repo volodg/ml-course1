@@ -62,7 +62,6 @@ pub struct Sample {
     student_id: u64,
 }
 
-#[allow(dead_code)]
 fn get_samples(inputs: &Vec<SortedDrawingData>) -> Vec<Sample> {
     inputs
         .iter()
@@ -82,7 +81,6 @@ fn get_samples(inputs: &Vec<SortedDrawingData>) -> Vec<Sample> {
         .collect()
 }
 
-#[allow(dead_code)]
 pub fn store_samples(inputs: &Vec<SortedDrawingData>) -> Result<(), std::io::Error> {
     let samples = get_samples(&inputs);
 
@@ -121,6 +119,7 @@ pub fn store_drawings_as_png(
 ) {
     for drawing in drawings {
         let path = std::format!("{}/{}.png", IMG_DIR, drawing.0);
+        println!("Generating image with id: {}", drawing.0);
         generate_image_file(path.as_str(), drawing.1);
     }
 }
