@@ -44,14 +44,19 @@ pub struct Sample {
 pub fn get_samples(inputs: &Vec<DrawingData>) -> Vec<Sample> {
     inputs
         .iter()
-        .zip(1..)
-        .flat_map(|(record, id)| {
-            record.get_drawings().iter().map(move |(label, _)| Sample {
-                id,
-                label: label.to_owned(),
-                student_name: record.get_student().to_owned(),
-                student_id: record.get_session(),
+        .flat_map(|record| {
+            record.get_drawings().iter().map(|(label, _)| {
+                (label.to_owned(), record.get_student().to_owned(), record.get_session())
             })
+        })
+        .zip(1..)
+        .map(|((label, student_name, student_id), id)| {
+            Sample {
+                id,
+                label,
+                student_name,
+                student_id,
+            }
         })
         .collect()
 }
