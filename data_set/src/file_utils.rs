@@ -38,7 +38,7 @@ pub struct Sample {
     student_id: u64,
 }
 
-pub fn get_samples(inputs: &Vec<DrawingData>) -> Vec<Sample> {
+fn get_samples(inputs: &Vec<DrawingData>) -> Vec<Sample> {
     inputs
         .iter()
         .flat_map(|record| {
@@ -58,6 +58,15 @@ pub fn get_samples(inputs: &Vec<DrawingData>) -> Vec<Sample> {
             student_id,
         })
         .collect()
+}
+
+pub fn store_samples(inputs: &Vec<DrawingData>) -> Result<(), std::io::Error> {
+    let samples = get_samples(&inputs);
+
+    let json = serde_json::to_string(&samples)
+        .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
+
+    std::fs::write(SAMPLES, json)
 }
 
 pub fn get_drawings_by_id(inputs: &Vec<DrawingData>) -> HashMap<u64, Vec<Vec<[i32; 2]>>> {
