@@ -45,6 +45,7 @@ dependencies = [
  "commons",
  "const_format",
  "drawing_commons",
+ "serde",
  "serde_json",
  "wasm-bindgen",
 ]

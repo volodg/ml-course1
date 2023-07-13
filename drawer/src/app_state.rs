@@ -1,6 +1,6 @@
 use crate::geometry::Point;
-use js_sys::Date;
 use commons::utils::SomeExt;
+use js_sys::Date;
 
 const DRAWING_SIZE: usize = 8;
 
@@ -37,7 +37,7 @@ pub struct InitialState<View: Clone> {
 impl<View: Clone> InitialState<View> {
     pub fn create(view: View) -> Self {
         let session = Date::now() as u64;
-        Self { view, session, }
+        Self { view, session }
     }
 
     pub fn get_view(&self) -> &View {
