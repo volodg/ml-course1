@@ -1,5 +1,5 @@
-use crate::utils::OkExt;
 use web_sys::{DomRect, MouseEvent, TouchEvent};
+use commons::utils::OkExt;
 
 #[derive(Clone)]
 pub struct Point {

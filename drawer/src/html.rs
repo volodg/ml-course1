@@ -1,5 +1,4 @@
 use crate::app_state::WithStudent;
-use crate::utils::OkExt;
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
@@ -7,6 +6,7 @@ use web_sys::{
     window, CanvasRenderingContext2d, Document, EventTarget, HtmlButtonElement, HtmlCanvasElement,
     HtmlElement, HtmlInputElement, HtmlSpanElement, MouseEvent,
 };
+use commons::utils::OkExt;
 
 #[derive(Clone)]
 pub struct HtmlDom {

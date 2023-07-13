@@ -1,6 +1,6 @@
 use crate::geometry::Point;
-use crate::utils::SomeExt;
 use js_sys::Date;
+use commons::utils::SomeExt;
 
 const DRAWING_SIZE: usize = 8;
 

@@ -7,6 +7,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
+commons = { path = "../commons" }
 drawing_commons = { path = "../drawing_commons" }
 js-sys = "0.3.64"
 itertools = "0.10.5"

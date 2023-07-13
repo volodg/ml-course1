@@ -2,6 +2,7 @@
 resolver = "2"
 
 members = [
+    "commons",
     "drawer",
     "drawing_commons",
     "data_set"

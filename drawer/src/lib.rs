@@ -5,7 +5,6 @@ mod html;
 mod html_state;
 mod subscribe_html;
 mod subscribe_state;
-mod utils;
 
 use crate::app_state::{AppState, DrawingState, InitialState, ReadyState, SavedState};
 use crate::draw::Draw;
@@ -13,11 +12,11 @@ use crate::geometry::Point;
 use crate::html::{alert, HtmlDom};
 use crate::html_state::Save;
 use crate::subscribe_state::StateSubscriber;
-use crate::utils::SomeExt;
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
+use commons::utils::SomeExt;
 
 #[wasm_bindgen]
 extern "C" {

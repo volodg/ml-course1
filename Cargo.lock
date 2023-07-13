@@ -15,6 +15,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "commons"
+version = "0.1.0"
+
+[[package]]
 name = "const_format"
 version = "0.2.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -38,6 +42,7 @@ dependencies = [
 name = "data_set"
 version = "0.1.0"
 dependencies = [
+ "commons",
  "const_format",
  "drawing_commons",
  "serde_json",
@@ -101,6 +106,7 @@ dependencies = [
 name = "ml-course1"
 version = "0.1.0"
 dependencies = [
+ "commons",
  "drawing_commons",
  "itertools",
  "js-sys",
