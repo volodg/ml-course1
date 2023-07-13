@@ -27,3 +27,12 @@ button:disabled:hover {
     background-color: gray;
     cursor: default;
 }
+.row {
+    display: flex;
+}
+.thumb {
+    width: 10%;
+}
+.rowLabel {
+    width: 15%;
+}
