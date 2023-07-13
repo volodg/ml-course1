@@ -1,6 +1,9 @@
 use crate::app_state::{ReadyState, SavedState};
 use crate::html::{HtmlDom, Visibility};
+use crate::utils::OkExt;
 use js_sys::encode_uri_component;
+use serde::Serialize;
+use std::collections::HashMap;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::HtmlElement;
@@ -11,6 +14,36 @@ pub trait Save {
     fn save(&self) -> Result<SavedState<Self::View>, JsValue>;
 }
 
+#[derive(Serialize)]
+struct DrawingData {
+    session: String,
+    student: String,
+    drawings: HashMap<String, Vec<Vec<[i32; 2]>>>,
+}
+
+fn convert_to_save_format(input: &ReadyState<HtmlDom>) -> DrawingData {
+    let session = input.session.clone();
+    let student = input.student.clone();
+    let drawings: HashMap<_, _> = input
+        .drawings
+        .iter()
+        .map(|paths| {
+            let label = paths.get_label().to_owned();
+            let paths = paths
+                .get_paths()
+                .iter()
+                .map(|path| path.iter().map(|point| [point.x, point.y]).collect())
+                .collect();
+            (label, paths)
+        })
+        .collect();
+    DrawingData {
+        session,
+        student,
+        drawings,
+    }
+}
+
 impl Save for ReadyState<HtmlDom> {
     type View = HtmlDom;
 
@@ -18,7 +51,7 @@ impl Save for ReadyState<HtmlDom> {
         let document = &self.get_view().document;
         let element = document.create_element("a")?.dyn_into::<HtmlElement>()?;
 
-        let drawings: Vec<_> = self.drawings.iter().map(|x| x.get_paths()).collect();
+        let drawings = convert_to_save_format(self);
 
         let json = serde_json::to_string(&drawings)
             .map_err(|err| JsValue::from_str(std::format!("json error: {}", err).as_str()))?;
@@ -37,6 +70,6 @@ impl Save for ReadyState<HtmlDom> {
         element.click();
         _ = body.remove_child(&element);
 
-        Ok(SavedState::create(self))
+        SavedState::create(self).ok()
     }
 }

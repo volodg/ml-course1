@@ -1,4 +1,5 @@
 use crate::app_state::WithStudent;
+use crate::utils::OkExt;
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
@@ -46,7 +47,7 @@ impl HtmlDom {
             .unwrap()
             .dyn_into::<HtmlSpanElement>()?;
 
-        Ok(Self {
+        Self {
             document,
             student_input,
             advance_btn,
@@ -54,7 +55,8 @@ impl HtmlDom {
             instructions_spn,
             context,
             canvas,
-        })
+        }
+        .ok()
     }
 }
 

@@ -1,7 +1,7 @@
-use serde::Serialize;
+use crate::utils::OkExt;
 use web_sys::{DomRect, MouseEvent, TouchEvent};
 
-#[derive(Clone, Serialize)]
+#[derive(Clone)]
 pub struct Point {
     pub x: i32,
     pub y: i32,
@@ -21,10 +21,11 @@ impl TryFrom<TouchEvent> for Point {
 
     fn try_from(event: TouchEvent) -> Result<Self, Self::Error> {
         match event.touches().get(0) {
-            Some(touch) => Ok(Self {
+            Some(touch) => Self {
                 x: touch.client_x(),
                 y: touch.client_y(),
-            }),
+            }
+            .ok(),
             None => Err(()),
         }
     }

@@ -5,6 +5,7 @@ mod html;
 mod html_state;
 mod subscribe_html;
 mod subscribe_state;
+mod utils;
 
 use crate::app_state::{AppState, DrawingState, InitialState, ReadyState, SavedState};
 use crate::draw::Draw;
@@ -12,6 +13,7 @@ use crate::geometry::Point;
 use crate::html::{alert, HtmlDom};
 use crate::html_state::Save;
 use crate::subscribe_state::StateSubscriber;
+use crate::utils::SomeExt;
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -33,7 +35,7 @@ fn handle_next(app_state: &Rc<RefCell<AppState<HtmlDom>>>) {
         } else if !state.increment_index() {
             let new_state = ReadyState::create(state);
             new_state.draw();
-            Some(new_state)
+            new_state.some()
         } else {
             state.draw();
             None
@@ -82,14 +84,14 @@ fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Resul
                     new_state.draw();
                     new_state.subscribe(app_state.clone())?;
 
-                    Some(Action::TurnIntoDrawingState(new_state))
+                    Action::TurnIntoDrawingState(new_state).some()
                 }
             }
-            AppState::Drawing(_) => Some(Action::HandleNext),
+            AppState::Drawing(_) => Action::HandleNext.some(),
             AppState::Ready(state) => {
                 let new_state = state.save()?;
                 new_state.draw();
-                Some(Action::TurnIntoSavedState(new_state))
+                Action::TurnIntoSavedState(new_state).some()
             }
             AppState::Saved(_) => panic!(),
         }

@@ -1,4 +1,5 @@
 use crate::geometry::Point;
+use crate::utils::SomeExt;
 use js_sys::Date;
 
 const DRAWING_SIZE: usize = 8;
@@ -17,6 +18,10 @@ impl Drawing {
             pressed: false,
             paths: vec![],
         }
+    }
+
+    pub fn get_label(&self) -> &str {
+        self.label
     }
 
     pub fn get_paths(&self) -> &Vec<Vec<Point>> {
@@ -135,23 +140,22 @@ impl<View: Clone + WithStudent> DrawingState<View> {
 }
 
 pub struct ReadyState<View: Clone> {
-    #[allow(dead_code)]
-    student: String,
     view: View,
     pub session: String,
+    pub student: String,
     pub drawings: [Drawing; DRAWING_SIZE],
 }
 
 impl<View: Clone> ReadyState<View> {
     pub fn create(state: &DrawingState<View>) -> Self {
-        let student = state.student.clone();
         let view = state.view.clone();
-        let drawings = state.drawings.clone();
         let session = state.session.clone();
+        let student = state.student.clone();
+        let drawings = state.drawings.clone();
         Self {
-            student,
             view,
             session,
+            student,
             drawings,
         }
     }
@@ -192,7 +196,7 @@ impl<View: Clone + WithStudent> AppState<View> {
     pub fn drawing_expected_mut(&mut self) -> Option<&mut DrawingState<View>> {
         match self {
             AppState::Initial(_) => None,
-            AppState::Drawing(state) => Some(state),
+            AppState::Drawing(state) => state.some(),
             AppState::Ready(_) => None,
             AppState::Saved(_) => None,
         }
