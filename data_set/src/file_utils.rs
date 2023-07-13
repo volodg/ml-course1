@@ -7,21 +7,45 @@ use std::path::PathBuf;
 
 const DATA_DIR: &str = "./data";
 const RAW_DIR: &str = concatcp!(DATA_DIR, "/raw");
-#[allow(dead_code)]
 const DATASET_DIR: &str = concatcp!(DATA_DIR, "/dataset");
 const JSON_DIR: &str = concatcp!(DATASET_DIR, "/json");
 #[allow(dead_code)]
 const IMG_DIR: &str = concatcp!(DATASET_DIR, "/img");
 const SAMPLES: &str = concatcp!(DATASET_DIR, "/samples.json");
 
-fn file_to_drawing_data(file_name: &PathBuf) -> Result<DrawingData, std::io::Error> {
-    std::fs::read_to_string(file_name).and_then(|content| {
-        serde_json::from_str::<DrawingData>(content.as_str())
-            .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))
-    })
+type SortedDrawings = Vec<(String, Vec<Vec<[i32; 2]>>)>;
+
+pub struct SortedDrawingData {
+    session: u64,
+    student: String,
+    drawings: SortedDrawings,
 }
 
-pub fn read_drawing_data() -> Result<Vec<DrawingData>, std::io::Error> {
+fn file_to_drawing_data(file_name: &PathBuf) -> Result<SortedDrawingData, std::io::Error> {
+    let result = std::fs::read_to_string(file_name).and_then(|content| {
+        serde_json::from_str::<DrawingData>(content.as_str())
+            .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))
+    })?;
+
+    let DrawingData {
+        session,
+        student,
+        drawings,
+    } = result;
+
+    let mut drawings = drawings.into_iter().collect::<Vec<_>>();
+    drawings.sort_by(|a, b| a.0.cmp(&b.0));
+
+    let result = SortedDrawingData {
+        session,
+        student,
+        drawings,
+    };
+
+    Ok(result)
+}
+
+pub fn read_drawing_data() -> Result<Vec<SortedDrawingData>, std::io::Error> {
     Ok(std::fs::read_dir(RAW_DIR)?
         .flat_map(|x| x)
         .map(|res| res.path())
@@ -37,17 +61,14 @@ pub struct Sample {
     student_id: u64,
 }
 
-fn get_samples(inputs: &Vec<DrawingData>) -> Vec<Sample> {
+fn get_samples(inputs: &Vec<SortedDrawingData>) -> Vec<Sample> {
     inputs
         .iter()
         .flat_map(|record| {
-            record.get_drawings().iter().map(|(label, _)| {
-                (
-                    label.to_owned(),
-                    record.get_student().to_owned(),
-                    record.get_session(),
-                )
-            })
+            record
+                .drawings
+                .iter()
+                .map(|(label, _)| (label.to_owned(), record.student.to_owned(), record.session))
         })
         .zip(1..)
         .map(|((label, student_name, student_id), id)| Sample {
@@ -59,7 +80,7 @@ fn get_samples(inputs: &Vec<DrawingData>) -> Vec<Sample> {
         .collect()
 }
 
-pub fn store_samples(inputs: &Vec<DrawingData>) -> Result<(), std::io::Error> {
+pub fn store_samples(inputs: &Vec<SortedDrawingData>) -> Result<(), std::io::Error> {
     let samples = get_samples(&inputs);
 
     let json = serde_json::to_string(&samples)
@@ -68,21 +89,18 @@ pub fn store_samples(inputs: &Vec<DrawingData>) -> Result<(), std::io::Error> {
     std::fs::write(SAMPLES, json)
 }
 
-pub fn get_drawings_by_id(inputs: &Vec<DrawingData>) -> HashMap<u64, Vec<Vec<[i32; 2]>>> {
+pub fn get_drawings_by_id(inputs: &Vec<SortedDrawingData>) -> HashMap<u64, Vec<Vec<[i32; 2]>>> {
     inputs
         .iter()
-        .flat_map(|record| {
-            record
-                .get_drawings()
-                .iter()
-                .map(|(_, drawings)| drawings.clone())
-        })
+        .flat_map(|record| record.drawings.iter().map(|(_, drawings)| drawings.clone()))
         .zip(1..)
         .map(|(drawings, id)| (id, drawings))
         .collect()
 }
 
-pub fn store_drawings_as_json(drawings: &HashMap<u64, Vec<Vec<[i32; 2]>>>) -> Result<(), std::io::Error> {
+pub fn store_drawings_as_json(
+    drawings: &HashMap<u64, Vec<Vec<[i32; 2]>>>,
+) -> Result<(), std::io::Error> {
     for (id, drawings) in drawings {
         let json = serde_json::to_string(&drawings)
             .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;

@@ -5,9 +5,9 @@ type Drawings = HashMap<String, Vec<Vec<[i32; 2]>>>;
 
 #[derive(Deserialize, Serialize)]
 pub struct DrawingData {
-    session: u64,
-    student: String,
-    drawings: Drawings,
+    pub session: u64,
+    pub student: String,
+    pub drawings: Drawings,
 }
 
 impl DrawingData {
