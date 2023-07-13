@@ -4,25 +4,21 @@ use serde::Serialize;
 use std::collections::HashMap;
 use std::io::ErrorKind;
 use std::path::PathBuf;
+use crate::draw::generate_image_file;
 
 const DATA_DIR: &str = "./data";
 const RAW_DIR: &str = concatcp!(DATA_DIR, "/raw");
 const DATASET_DIR: &str = concatcp!(DATA_DIR, "/dataset");
-#[allow(dead_code)]
 const JSON_DIR: &str = concatcp!(DATASET_DIR, "/json");
-pub const IMG_DIR: &str = concatcp!(DATASET_DIR, "/img");
-#[allow(dead_code)]
+const IMG_DIR: &str = concatcp!(DATASET_DIR, "/img");
 const SAMPLES: &str = concatcp!(DATASET_DIR, "/samples.json");
 
 pub type Paths = Vec<Vec<[i32; 2]>>;
 type SortedDrawings = Vec<(String, Paths)>;
 
 pub struct SortedDrawingData {
-    #[allow(dead_code)]
     session: u64,
-    #[allow(dead_code)]
     student: String,
-    #[allow(dead_code)]
     drawings: SortedDrawings,
 }
 
@@ -118,4 +114,13 @@ pub fn store_drawings_as_json(
     }
 
     Ok(())
+}
+
+pub fn store_drawings_as_png(
+    drawings: &HashMap<u64, Vec<Vec<[i32; 2]>>>,
+) {
+    for drawing in drawings {
+        let path = std::format!("{}/{}.png", IMG_DIR, drawing.0);
+        generate_image_file(path.as_str(), drawing.1);
+    }
 }
