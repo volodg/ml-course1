@@ -119,7 +119,7 @@ pub fn store_drawings_as_json(
 }
 
 fn print_progress(label: &str, count: usize, max: usize) {
-    let progress = std::format!("{label} progress: {}%", count * 100 / max);
+    let progress = std::format!("{label} progress: {}/{} ({:.1}%)", count, max, count as f32 * 100.0 / max as f32);
 
     if let Some(mut stdout) = stdout().into_raw_mode().ok() {
         write!(stdout, "{}{}", clear::CurrentLine, Goto(1, 1)).unwrap();
