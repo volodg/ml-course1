@@ -8,16 +8,22 @@ use std::path::PathBuf;
 const DATA_DIR: &str = "./data";
 const RAW_DIR: &str = concatcp!(DATA_DIR, "/raw");
 const DATASET_DIR: &str = concatcp!(DATA_DIR, "/dataset");
+#[allow(dead_code)]
 const JSON_DIR: &str = concatcp!(DATASET_DIR, "/json");
 #[allow(dead_code)]
 const IMG_DIR: &str = concatcp!(DATASET_DIR, "/img");
+#[allow(dead_code)]
 const SAMPLES: &str = concatcp!(DATASET_DIR, "/samples.json");
 
-type SortedDrawings = Vec<(String, Vec<Vec<[i32; 2]>>)>;
+pub type Paths = Vec<Vec<[i32; 2]>>;
+type SortedDrawings = Vec<(String, Paths)>;
 
 pub struct SortedDrawingData {
+    #[allow(dead_code)]
     session: u64,
+    #[allow(dead_code)]
     student: String,
+    #[allow(dead_code)]
     drawings: SortedDrawings,
 }
 
@@ -61,6 +67,7 @@ pub struct Sample {
     student_id: u64,
 }
 
+#[allow(dead_code)]
 fn get_samples(inputs: &Vec<SortedDrawingData>) -> Vec<Sample> {
     inputs
         .iter()
@@ -80,6 +87,7 @@ fn get_samples(inputs: &Vec<SortedDrawingData>) -> Vec<Sample> {
         .collect()
 }
 
+#[allow(dead_code)]
 pub fn store_samples(inputs: &Vec<SortedDrawingData>) -> Result<(), std::io::Error> {
     let samples = get_samples(&inputs);
 
@@ -98,6 +106,7 @@ pub fn get_drawings_by_id(inputs: &Vec<SortedDrawingData>) -> HashMap<u64, Vec<V
         .collect()
 }
 
+#[allow(dead_code)]
 pub fn store_drawings_as_json(
     drawings: &HashMap<u64, Vec<Vec<[i32; 2]>>>,
 ) -> Result<(), std::io::Error> {
