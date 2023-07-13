@@ -2,8 +2,11 @@ use const_format::concatcp;
 use drawing_commons::DrawingData;
 use serde::Serialize;
 use std::collections::HashMap;
-use std::io::ErrorKind;
+use std::io::{ErrorKind, stdout, Write};
 use std::path::PathBuf;
+use termion::clear;
+use termion::cursor::Goto;
+use termion::raw::IntoRawMode;
 use crate::draw::generate_image_file;
 
 const DATA_DIR: &str = "./data";
@@ -103,23 +106,38 @@ pub fn get_drawings_by_id(inputs: &Vec<SortedDrawingData>) -> HashMap<u64, Vec<V
 pub fn store_drawings_as_json(
     drawings: &HashMap<u64, Vec<Vec<[i32; 2]>>>,
 ) -> Result<(), std::io::Error> {
-    for (id, drawings) in drawings {
-        let json = serde_json::to_string(&drawings)
+    for ((id, draw), count) in drawings.iter().zip(1..) {
+        let json = serde_json::to_string(&draw)
             .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
 
         let path = std::format!("{}/{}.json", JSON_DIR, id);
+        print_progress("Generating jsons", count, drawings.len());
         std::fs::write(path, json)?;
     }
 
     Ok(())
 }
 
+fn print_progress(label: &str, count: usize, max: usize) {
+    let progress = std::format!("{label} progress: {}%", count * 100 / max);
+
+    if let Some(mut stdout) = stdout().into_raw_mode().ok() {
+        write!(stdout, "{}{}", clear::CurrentLine, Goto(1, 1)).unwrap();
+        write!(stdout, "{}", progress).unwrap();
+        stdout.flush().unwrap();
+
+        write!(stdout, "{}", termion::cursor::Show).unwrap();
+    } else {
+        println!("{}", progress);
+    }
+}
+
 pub fn store_drawings_as_png(
     drawings: &HashMap<u64, Vec<Vec<[i32; 2]>>>,
 ) {
-    for drawing in drawings {
+    for (drawing, count) in drawings.iter().zip(1..) {
         let path = std::format!("{}/{}.png", IMG_DIR, drawing.0);
-        println!("Generating image with id: {}", drawing.0);
+        print_progress("Generating images", count, drawings.len());
         generate_image_file(path.as_str(), drawing.1);
     }
 }
