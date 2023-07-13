@@ -10,8 +10,7 @@ const RAW_DIR: &str = concatcp!(DATA_DIR, "/raw");
 const DATASET_DIR: &str = concatcp!(DATA_DIR, "/dataset");
 #[allow(dead_code)]
 const JSON_DIR: &str = concatcp!(DATASET_DIR, "/json");
-#[allow(dead_code)]
-const IMG_DIR: &str = concatcp!(DATASET_DIR, "/img");
+pub const IMG_DIR: &str = concatcp!(DATASET_DIR, "/img");
 #[allow(dead_code)]
 const SAMPLES: &str = concatcp!(DATASET_DIR, "/samples.json");
 

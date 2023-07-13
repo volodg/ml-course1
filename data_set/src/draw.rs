@@ -17,7 +17,7 @@ const LINE_SOURCE: Source = Source::Solid(SolidSource {
     a: 255,
 });
 
-pub fn generate_image_file(_file: &str, paths: &Paths) {
+pub fn generate_image_file(file: &str, paths: &Paths) {
     let mut dt = DrawTarget::new(400, 400);
 
     dt.clear(SolidSource {
@@ -46,5 +46,5 @@ pub fn generate_image_file(_file: &str, paths: &Paths) {
         );
     }
 
-    dt.write_png("example.png").unwrap()
+    dt.write_png(file).unwrap()
 }
