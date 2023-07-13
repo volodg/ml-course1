@@ -31,16 +31,13 @@ impl Drawing {
 
 pub struct InitialState<View: Clone> {
     view: View,
-    session: String,
+    session: u64,
 }
 
 impl<View: Clone> InitialState<View> {
     pub fn create(view: View) -> Self {
-        let now_since_the_epoch = Date::now();
-        Self {
-            view,
-            session: std::format!("{}", now_since_the_epoch),
-        }
+        let session = Date::now() as u64;
+        Self { view, session, }
     }
 
     pub fn get_view(&self) -> &View {
@@ -62,7 +59,7 @@ pub struct DrawingState<View> {
     pub student: String,
     label_index: usize,
     view: View,
-    session: String,
+    session: u64,
     pub drawings: [Drawing; DRAWING_SIZE],
 }
 
@@ -141,7 +138,7 @@ impl<View: Clone + WithStudent> DrawingState<View> {
 
 pub struct ReadyState<View: Clone> {
     view: View,
-    pub session: String,
+    pub session: u64,
     pub student: String,
     pub drawings: [Drawing; DRAWING_SIZE],
 }
@@ -149,7 +146,7 @@ pub struct ReadyState<View: Clone> {
 impl<View: Clone> ReadyState<View> {
     pub fn create(state: &DrawingState<View>) -> Self {
         let view = state.view.clone();
-        let session = state.session.clone();
+        let session = state.session;
         let student = state.student.clone();
         let drawings = state.drawings.clone();
         Self {

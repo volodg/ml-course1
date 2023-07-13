@@ -39,6 +39,9 @@ name = "data_set"
 version = "0.1.0"
 dependencies = [
  "const_format",
+ "drawing_commons",
+ "serde_json",
+ "wasm-bindgen",
 ]
 
 [[package]]
