@@ -1,4 +1,5 @@
 use crate::geometry::Point;
+use js_sys::Date;
 
 const DRAWING_SIZE: usize = 8;
 
@@ -25,11 +26,16 @@ impl Drawing {
 
 pub struct InitialState<View: Clone> {
     view: View,
+    session: String,
 }
 
 impl<View: Clone> InitialState<View> {
     pub fn create(view: View) -> Self {
-        Self { view }
+        let now_since_the_epoch = Date::now();
+        Self {
+            view,
+            session: std::format!("{}", now_since_the_epoch),
+        }
     }
 
     pub fn get_view(&self) -> &View {
@@ -51,6 +57,7 @@ pub struct DrawingState<View> {
     pub student: String,
     label_index: usize,
     view: View,
+    session: String,
     pub drawings: [Drawing; DRAWING_SIZE],
 }
 
@@ -58,10 +65,12 @@ impl<View: Clone + WithStudent> DrawingState<View> {
     pub fn create(state: &InitialState<View>) -> Self {
         let student = state.get_student();
         let view = state.view.clone();
+        let session = state.session.clone();
         Self {
             student,
             label_index: 0,
             view,
+            session,
             drawings: [
                 Drawing::create("car"),
                 Drawing::create("fish"),
@@ -129,6 +138,7 @@ pub struct ReadyState<View: Clone> {
     #[allow(dead_code)]
     student: String,
     view: View,
+    pub session: String,
     pub drawings: [Drawing; DRAWING_SIZE],
 }
 
@@ -137,9 +147,11 @@ impl<View: Clone> ReadyState<View> {
         let student = state.student.clone();
         let view = state.view.clone();
         let drawings = state.drawings.clone();
+        let session = state.session.clone();
         Self {
             student,
             view,
+            session,
             drawings,
         }
     }

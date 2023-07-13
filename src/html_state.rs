@@ -27,8 +27,8 @@ impl Save for ReadyState<HtmlDom> {
         let attribute = std::format!("data:text/plain;charset=utf-8,{}", json);
         _ = element.set_attribute("href", attribute.as_str());
 
-        let file_name = "todo_change_me.json";
-        _ = element.set_attribute("download", file_name);
+        let file_name = std::format!("{}.json", self.session);
+        _ = element.set_attribute("download", file_name.as_str());
 
         element.set_display(false);
 

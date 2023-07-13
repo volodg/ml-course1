@@ -41,7 +41,10 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
             view.canvas
                 .add_listener("mousedown", move |event: MouseEvent| {
                     let mut app_state = app_state.borrow_mut();
-                    handle_touch_start(app_state.drawing_expected_mut().expect(""), Some(event.into()))
+                    handle_touch_start(
+                        app_state.drawing_expected_mut().expect(""),
+                        Some(event.into()),
+                    )
                 })?
         }
         {
