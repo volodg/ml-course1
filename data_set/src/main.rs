@@ -27,15 +27,11 @@ fn main() -> Result<(), std::io::Error> {
     let entries: Vec<_> = std::fs::read_dir(RAW_DIR)?
         .flat_map(|x| x)
         .map(|res| res.path())
-        .collect();
+        .flat_map(|file_name| {
+            file_to_drawing_data(&file_name)
+        }).collect();
 
-    println!("Files count {:?}", entries.len());
-
-    let entries_content: Vec<_> = entries.iter().flat_map(|file_name| {
-        file_to_drawing_data(file_name)
-    }).collect();
-
-    println!("Valid entries count {:?}", entries_content.len());
+    println!("Valid entries count {:?}", entries.len());
 
     Ok(())
 }
