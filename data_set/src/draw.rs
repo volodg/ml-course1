@@ -1,5 +1,7 @@
-use raqote::{DrawOptions, DrawTarget, LineCap, LineJoin, PathBuilder, SolidSource, Source, StrokeStyle};
 use crate::file_utils::Paths;
+use raqote::{
+    DrawOptions, DrawTarget, LineCap, LineJoin, PathBuilder, SolidSource, Source, StrokeStyle,
+};
 
 const STROKE_STYLE: StrokeStyle = StrokeStyle {
     cap: LineCap::Round,
@@ -38,12 +40,7 @@ pub fn generate_image_file(file: &str, paths: &Paths) {
 
         let path = pb.finish();
 
-        dt.stroke(
-            &path,
-            &LINE_SOURCE,
-            &STROKE_STYLE,
-            &DrawOptions::new(),
-        );
+        dt.stroke(&path, &LINE_SOURCE, &STROKE_STYLE, &DrawOptions::new());
     }
 
     dt.write_png(file).unwrap()

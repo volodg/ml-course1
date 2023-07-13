@@ -6,5 +6,6 @@ members = [
     "drawer",
     "drawing_commons",
     "data_set",
-    "viewer"
+    "viewer",
+    "web_commons"
 ]

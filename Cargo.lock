@@ -207,6 +207,7 @@ dependencies = [
  "serde_json",
  "wasm-bindgen",
  "web-sys",
+ "web_commons",
 ]
 
 [[package]]
@@ -793,6 +794,14 @@ checksum = "e33b99f4b23ba3eec1a53ac264e35a755f00e966e0065077d6027c0f575b0b97"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "web_commons"
+version = "0.1.0"
+dependencies = [
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]

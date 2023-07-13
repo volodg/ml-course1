@@ -1,11 +1,12 @@
 use crate::app_state::{ReadyState, SavedState};
-use crate::html::{HtmlDom, Visibility};
+use crate::html::HtmlDom;
 use commons::utils::OkExt;
 use drawing_commons::DrawingData;
 use js_sys::encode_uri_component;
 use std::collections::HashMap;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
+use web_commons::html::Visibility;
 use web_sys::HtmlElement;
 
 pub trait Save {

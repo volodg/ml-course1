@@ -1,6 +1,7 @@
 use crate::app_state::{DrawingState, ReadyState, SavedState};
-use crate::html::{HtmlDom, Visibility};
+use crate::html::HtmlDom;
 use itertools::Itertools;
+use web_commons::html::Visibility;
 
 pub trait Draw {
     fn draw(&self);

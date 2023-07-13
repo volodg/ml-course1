@@ -1,9 +1,12 @@
 extern crate core;
 
-mod file_utils;
 mod draw;
+mod file_utils;
 
-use crate::file_utils::{get_drawings_by_id, read_drawing_data, store_drawings_as_json, store_drawings_as_png, store_samples};
+use crate::file_utils::{
+    get_drawings_by_id, read_drawing_data, store_drawings_as_json, store_drawings_as_png,
+    store_samples,
+};
 
 fn main() -> Result<(), std::io::Error> {
     let drawing_data = read_drawing_data()?;
