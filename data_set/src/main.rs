@@ -1,6 +1,6 @@
 mod file_utils;
 
-use crate::file_utils::{get_samples, read_drawing_data, SAMPLES};
+use crate::file_utils::{get_drawings_by_id, get_samples, read_drawing_data, SAMPLES};
 use std::io::ErrorKind;
 
 fn main() -> Result<(), std::io::Error> {
@@ -13,7 +13,10 @@ fn main() -> Result<(), std::io::Error> {
 
     std::fs::write(SAMPLES, json)?;
 
-    println!("Valid entries count {:?}", samples.len());
+    let drawings = get_drawings_by_id(&drawing_data);
+
+    println!("samples count {:?}", samples.len());
+    println!("drawings count {:?}", drawings.len());
 
     Ok(())
 }

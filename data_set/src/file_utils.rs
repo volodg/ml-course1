@@ -1,6 +1,7 @@
 use const_format::concatcp;
 use drawing_commons::DrawingData;
 use serde::Serialize;
+use std::collections::HashMap;
 use std::io::ErrorKind;
 use std::path::PathBuf;
 
@@ -31,13 +32,9 @@ pub fn read_drawing_data() -> Result<Vec<DrawingData>, std::io::Error> {
 
 #[derive(Serialize)]
 pub struct Sample {
-    #[allow(dead_code)]
     id: usize,
-    #[allow(dead_code)]
     label: String,
-    #[allow(dead_code)]
     student_name: String,
-    #[allow(dead_code)]
     student_id: u64,
 }
 
@@ -46,17 +43,33 @@ pub fn get_samples(inputs: &Vec<DrawingData>) -> Vec<Sample> {
         .iter()
         .flat_map(|record| {
             record.get_drawings().iter().map(|(label, _)| {
-                (label.to_owned(), record.get_student().to_owned(), record.get_session())
+                (
+                    label.to_owned(),
+                    record.get_student().to_owned(),
+                    record.get_session(),
+                )
             })
         })
         .zip(1..)
-        .map(|((label, student_name, student_id), id)| {
-            Sample {
-                id,
-                label,
-                student_name,
-                student_id,
-            }
+        .map(|((label, student_name, student_id), id)| Sample {
+            id,
+            label,
+            student_name,
+            student_id,
         })
+        .collect()
+}
+
+pub fn get_drawings_by_id(inputs: &Vec<DrawingData>) -> HashMap<u64, Vec<Vec<[i32; 2]>>> {
+    inputs
+        .iter()
+        .flat_map(|record| {
+            record
+                .get_drawings()
+                .iter()
+                .map(|(_, drawings)| drawings.clone())
+        })
+        .zip(1..)
+        .map(|(drawings, id)| (id, drawings))
         .collect()
 }
