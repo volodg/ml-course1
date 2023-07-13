@@ -1,5 +1,5 @@
 use commons::utils::OkExt;
-use drawing_commons::{Sample, IMG_DIR};
+use drawing_commons::{Sample, IMG_DIR, FLAGGED_USERS};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{window, Document, Element, HtmlImageElement};
@@ -40,10 +40,23 @@ impl HtmlDom {
                 .create_element("img")?
                 .dyn_into::<HtmlImageElement>()?;
 
+            let sample_container = self.document.create_element("div")?;
+            sample_container.set_id(std::format!("sample_{}", sample.id).as_str());
+            let _ = sample_container.class_list().add_1("sampleContainer")?;
+
+            let sample_label = self.document.create_element("div")?;
+            sample_label.set_inner_html(sample.label.as_str());
+            let _ = sample_container.append_child(&sample_label);
+
             let path = std::format!("{}/{}.png", IMG_DIR, sample.id);
             img.set_src(path.as_str());
             let _ = img.class_list().add_1("thumb")?;
-            let _ = row.append_child(&img);
+            if FLAGGED_USERS.contains(&sample.student_id) {
+                let _ = img.class_list().add_1("blur")?;
+            }
+            let _ = sample_container.append_child(&img);
+
+            let _ = row.append_child(&sample_container);
         }
 
         Ok(())
