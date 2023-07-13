@@ -1,8 +1,8 @@
 use crate::app_state::{ReadyState, SavedState};
 use crate::html::{HtmlDom, Visibility};
 use crate::utils::OkExt;
+use drawing_commons::DrawingData;
 use js_sys::encode_uri_component;
-use serde::Serialize;
 use std::collections::HashMap;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
@@ -12,13 +12,6 @@ pub trait Save {
     type View;
 
     fn save(&self) -> Result<SavedState<Self::View>, JsValue>;
-}
-
-#[derive(Serialize)]
-struct DrawingData {
-    session: String,
-    student: String,
-    drawings: HashMap<String, Vec<Vec<[i32; 2]>>>,
 }
 
 fn convert_to_save_format(input: &ReadyState<HtmlDom>) -> DrawingData {
@@ -37,11 +30,7 @@ fn convert_to_save_format(input: &ReadyState<HtmlDom>) -> DrawingData {
             (label, paths)
         })
         .collect();
-    DrawingData {
-        session,
-        student,
-        drawings,
-    }
+    DrawingData::create(session, student, drawings,)
 }
 
 impl Save for ReadyState<HtmlDom> {
