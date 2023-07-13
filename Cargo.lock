@@ -216,6 +216,7 @@ dependencies = [
  "const_format",
  "serde",
  "serde_json",
+ "web-sys",
 ]
 
 [[package]]

@@ -1,5 +1,5 @@
 use crate::draw::generate_image_file;
-use drawing_commons::{DrawingData, IMG_DIR, JSON_DIR, RAW_DIR, Sample, SAMPLES};
+use drawing_commons::{DrawingData, Sample, IMG_DIR, JSON_DIR, RAW_DIR, SAMPLES};
 use std::collections::HashMap;
 use std::io::{stdout, ErrorKind, Write};
 use std::path::PathBuf;

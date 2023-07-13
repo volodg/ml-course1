@@ -20,22 +20,8 @@ web_commons = { path = "../web_commons" }
 [dependencies.web-sys]
 version = "0.3.4"
 features = [
-    'CanvasRenderingContext2d',
-    'CssStyleDeclaration',
+    'DomTokenList',
     'Document',
-    'DomRect',
-    'Element',
-    'EventTarget',
-    'HtmlButtonElement',
-    'HtmlCanvasElement',
-    'HtmlElement',
-    'HtmlInputElement',
-    'HtmlSpanElement',
-    'MouseEvent',
-    'Node',
-    'Touch',
-    'TouchEvent',
-    'TouchList',
     'Window',
 ]
 
