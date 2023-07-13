@@ -22,13 +22,6 @@ const LINE_SOURCE: Source = Source::Solid(SolidSource {
 pub fn generate_image_file(file: &str, paths: &Paths) {
     let mut dt = DrawTarget::new(400, 400);
 
-    dt.clear(SolidSource {
-        r: 255,
-        g: 255,
-        b: 255,
-        a: 255,
-    });
-
     for path in paths {
         let mut pb = PathBuilder::new();
 
