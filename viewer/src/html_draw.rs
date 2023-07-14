@@ -61,24 +61,32 @@ impl Draw for HtmlDom {
     }
 }
 
-pub fn plot_statistic_to_html(_feature_data: &FeaturesData) -> String {
-    let trace1 = Scatter::new(vec![1, 2, 3, 4, 5], vec![1, 6, 3, 6, 1])
+fn plot_statistic_to_html(feature_data: &FeaturesData) -> String {
+    let x_points = feature_data.features.iter().map(|x| {
+        x.point[0]
+    }).collect::<Vec<_>>();
+    let y_points = feature_data.features.iter().map(|x| {
+        x.point[1]
+    }).collect::<Vec<_>>();
+
+    let max_x = *(x_points.iter().max().unwrap_or(&0)) as f64 + 10.;
+    let max_y = *(y_points.iter().max().unwrap_or(&0)) as f64 + 10.;
+
+    let trace = Scatter::new(x_points, y_points)
         .mode(Mode::Markers)
         .name("Team A")
         .marker(Marker::new().size(12));
-    let trace2 = Scatter::new(vec![1.5, 2.5, 3.5, 4.5, 5.5], vec![4, 1, 7, 1, 4])
-        .mode(Mode::Markers)
-        .name("Team B")
-        .marker(Marker::new().size(12));
 
     let mut plot = Plot::new();
-    plot.add_trace(trace1);
-    plot.add_trace(trace2);
+    plot.add_trace(trace);
+
+    let x_axis_name = feature_data.feature_names[0].as_str();
+    let y_axis_name = feature_data.feature_names[1].as_str();
 
     let layout = Layout::new()
         .title(Title::new("Data Labels Hover"))
-        .x_axis(Axis::new().title(Title::new("x")).range(vec![0.75, 5.25]))
-        .y_axis(Axis::new().title(Title::new("y")).range(vec![0., 8.]));
+        .x_axis(Axis::new().title(Title::new(x_axis_name)).range(vec![0., max_x]))
+        .y_axis(Axis::new().title(Title::new(y_axis_name)).range(vec![0., max_y]));
     plot.set_layout(layout);
     plot.to_inline_html(Some("chart"))
 }
