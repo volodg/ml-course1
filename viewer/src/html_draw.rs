@@ -1,9 +1,10 @@
+use std::collections::HashMap;
 use crate::html::HtmlDom;
 use drawing_commons::models::{FeaturesData, Sample};
 use drawing_commons::{FLAGGED_USERS, IMG_DIR};
 use plotly::common::{Marker, Mode, Title};
 use plotly::layout::Axis;
-use plotly::{Layout, Plot, Scatter};
+use plotly::{Layout, Plot, Scatter, Trace};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::html::InnerHtmlSetter;
@@ -61,6 +62,38 @@ impl Draw for HtmlDom {
     }
 }
 
+#[derive(Default)]
+struct TracesData {
+    traces: HashMap<String, (Vec<usize>, Vec<usize>)>,
+    max: [usize; 2]
+}
+
+impl TracesData {
+    fn into(self) -> Vec<Box<Scatter<usize, usize>>> {
+        self.traces.into_iter().map(|(key, values)| {
+            unimplemented!()
+        }).collect()
+    }
+}
+
+fn feature_data_into_traces(feature_data: &FeaturesData) -> TracesData {
+    feature_data.features.iter().fold(TracesData::default(), |acc, el| {
+        let TracesData {
+            mut traces,
+            mut max
+        } = acc;
+
+        let (x_values, y_values) = traces.entry(el.label.clone()).or_default();
+        x_values.push(el.point[0]);
+        y_values.push(el.point[1]);
+
+        max[0] = max[0].max(el.point[0]);
+        max[1] = max[1].max(el.point[1]);
+
+        TracesData { traces, max }
+    })
+}
+
 fn plot_statistic_to_html(feature_data: &FeaturesData) -> String {
     let x_points = feature_data.features.iter().map(|x| {
         x.point[0]
@@ -69,8 +102,10 @@ fn plot_statistic_to_html(feature_data: &FeaturesData) -> String {
         x.point[1]
     }).collect::<Vec<_>>();
 
-    let max_x = *(x_points.iter().max().unwrap_or(&0)) as f64 + 10.;
-    let max_y = *(y_points.iter().max().unwrap_or(&0)) as f64 + 10.;
+    let traces_data = feature_data_into_traces(feature_data);
+
+    let max_x = traces_data.max[0] as f64 + 10.;
+    let max_y = traces_data.max[1] as f64 + 10.;
 
     let trace = Scatter::new(x_points, y_points)
         .mode(Mode::Markers)
@@ -84,7 +119,7 @@ fn plot_statistic_to_html(feature_data: &FeaturesData) -> String {
     let y_axis_name = feature_data.feature_names[1].as_str();
 
     let layout = Layout::new()
-        .title(Title::new("Data Labels Hover"))
+        .title(Title::new("Features statistic"))
         .x_axis(Axis::new().title(Title::new(x_axis_name)).range(vec![0., max_x]))
         .y_axis(Axis::new().title(Title::new(y_axis_name)).range(vec![0., max_y]));
     plot.set_layout(layout);
