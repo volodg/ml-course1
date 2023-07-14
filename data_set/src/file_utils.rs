@@ -1,5 +1,7 @@
 use crate::draw::generate_image_file;
-use drawing_commons::models::{DrawingData, DrawingPaths, Features, FeaturesData, Sample, SampleWithFeatures};
+use drawing_commons::models::{
+    DrawingData, DrawingPaths, Features, FeaturesData, Sample, SampleWithFeatures,
+};
 use drawing_commons::{FEATURES, IMG_DIR, JSON_DIR, RAW_DIR, SAMPLES};
 use std::collections::HashMap;
 use std::io::{stdout, ErrorKind, Write};
@@ -132,6 +134,8 @@ pub fn store_drawings_as_png(drawings: &HashMap<u64, Vec<Vec<[i32; 2]>>>) {
 }
 
 pub fn build_features() -> Result<(), std::io::Error> {
+    println!("EXTRACTING FEATURES...");
+
     let samples = std::fs::read_to_string(SAMPLES).and_then(|content| {
         serde_json::from_str::<Vec<Sample>>(content.as_str())
             .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))

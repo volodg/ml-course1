@@ -1,6 +1,7 @@
 mod html;
 
 use crate::html::HtmlDom;
+use drawing_commons::models::FeaturesData;
 use drawing_commons::models::Sample;
 use itertools::Itertools;
 use lazy_static::lazy_static;
@@ -9,7 +10,10 @@ use wasm_bindgen::prelude::*;
 lazy_static! {
     // TODO const variables don't work as arguments of std::include_str!
     static ref SAMPLES_DATA: Vec<Sample> =
-        serde_json::from_str::<Vec<Sample>>(std::include_str!("../../data/dataset/samples.json"))
+        serde_json::from_str::<Vec<_>>(std::include_str!("../../data/dataset/samples.json"))
+            .expect("");
+    static ref FEATURES_DATA: FeaturesData =
+        serde_json::from_str::<_>(std::include_str!("../../data/dataset/features.json"))
             .expect("");
 }
 
@@ -27,11 +31,19 @@ fn start() -> Result<(), JsValue> {
 
 #[cfg(test)]
 mod tests {
-    use crate::SAMPLES_DATA;
+    use crate::{FEATURES_DATA, SAMPLES_DATA};
 
     #[test]
-    fn test_samples() {
+    fn test_resources() {
+        let samples_count = 5728;
+
         let size = SAMPLES_DATA.len();
-        assert_eq!(size, 5728);
+        assert_eq!(size, samples_count);
+
+        let size = FEATURES_DATA.features.len();
+        assert_eq!(size, samples_count);
+
+        let size = FEATURES_DATA.feature_names.len();
+        assert_eq!(size, 2);
     }
 }

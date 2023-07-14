@@ -58,7 +58,7 @@ impl Features for DrawingPaths {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize)]
 pub struct SampleWithFeatures {
     pub label: String,
     pub point: [usize; 2],
@@ -73,9 +73,9 @@ impl SampleWithFeatures {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FeaturesData {
-    pub feature_names: [String; 2],
+    pub feature_names: Vec<String>,
     pub features: Vec<SampleWithFeatures>,
 }
