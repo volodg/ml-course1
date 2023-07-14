@@ -1,29 +1,37 @@
+use js_sys::eval;
 use commons::utils::OkExt;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_sys::{window, Document, Element, HtmlCanvasElement};
+use web_sys::{window, Document, Element, HtmlCanvasElement, HtmlScriptElement};
 
 #[derive(Clone)]
 pub struct HtmlDom {
     pub document: Document,
     pub container: Element,
-    pub canvas: HtmlCanvasElement,
 }
 
 impl HtmlDom {
-    #[allow(dead_code)]
     pub fn create() -> Result<Self, JsValue> {
         let document = window().unwrap().document().unwrap();
         let container = document.get_element_by_id("container").unwrap();
 
-        let canvas = document.get_element_by_id("canvas").unwrap();
-        let canvas = canvas.dyn_into::<HtmlCanvasElement>()?;
-
         Self {
             document,
-            container,
-            canvas
+            container
         }
         .ok()
+    }
+
+    pub fn set_inner_html_with_script(&self, container: Element, html: &str) -> Result<(), JsValue> {
+        container.set_inner_html(&html);
+
+        let collection = container.get_elements_by_tag_name("script");
+        for i in 0..collection.length() {
+            let script = collection.item(i).expect("").dyn_into::<HtmlScriptElement>()?;
+            let text: &str = &script.text().unwrap();
+            eval(text)?;
+        }
+
+        Ok(())
     }
 }

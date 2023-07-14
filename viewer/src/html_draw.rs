@@ -1,17 +1,15 @@
-use plotters::prelude::{BLUE, ChartBuilder, Circle, Color, IntoDrawingArea, IntoFont, WHITE};
-use plotters_canvas::CanvasBackend;
+use plotly::common::{Marker, Mode, Title};
+use plotly::{Layout, Plot, Scatter};
+use plotly::layout::Axis;
 use wasm_bindgen::JsValue;
 use web_sys::HtmlImageElement;
 use drawing_commons::{FLAGGED_USERS, IMG_DIR};
-use drawing_commons::models::{FeaturesData, Sample};
 use wasm_bindgen::JsCast;
+use drawing_commons::models::{FeaturesData, Sample};
 use crate::html::HtmlDom;
-
-pub type DrawResult<T> = Result<T, Box<dyn std::error::Error>>;
 
 pub trait Draw {
     fn create_row(&self, student_name: &str, samples: &[&Sample]) -> Result<(), JsValue>;
-    fn draw_chart(&self, features: &FeaturesData) -> DrawResult<()>;
 }
 
 impl Draw for HtmlDom {
@@ -52,41 +50,26 @@ impl Draw for HtmlDom {
 
         Ok(())
     }
+}
 
-    // TODO Try:
-    // 1. https://igiagkiozis.github.io/plotly
-    // https://github.com/igiagkiozis/plotly#usage-within-a-wasm-environment
-    // 2. https://crates.io/crates/poloto
-    // 3. https://crates.io/crates/graplot
-    fn draw_chart(&self, features: &FeaturesData) -> DrawResult<()> {
-        let root = CanvasBackend::with_canvas_object(self.canvas.clone())
-            .unwrap()
-            .into_drawing_area();
+pub fn plot_statistic(_feature_data: &FeaturesData) -> String {
+    let trace1 = Scatter::new(vec![1, 2, 3, 4, 5], vec![1, 6, 3, 6, 1])
+        .mode(Mode::Markers)
+        .name("Team A")
+        .marker(Marker::new().size(12));
+    let trace2 = Scatter::new(vec![1.5, 2.5, 3.5, 4.5, 5.5], vec![4, 1, 7, 1, 4])
+        .mode(Mode::Markers)
+        .name("Team B")
+        .marker(Marker::new().size(12));
 
-        root.fill(&WHITE)?;
+    let mut plot = Plot::new();
+    plot.add_trace(trace1);
+    plot.add_trace(trace2);
 
-        let random_points: Vec<(f64, f64)> = features.features.iter().map(|x| {
-            (x.point[0] as f64, x.point[1] as f64)
-        }).collect();
-
-        let areas = root.split_by_breakpoints([1000], [50]);
-
-        let caption = std::format!("({},{})", features.feature_names[0], features.feature_names[1]);
-
-        let mut scatter_ctx = ChartBuilder::on(&areas[2])
-            .caption(caption, ("sans-serif", 20).into_font())
-            .x_label_area_size(40)
-            .y_label_area_size(60)
-            .build_cartesian_2d(0f64..300f64, 0f64..20_000f64)?;
-        scatter_ctx
-            .configure_mesh()
-            .draw()?;
-        scatter_ctx.draw_series(
-            random_points
-                .iter()
-                .map(|(x, y)| Circle::new((*x, *y), 2, BLUE.filled())),
-        )?;
-
-        Ok(())
-    }
+    let layout = Layout::new()
+        .title(Title::new("Data Labels Hover"))
+        .x_axis(Axis::new().title(Title::new("x")).range(vec![0.75, 5.25]))
+        .y_axis(Axis::new().title(Title::new("y")).range(vec![0., 8.]));
+    plot.set_layout(layout);
+    plot.to_inline_html(Some("chart"))
 }
