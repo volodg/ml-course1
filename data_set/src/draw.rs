@@ -1,7 +1,7 @@
+use drawing_commons::models::DrawingPaths;
 use raqote::{
     DrawOptions, DrawTarget, LineCap, LineJoin, PathBuilder, SolidSource, Source, StrokeStyle,
 };
-use drawing_commons::models::DrawingPaths;
 
 const STROKE_STYLE: StrokeStyle = StrokeStyle {
     cap: LineCap::Round,

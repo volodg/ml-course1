@@ -54,8 +54,27 @@ impl Features for DrawingPaths {
     }
 
     fn point_count(&self) -> usize {
-        self.iter().fold(0, |acc, drawing| {
-            acc + drawing.len()
-        })
+        self.iter().fold(0, |acc, drawing| acc + drawing.len())
+    }
+}
+
+#[derive(Serialize)]
+pub struct SampleWithFeatures {
+    pub id: usize,
+    pub label: String,
+    pub student_name: String,
+    pub student_id: u64,
+    pub point: [usize; 2],
+}
+
+impl SampleWithFeatures {
+    pub fn create(sample: Sample, point: [usize; 2]) -> Self {
+        Self {
+            id: sample.id,
+            label: sample.label,
+            student_name: sample.student_name,
+            student_id: sample.student_id,
+            point,
+        }
     }
 }

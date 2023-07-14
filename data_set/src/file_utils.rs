@@ -1,5 +1,5 @@
 use crate::draw::generate_image_file;
-use drawing_commons::models::{DrawingData, DrawingPaths, Sample};
+use drawing_commons::models::{DrawingData, DrawingPaths, Features, Sample, SampleWithFeatures};
 use drawing_commons::{IMG_DIR, JSON_DIR, RAW_DIR, SAMPLES};
 use std::collections::HashMap;
 use std::io::{stdout, ErrorKind, Write};
@@ -129,4 +129,32 @@ pub fn store_drawings_as_png(drawings: &HashMap<u64, Vec<Vec<[i32; 2]>>>) {
         print_progress("Generating images", count, drawings.len());
         generate_image_file(path.as_str(), drawing.1);
     }
+}
+
+pub fn build_features() -> Result<(), std::io::Error> {
+    let samples = std::fs::read_to_string(SAMPLES).and_then(|content| {
+        serde_json::from_str::<Vec<Sample>>(content.as_str())
+            .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))
+    })?;
+
+    let samples = samples
+        .into_iter()
+        .map(|sample| {
+            let path = std::format!("{}/{}.json", JSON_DIR, sample.id);
+
+            let draw_paths = std::fs::read_to_string(path)
+                .and_then(|content| {
+                    serde_json::from_str::<DrawingPaths>(content.as_str())
+                        .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))
+                })
+                .expect("");
+
+            SampleWithFeatures::create(sample, [draw_paths.path_count(), draw_paths.point_count()])
+        })
+        .collect::<Vec<_>>();
+
+    let json = serde_json::to_string(&samples)
+        .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
+
+    std::fs::write(SAMPLES, json)
 }
