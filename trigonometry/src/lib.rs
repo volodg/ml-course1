@@ -1,12 +1,15 @@
 mod html;
+mod html_draw;
 
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
-use web_commons::log;
+use crate::html::HtmlDom;
+use crate::html_draw::Draw;
 
 #[wasm_bindgen(start)]
 fn start() -> Result<(), JsValue> {
-    log("Hello world, trigonometry");
+    let hml = HtmlDom::create()?;
+    hml.draw()?;
 
     Ok(())
 }
