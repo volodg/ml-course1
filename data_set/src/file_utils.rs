@@ -1,6 +1,6 @@
 use crate::draw::generate_image_file;
-use drawing_commons::models::{DrawingData, DrawingPaths, Features, Sample, SampleWithFeatures};
-use drawing_commons::{IMG_DIR, JSON_DIR, RAW_DIR, SAMPLES};
+use drawing_commons::models::{DrawingData, DrawingPaths, Features, FeaturesData, Sample, SampleWithFeatures};
+use drawing_commons::{FEATURES, IMG_DIR, JSON_DIR, RAW_DIR, SAMPLES};
 use std::collections::HashMap;
 use std::io::{stdout, ErrorKind, Write};
 use std::path::PathBuf;
@@ -137,7 +137,7 @@ pub fn build_features() -> Result<(), std::io::Error> {
             .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))
     })?;
 
-    let samples = samples
+    let features = samples
         .into_iter()
         .map(|sample| {
             let path = std::format!("{}/{}.json", JSON_DIR, sample.id);
@@ -153,8 +153,13 @@ pub fn build_features() -> Result<(), std::io::Error> {
         })
         .collect::<Vec<_>>();
 
-    let json = serde_json::to_string(&samples)
+    let features = FeaturesData {
+        feature_names: ["Path Count".to_owned(), "Point Count".to_owned()],
+        features,
+    };
+
+    let json = serde_json::to_string(&features)
         .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
 
-    std::fs::write(SAMPLES, json)
+    std::fs::write(FEATURES, json)
 }

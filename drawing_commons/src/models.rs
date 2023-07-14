@@ -78,3 +78,10 @@ impl SampleWithFeatures {
         }
     }
 }
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeaturesData {
+    pub feature_names: [String; 2],
+    pub features: Vec<SampleWithFeatures>,
+}
