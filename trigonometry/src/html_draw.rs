@@ -1,12 +1,12 @@
 use crate::app_state::AppState;
-use crate::draw::Draw;
+use crate::draw::DrawWithState;
 use crate::html::HtmlDom;
 use js_sys::Array;
 use std::f64::consts::TAU;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
 
-impl Draw for HtmlDom {
+impl DrawWithState for HtmlDom {
     fn draw(&self, app_state: &AppState) -> Result<(), JsValue> {
         let _ = self
             .context

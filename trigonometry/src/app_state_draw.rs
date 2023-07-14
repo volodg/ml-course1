@@ -1,13 +1,13 @@
 use crate::app_state::AppState;
-use crate::draw::Draw;
+use crate::draw::{Draw, DrawWithState};
 use wasm_bindgen::JsValue;
 
 impl Draw for AppState {
-    fn draw(&self, app_state: &AppState) -> Result<(), JsValue> {
-        self.html.draw(app_state)
+    fn draw(&self) -> Result<(), JsValue> {
+        self.html.draw(self)
     }
 
-    fn redraw(&self, app_state: &AppState) -> Result<(), JsValue> {
-        self.html.redraw(app_state)
+    fn redraw(&self) -> Result<(), JsValue> {
+        self.html.redraw(self)
     }
 }

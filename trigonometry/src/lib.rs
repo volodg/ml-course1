@@ -19,7 +19,7 @@ fn start() -> Result<(), JsValue> {
     let html = HtmlDom::create()?;
 
     let app_state = AppState::create(html);
-    app_state.draw(&app_state)?;
+    app_state.draw()?;
 
     let app_state = Rc::new(RefCell::new(app_state));
     app_state.borrow().html.subscribe(app_state.clone())?;
