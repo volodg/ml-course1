@@ -14,23 +14,24 @@ use web_commons::html::InnerHtmlSetter;
 use web_sys::HtmlImageElement;
 
 lazy_static! {
-    static ref COLOR_STYLES: HashMap<String, Rgba> = (|| {
+    static ref COLOR_STYLES: HashMap<String, (Rgba, String)> = (|| {
         let mut result = HashMap::new();
 
-        result.insert("car".to_owned(), NamedColor::Gray);
-        result.insert("fish".to_owned(), NamedColor::Red);
-        result.insert("house".to_owned(), NamedColor::Yellow);
-        result.insert("tree".to_owned(), NamedColor::Green);
-        result.insert("bicycle".to_owned(), NamedColor::Cyan);
-        result.insert("guitar".to_owned(), NamedColor::Blue);
-        result.insert("pencil".to_owned(), NamedColor::Magenta);
-        result.insert("clock".to_owned(), NamedColor::LightGray);
+        result.insert("car".to_owned(), (NamedColor::Gray, "🚗".to_owned()));
+        result.insert("fish".to_owned(), (NamedColor::Red, "🐟".to_owned()));
+        result.insert("house".to_owned(), (NamedColor::Yellow, "🏠".to_owned()));
+        result.insert("tree".to_owned(), (NamedColor::Green, "🌳".to_owned()));
+        result.insert("bicycle".to_owned(), (NamedColor::Cyan, "🚲".to_owned()));
+        result.insert("guitar".to_owned(), (NamedColor::Blue, "🎸".to_owned()));
+        result.insert("pencil".to_owned(), (NamedColor::Magenta, "✏️".to_owned()));
+        result.insert("clock".to_owned(), (NamedColor::LightGray, "⏰".to_owned()));
 
         result
             .into_iter()
-            .map(|(key, value)| {
-                let color: Srgb<u8> = from_named_srgb_color(&value);
-                (key, Rgba::new(color.red, color.green, color.blue, 0.5))
+            .map(|(key, (color, symbol))| {
+                let color = from_named_srgb_color(&color);
+                let color = Rgba::new(color.red, color.green, color.blue, 0.7);
+                (key, (color, symbol))
             })
             .collect()
     })();
@@ -105,11 +106,15 @@ impl TracesData {
         self.traces
             .into_iter()
             .map(|(key, values)| {
-                let color = *COLOR_STYLES.get(&key).expect("");
+                let (_, symbol) = COLOR_STYLES.get(&key).expect("");
+                let marker = Marker::new()
+                    .color(NamedColor::Transparent)
+                    .size(12);
                 Scatter::new(values.0, values.1)
-                    .mode(Mode::Markers)
+                    .mode(Mode::MarkersText)
                     .name(key)
-                    .marker(Marker::new().color(color).size(12))
+                    .text(symbol)
+                    .marker(marker)
             })
             .collect()
     }
