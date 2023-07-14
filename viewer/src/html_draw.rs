@@ -53,6 +53,11 @@ impl Draw for HtmlDom {
         Ok(())
     }
 
+    // TODO Try:
+    // 1. https://igiagkiozis.github.io/plotly
+    // https://github.com/igiagkiozis/plotly#usage-within-a-wasm-environment
+    // 2. https://crates.io/crates/poloto
+    // 3. https://crates.io/crates/graplot
     fn draw_chart(&self, features: &FeaturesData) -> DrawResult<()> {
         let root = CanvasBackend::with_canvas_object(self.canvas.clone())
             .unwrap()
