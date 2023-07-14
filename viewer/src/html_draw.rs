@@ -1,6 +1,9 @@
 use crate::html::HtmlDom;
 use drawing_commons::models::{FeaturesData, Sample};
 use drawing_commons::{FLAGGED_USERS, IMG_DIR};
+use lazy_static::lazy_static;
+use palette::{named::from_str, Srgb};
+use plotly::color::{NamedColor, Rgba};
 use plotly::common::{Marker, Mode, Title};
 use plotly::layout::Axis;
 use plotly::{Layout, Plot, Scatter};
@@ -9,6 +12,35 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::html::InnerHtmlSetter;
 use web_sys::HtmlImageElement;
+
+lazy_static! {
+    static ref COLOR_STYLES: HashMap<String, Rgba> = (|| {
+        let mut result = HashMap::new();
+
+        result.insert("car".to_owned(), NamedColor::Gray);
+        result.insert("fish".to_owned(), NamedColor::Red);
+        result.insert("house".to_owned(), NamedColor::Yellow);
+        result.insert("tree".to_owned(), NamedColor::Green);
+        result.insert("bicycle".to_owned(), NamedColor::Cyan);
+        result.insert("guitar".to_owned(), NamedColor::Blue);
+        result.insert("pencil".to_owned(), NamedColor::Magenta);
+        result.insert("clock".to_owned(), NamedColor::LightGray);
+
+        result
+            .into_iter()
+            .map(|(key, value)| {
+                let color: Srgb<u8> = from_named_srgb_color(&value);
+                (key, Rgba::new(color.red, color.green, color.blue, 0.5))
+            })
+            .collect()
+    })();
+}
+
+fn from_named_srgb_color(color: &NamedColor) -> Srgb<u8> {
+    let value: serde_json::Value = serde_json::to_value(&color).expect("");
+    let color = value.as_str().expect("");
+    from_str(&color).unwrap()
+}
 
 pub trait Draw {
     fn create_row(&self, student_name: &str, samples: &[&Sample]) -> Result<(), JsValue>;
@@ -73,10 +105,11 @@ impl TracesData {
         self.traces
             .into_iter()
             .map(|(key, values)| {
+                let color = *COLOR_STYLES.get(&key).expect("");
                 Scatter::new(values.0, values.1)
                     .mode(Mode::Markers)
                     .name(key)
-                    .marker(Marker::new().size(12))
+                    .marker(Marker::new().color(color).size(12))
             })
             .collect()
     }
@@ -133,4 +166,24 @@ fn plot_statistic_to_html(feature_data: &FeaturesData) -> String {
         );
     plot.set_layout(layout);
     plot.to_inline_html(Some("chart"))
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::html_draw::{from_named_srgb_color, COLOR_STYLES};
+    use plotly::color::NamedColor;
+
+    #[test]
+    fn test_from_named_srgb_color() {
+        let srgb = from_named_srgb_color(&NamedColor::Gray);
+        assert_eq!(srgb.red, 128);
+        assert_eq!(srgb.green, 128);
+        assert_eq!(srgb.blue, 128);
+    }
+
+    #[test]
+    fn test_color_styles() {
+        let size = COLOR_STYLES.len();
+        assert_eq!(size, 8);
+    }
 }
