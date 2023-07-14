@@ -1,12 +1,12 @@
+use crate::html::HtmlDom;
+use drawing_commons::models::{FeaturesData, Sample};
+use drawing_commons::{FLAGGED_USERS, IMG_DIR};
 use plotly::common::{Marker, Mode, Title};
-use plotly::{Layout, Plot, Scatter};
 use plotly::layout::Axis;
+use plotly::{Layout, Plot, Scatter};
+use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::HtmlImageElement;
-use drawing_commons::{FLAGGED_USERS, IMG_DIR};
-use wasm_bindgen::JsCast;
-use drawing_commons::models::{FeaturesData, Sample};
-use crate::html::HtmlDom;
 
 pub trait Draw {
     fn create_row(&self, student_name: &str, samples: &[&Sample]) -> Result<(), JsValue>;
