@@ -40,20 +40,22 @@ impl DrawingData {
     }
 }
 
+pub type DrawingPaths = Vec<Vec<[i32; 2]>>;
+
 pub trait Features {
     fn path_count(&self) -> usize;
 
     fn point_count(&self) -> usize;
 }
 
-impl Features for DrawingData {
+impl Features for DrawingPaths {
     fn path_count(&self) -> usize {
-        self.drawings.len()
+        self.len()
     }
 
     fn point_count(&self) -> usize {
-        self.drawings.iter().fold(0, |acc, (_, drawing)| {
-            acc + drawing.iter().fold(0, |acc, path| acc + path.len())
+        self.iter().fold(0, |acc, drawing| {
+            acc + drawing.len()
         })
     }
 }

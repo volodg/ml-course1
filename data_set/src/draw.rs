@@ -1,7 +1,7 @@
-use crate::file_utils::Paths;
 use raqote::{
     DrawOptions, DrawTarget, LineCap, LineJoin, PathBuilder, SolidSource, Source, StrokeStyle,
 };
+use drawing_commons::models::DrawingPaths;
 
 const STROKE_STYLE: StrokeStyle = StrokeStyle {
     cap: LineCap::Round,
@@ -19,7 +19,7 @@ const LINE_SOURCE: Source = Source::Solid(SolidSource {
     a: 255,
 });
 
-pub fn generate_image_file(file: &str, paths: &Paths) {
+pub fn generate_image_file(file: &str, paths: &DrawingPaths) {
     let mut dt = DrawTarget::new(400, 400);
 
     for path in paths {

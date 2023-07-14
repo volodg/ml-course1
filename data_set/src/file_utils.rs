@@ -1,5 +1,5 @@
 use crate::draw::generate_image_file;
-use drawing_commons::models::{DrawingData, Sample};
+use drawing_commons::models::{DrawingData, DrawingPaths, Sample};
 use drawing_commons::{IMG_DIR, JSON_DIR, RAW_DIR, SAMPLES};
 use std::collections::HashMap;
 use std::io::{stdout, ErrorKind, Write};
@@ -8,8 +8,7 @@ use termion::clear;
 use termion::cursor::Goto;
 use termion::raw::IntoRawMode;
 
-pub type Paths = Vec<Vec<[i32; 2]>>;
-type SortedDrawings = Vec<(String, Paths)>;
+type SortedDrawings = Vec<(String, DrawingPaths)>;
 
 pub struct SortedDrawingData {
     session: u64,
