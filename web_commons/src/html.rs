@@ -1,6 +1,7 @@
+use js_sys::eval;
 use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::{JsCast, JsValue};
-use web_sys::{window, EventTarget, HtmlElement, MouseEvent};
+use web_sys::{window, Element, EventTarget, HtmlElement, HtmlScriptElement, MouseEvent};
 
 pub trait Visibility {
     fn set_visible(&self, visible: bool);
@@ -65,5 +66,27 @@ impl AddListener for EventTarget {
         F: FnMut(MouseEvent) + 'static,
     {
         self.add_listener("click", listener)
+    }
+}
+
+pub trait InnerHtmlSetter {
+    fn set_inner_html_with_script(&self, html: &str) -> Result<(), JsValue>;
+}
+
+impl InnerHtmlSetter for Element {
+    fn set_inner_html_with_script(&self, html: &str) -> Result<(), JsValue> {
+        self.set_inner_html(&html);
+
+        let collection = self.get_elements_by_tag_name("script");
+        for i in 0..collection.length() {
+            let script = collection
+                .item(i)
+                .expect("")
+                .dyn_into::<HtmlScriptElement>()?;
+            let text: &str = &script.text().unwrap();
+            eval(text)?;
+        }
+
+        Ok(())
     }
 }

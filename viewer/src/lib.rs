@@ -2,13 +2,12 @@ mod html;
 mod html_draw;
 
 use crate::html::HtmlDom;
-use crate::html_draw::{plot_statistic, Draw};
+use crate::html_draw::Draw;
 use drawing_commons::models::FeaturesData;
 use drawing_commons::models::Sample;
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use wasm_bindgen::prelude::*;
-use web_sys::HtmlScriptElement;
 
 lazy_static! {
     // TODO const variables don't work as arguments of std::include_str!
@@ -24,11 +23,7 @@ lazy_static! {
 fn start() -> Result<(), JsValue> {
     let html = HtmlDom::create()?;
 
-    {
-        let container = html.document.get_element_by_id("chartContainer").unwrap();
-        let chart = plot_statistic(&FEATURES_DATA);
-        html.set_inner_html_with_script(container, &chart)?;
-    }
+    html.plot_statistic(&FEATURES_DATA)?;
 
     for (_id, group) in &SAMPLES_DATA.iter().group_by(|x| x.student_id) {
         let group = group.collect::<Vec<_>>();

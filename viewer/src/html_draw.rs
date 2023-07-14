@@ -6,10 +6,12 @@ use plotly::layout::Axis;
 use plotly::{Layout, Plot, Scatter};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
+use web_commons::html::InnerHtmlSetter;
 use web_sys::HtmlImageElement;
 
 pub trait Draw {
     fn create_row(&self, student_name: &str, samples: &[&Sample]) -> Result<(), JsValue>;
+    fn plot_statistic(&self, feature_data: &FeaturesData) -> Result<(), JsValue>;
 }
 
 impl Draw for HtmlDom {
@@ -50,9 +52,16 @@ impl Draw for HtmlDom {
 
         Ok(())
     }
+
+    fn plot_statistic(&self, feature_data: &FeaturesData) -> Result<(), JsValue> {
+        let html = plot_statistic_to_html(feature_data);
+
+        let container = self.document.get_element_by_id("chartContainer").unwrap();
+        container.set_inner_html_with_script(&html)
+    }
 }
 
-pub fn plot_statistic(_feature_data: &FeaturesData) -> String {
+pub fn plot_statistic_to_html(_feature_data: &FeaturesData) -> String {
     let trace1 = Scatter::new(vec![1, 2, 3, 4, 5], vec![1, 6, 3, 6, 1])
         .mode(Mode::Markers)
         .name("Team A")
