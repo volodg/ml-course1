@@ -16,6 +16,11 @@ impl DrawWithState for HtmlDom {
         );
 
         self.context.draw_coordinate_system(&self.offset);
+
+        self.context.draw_line(&app_state.point_a, &app_state.point_b);
+        self.context.draw_line(&app_state.point_a, &app_state.point_c);
+        self.context.draw_line(&app_state.point_b, &app_state.point_c);
+
         self.context.draw_all_points(&app_state);
 
         Ok(())
@@ -24,6 +29,8 @@ impl DrawWithState for HtmlDom {
 
 trait ContextExt {
     fn draw_all_points(&self, app_state: &AppState);
+    fn draw_line(&self, from: &[i32; 2], to: &[i32; 2]);
+    fn draw_line_with_color(&self, from: &[i32; 2], to: &[i32; 2], color: &str);
     fn draw_coordinate_system(&self, offset: &[i32; 2]);
 
     fn draw_point(&self, location: &[i32; 2]);
@@ -42,6 +49,20 @@ impl ContextExt for CanvasRenderingContext2d {
         self.draw_text("B", &app_state.point_b);
         self.draw_point(&app_state.point_c);
         self.draw_text("C", &app_state.point_c);
+    }
+
+    fn draw_line(&self, from: &[i32; 2], to: &[i32; 2]) {
+        self.draw_line_with_color(from, to, "black")
+    }
+
+    fn draw_line_with_color(&self, from: &[i32; 2], to: &[i32; 2], color: &str) {
+        self.begin_path();
+        self.move_to(from[0].into(), from[1].into());
+        self.line_to(to[0].into(), to[1].into());
+
+        self.set_line_width(2.0);
+        self.set_stroke_style(&JsValue::from_str(color));
+        self.stroke();
     }
 
     fn draw_coordinate_system(&self, offset: &[i32; 2]) {
