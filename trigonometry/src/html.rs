@@ -8,6 +8,7 @@ pub struct HtmlDom {
     pub document: Document,
     pub context: CanvasRenderingContext2d,
     pub canvas: HtmlCanvasElement,
+    pub offset: [i32; 2],
 }
 
 impl HtmlDom {
@@ -22,10 +23,13 @@ impl HtmlDom {
             .unwrap()
             .dyn_into::<CanvasRenderingContext2d>()?;
 
+        let offset = [canvas.width() as i32 / 2, canvas.height() as i32 / 2];
+
         Self {
             document,
             context,
             canvas,
+            offset,
         }
         .ok()
     }

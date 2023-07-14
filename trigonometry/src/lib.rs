@@ -1,15 +1,28 @@
+mod app_state;
+mod app_state_draw;
+mod draw;
 mod html;
 mod html_draw;
+mod subscribe_state;
 
+use crate::app_state::AppState;
+use crate::html::HtmlDom;
+use crate::subscribe_state::StateSubscriber;
+use draw::Draw;
+use std::cell::RefCell;
+use std::rc::Rc;
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
-use crate::html::HtmlDom;
-use crate::html_draw::Draw;
 
 #[wasm_bindgen(start)]
 fn start() -> Result<(), JsValue> {
-    let hml = HtmlDom::create()?;
-    hml.draw()?;
+    let html = HtmlDom::create()?;
+
+    let app_state = AppState::create(html);
+    app_state.draw(&app_state)?;
+
+    let app_state = Rc::new(RefCell::new(app_state));
+    app_state.borrow().html.subscribe(app_state.clone())?;
 
     Ok(())
 }

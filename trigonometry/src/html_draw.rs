@@ -1,30 +1,30 @@
-use std::f64::consts::TAU;
+use crate::app_state::AppState;
+use crate::draw::Draw;
+use crate::html::HtmlDom;
 use js_sys::Array;
+use std::f64::consts::TAU;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
-use crate::html::HtmlDom;
-
-pub trait Draw {
-    fn draw(&self) -> Result<(), JsValue>;
-}
 
 impl Draw for HtmlDom {
-    fn draw(&self) -> Result<(), JsValue> {
-        let offset = [self.canvas.width() as i32 / 2, self.canvas.height() as i32 / 2];
-        let _ = self.context.translate(offset[0].into(), offset[1].into());
+    fn draw(&self, app_state: &AppState) -> Result<(), JsValue> {
+        let _ = self
+            .context
+            .translate(self.offset[0].into(), self.offset[1].into());
 
-        self.context.draw_coordinate_system(&offset);
+        self.context.draw_coordinate_system(&self.offset);
+        self.redraw(&app_state)?;
 
-        let point_a = [0, 0];
-        let point_b = [90, 120];
-        let point_c = [point_b[0], 0];
+        Ok(())
+    }
 
-        self.context.draw_point(&point_a);
-        self.context.draw_text("A", &point_a);
-        self.context.draw_point(&point_b);
-        self.context.draw_text("B", &point_b);
-        self.context.draw_point(&point_c);
-        self.context.draw_text("C", &point_c);
+    fn redraw(&self, app_state: &AppState) -> Result<(), JsValue> {
+        self.context.draw_point(&app_state.point_a);
+        self.context.draw_text("A", &app_state.point_a);
+        self.context.draw_point(&app_state.point_b);
+        self.context.draw_text("B", &app_state.point_b);
+        self.context.draw_point(&app_state.point_c);
+        self.context.draw_text("C", &app_state.point_c);
 
         Ok(())
     }
@@ -69,7 +69,13 @@ impl ContextExt for CanvasRenderingContext2d {
     fn draw_point_with_size_and_color(&self, location: &[i32; 2], size: i32, color: &str) {
         self.begin_path();
         self.set_fill_style(&JsValue::from_str(color));
-        let _ = self.arc(location[0].into(), location[1].into(), size as f64 / 2.0, 0.0, TAU);
+        let _ = self.arc(
+            location[0].into(),
+            location[1].into(),
+            size as f64 / 2.0,
+            0.0,
+            TAU,
+        );
         self.fill();
     }
 
