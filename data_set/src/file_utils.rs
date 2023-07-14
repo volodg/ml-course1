@@ -157,8 +157,12 @@ pub fn build_features() -> Result<(), std::io::Error> {
         })
         .collect::<Vec<_>>();
 
+    let feature_names = vec!["Path Count", "Point Count"]
+        .into_iter()
+        .map(|x| x.to_owned())
+        .collect();
     let features = FeaturesData {
-        feature_names: ["Path Count".to_owned(), "Point Count".to_owned()],
+        feature_names,
         features,
     };
 

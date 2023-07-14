@@ -323,6 +323,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "demo_chat"
+version = "0.1.0"
+dependencies = [
+ "commons",
+ "js-sys",
+ "wasm-bindgen",
+ "web-sys",
+ "web_commons",
+]
+
+[[package]]
 name = "dirs-next"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

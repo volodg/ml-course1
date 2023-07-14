@@ -7,7 +7,8 @@ use drawing_commons::models::FeaturesData;
 use drawing_commons::models::Sample;
 use itertools::Itertools;
 use lazy_static::lazy_static;
-use wasm_bindgen::prelude::*;
+use wasm_bindgen::prelude::wasm_bindgen;
+use wasm_bindgen::JsValue;
 
 lazy_static! {
     // TODO const variables don't work as arguments of std::include_str!

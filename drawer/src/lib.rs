@@ -16,7 +16,8 @@ use commons::utils::SomeExt;
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
-use wasm_bindgen::prelude::*;
+use wasm_bindgen::prelude::wasm_bindgen;
+use wasm_bindgen::JsValue;
 use web_commons::html::alert;
 
 fn handle_next(app_state: &Rc<RefCell<AppState<HtmlDom>>>) {

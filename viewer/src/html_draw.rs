@@ -107,9 +107,7 @@ impl TracesData {
             .into_iter()
             .map(|(key, values)| {
                 let (_, symbol) = COLOR_STYLES.get(&key).expect("");
-                let marker = Marker::new()
-                    .color(NamedColor::Transparent)
-                    .size(12);
+                let marker = Marker::new().color(NamedColor::Transparent).size(12);
                 Scatter::new(values.0, values.1)
                     .mode(Mode::MarkersText)
                     .name(key)
