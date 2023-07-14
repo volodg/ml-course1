@@ -1,7 +1,7 @@
 mod html;
 
 use crate::html::HtmlDom;
-use drawing_commons::Sample;
+use drawing_commons::models::Sample;
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use wasm_bindgen::prelude::*;

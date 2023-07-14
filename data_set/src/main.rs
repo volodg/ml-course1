@@ -19,3 +19,11 @@ fn main() -> Result<(), std::io::Error> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_add() {
+        assert!(true);
+    }
+}

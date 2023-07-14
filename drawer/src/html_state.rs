@@ -1,7 +1,7 @@
 use crate::app_state::{ReadyState, SavedState};
 use crate::html::HtmlDom;
 use commons::utils::OkExt;
-use drawing_commons::DrawingData;
+use drawing_commons::models::DrawingData;
 use js_sys::encode_uri_component;
 use std::collections::HashMap;
 use wasm_bindgen::JsCast;

@@ -1,5 +1,6 @@
 use commons::utils::OkExt;
-use drawing_commons::{Sample, IMG_DIR, FLAGGED_USERS};
+use drawing_commons::models::Sample;
+use drawing_commons::{FLAGGED_USERS, IMG_DIR};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{window, Document, Element, HtmlImageElement};
