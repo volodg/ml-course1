@@ -23,7 +23,7 @@ lazy_static! {
 fn start() -> Result<(), JsValue> {
     let html = HtmlDom::create()?;
 
-    html.draw_chart(100.0, 100.0).expect("");
+    html.draw_chart().expect("");
 
     for (_id, group) in &SAMPLES_DATA.iter().group_by(|x| x.student_id) {
         let group = group.collect::<Vec<_>>();
