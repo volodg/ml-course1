@@ -1,0 +1,22 @@
+[package]
+name = "trigonometry"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+commons = { path = "../commons" }
+js-sys = "0.3.64"
+wasm-bindgen = "0.2.87"
+web_commons = { path = "../web_commons" }
+
+[dependencies.web-sys]
+version = "0.3.4"
+features = []
+
+[profile.release]
+lto = true
