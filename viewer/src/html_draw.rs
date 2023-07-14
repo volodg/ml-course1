@@ -4,7 +4,7 @@ use drawing_commons::models::{FeaturesData, Sample};
 use drawing_commons::{FLAGGED_USERS, IMG_DIR};
 use plotly::common::{Marker, Mode, Title};
 use plotly::layout::Axis;
-use plotly::{Layout, Plot, Scatter, Trace};
+use plotly::{Layout, Plot, Scatter};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::html::InnerHtmlSetter;
@@ -71,7 +71,10 @@ struct TracesData {
 impl TracesData {
     fn into(self) -> Vec<Box<Scatter<usize, usize>>> {
         self.traces.into_iter().map(|(key, values)| {
-            unimplemented!()
+            Scatter::new(values.0, values.1)
+                .mode(Mode::Markers)
+                .name(key)
+                .marker(Marker::new().size(12))
         }).collect()
     }
 }
@@ -95,25 +98,17 @@ fn feature_data_into_traces(feature_data: &FeaturesData) -> TracesData {
 }
 
 fn plot_statistic_to_html(feature_data: &FeaturesData) -> String {
-    let x_points = feature_data.features.iter().map(|x| {
-        x.point[0]
-    }).collect::<Vec<_>>();
-    let y_points = feature_data.features.iter().map(|x| {
-        x.point[1]
-    }).collect::<Vec<_>>();
-
     let traces_data = feature_data_into_traces(feature_data);
 
     let max_x = traces_data.max[0] as f64 + 10.;
     let max_y = traces_data.max[1] as f64 + 10.;
 
-    let trace = Scatter::new(x_points, y_points)
-        .mode(Mode::Markers)
-        .name("Team A")
-        .marker(Marker::new().size(12));
+    let traces = traces_data.into();
 
     let mut plot = Plot::new();
-    plot.add_trace(trace);
+    for trace in traces {
+        plot.add_trace(trace);
+    }
 
     let x_axis_name = feature_data.feature_names[0].as_str();
     let y_axis_name = feature_data.feature_names[1].as_str();
