@@ -12,7 +12,6 @@ pub struct HtmlDom {
 }
 
 impl HtmlDom {
-    #[allow(dead_code)]
     pub fn create() -> Result<Self, JsValue> {
         let document = window().unwrap().document().unwrap();
         let canvas = document.get_element_by_id("myCanvas").unwrap();
@@ -24,6 +23,8 @@ impl HtmlDom {
             .dyn_into::<CanvasRenderingContext2d>()?;
 
         let offset = [canvas.width() as i32 / 2, canvas.height() as i32 / 2];
+
+        let _ = context.translate(offset[0].into(), offset[1].into());
 
         Self {
             document,

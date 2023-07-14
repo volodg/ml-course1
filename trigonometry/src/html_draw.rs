@@ -8,29 +8,22 @@ use web_sys::CanvasRenderingContext2d;
 
 impl DrawWithState for HtmlDom {
     fn draw(&self, app_state: &AppState) -> Result<(), JsValue> {
-        let _ = self
-            .context
-            .translate(self.offset[0].into(), self.offset[1].into());
+        self.context.clear_rect(
+            (-self.offset[0]).into(),
+            (-self.offset[1]).into(),
+            self.canvas.width().into(),
+            self.canvas.height().into(),
+        );
 
         self.context.draw_coordinate_system(&self.offset);
-        self.redraw(&app_state)?;
-
-        Ok(())
-    }
-
-    fn redraw(&self, app_state: &AppState) -> Result<(), JsValue> {
-        self.context.draw_point(&app_state.point_a);
-        self.context.draw_text("A", &app_state.point_a);
-        self.context.draw_point(&app_state.point_b);
-        self.context.draw_text("B", &app_state.point_b);
-        self.context.draw_point(&app_state.point_c);
-        self.context.draw_text("C", &app_state.point_c);
+        self.context.draw_all_points(&app_state);
 
         Ok(())
     }
 }
 
 trait ContextExt {
+    fn draw_all_points(&self, app_state: &AppState);
     fn draw_coordinate_system(&self, offset: &[i32; 2]);
 
     fn draw_point(&self, location: &[i32; 2]);
@@ -42,6 +35,15 @@ trait ContextExt {
 }
 
 impl ContextExt for CanvasRenderingContext2d {
+    fn draw_all_points(&self, app_state: &AppState) {
+        self.draw_point(&app_state.point_a);
+        self.draw_text("A", &app_state.point_a);
+        self.draw_point(&app_state.point_b);
+        self.draw_text("B", &app_state.point_b);
+        self.draw_point(&app_state.point_c);
+        self.draw_text("C", &app_state.point_c);
+    }
+
     fn draw_coordinate_system(&self, offset: &[i32; 2]) {
         self.begin_path();
         self.move_to((-offset[0]).into(), 0.0);

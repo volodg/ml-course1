@@ -25,5 +25,7 @@ impl AppState {
     pub fn update_points(&mut self, position: &[i32; 2]) {
         self.point_b[0] = position[0] - self.html.offset[0];
         self.point_b[1] = position[1] - self.html.offset[1];
+
+        self.point_c[0] = self.point_b[0];
     }
 }

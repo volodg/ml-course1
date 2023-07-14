@@ -17,7 +17,7 @@ impl StateSubscriber for HtmlDom {
             .add_listener("mousemove", move |event: MouseEvent| {
                 let position = [event.offset_x(), event.offset_y()];
                 app_state.borrow_mut().update_points(&position);
-                app_state.borrow().redraw().expect("")
+                app_state.borrow().draw().expect("")
             })
     }
 }

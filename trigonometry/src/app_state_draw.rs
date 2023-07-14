@@ -6,8 +6,4 @@ impl Draw for AppState {
     fn draw(&self) -> Result<(), JsValue> {
         self.html.draw(self)
     }
-
-    fn redraw(&self) -> Result<(), JsValue> {
-        self.html.redraw(self)
-    }
 }
