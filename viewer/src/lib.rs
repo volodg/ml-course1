@@ -1,4 +1,5 @@
 mod html;
+mod html_draw;
 
 use crate::html::HtmlDom;
 use drawing_commons::models::FeaturesData;
@@ -6,6 +7,7 @@ use drawing_commons::models::Sample;
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use wasm_bindgen::prelude::*;
+use crate::html_draw::Draw;
 
 lazy_static! {
     // TODO const variables don't work as arguments of std::include_str!
@@ -20,6 +22,8 @@ lazy_static! {
 #[wasm_bindgen(start)]
 fn start() -> Result<(), JsValue> {
     let html = HtmlDom::create()?;
+
+    html.draw_chart(100.0, 100.0).expect("");
 
     for (_id, group) in &SAMPLES_DATA.iter().group_by(|x| x.student_id) {
         let group = group.collect::<Vec<_>>();
