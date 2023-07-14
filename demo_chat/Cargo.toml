@@ -17,6 +17,3 @@ web_commons = { path = "../web_commons" }
 [dependencies.web-sys]
 version = "0.3.4"
 features = []
-
-[profile.release]
-lto = true

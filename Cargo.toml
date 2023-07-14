@@ -11,3 +11,6 @@ members = [
     "viewer",
     "web_commons"
 ]
+
+[profile.release]
+lto = true

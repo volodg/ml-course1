@@ -31,6 +31,3 @@ features = [
     'HtmlScriptElement',
     'Window',
 ]
-
-[profile.release]
-lto = true

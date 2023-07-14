@@ -38,6 +38,3 @@ features = [
     'TouchList',
     'Window',
 ]
-
-[profile.release]
-lto = true
