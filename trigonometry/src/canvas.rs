@@ -24,7 +24,7 @@ impl Canvas {
             .dyn_into::<CanvasRenderingContext2d>()?;
 
         let offset = [canvas.width() as f64 / 2.0, canvas.height() as f64 / 2.0];
-        let _ = context.translate(offset[0].into(), offset[1].into());
+        _ = context.translate(offset[0].into(), offset[1].into());
 
         Ok(Self {
             canvas,
@@ -58,12 +58,12 @@ impl ContextExt for CanvasRenderingContext2d {
         self.line_to(0.0, offset[1].into());
 
         let array = Array::of2(&JsValue::from(4.0), &JsValue::from(2.0));
-        let _ = self.set_line_dash(&array);
+        _ = self.set_line_dash(&array);
         self.set_line_width(1.0);
         self.set_stroke_style(&JsValue::from_str("gray"));
         self.stroke();
 
-        let _ = self.set_line_dash(&Array::new());
+        _ = self.set_line_dash(&Array::new());
     }
 
     fn draw_point(&self, location: &[f64; 2]) {
@@ -77,7 +77,7 @@ impl ContextExt for CanvasRenderingContext2d {
     fn draw_point_with_size_and_color(&self, location: &[f64; 2], size: f64, color: &str) {
         self.begin_path();
         self.set_fill_style(&JsValue::from_str(color));
-        let _ = self.arc(
+        _ = self.arc(
             location[0].into(),
             location[1].into(),
             size as f64 / 2.0,

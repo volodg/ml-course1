@@ -28,7 +28,7 @@ impl Visibility for HtmlElement {
 
 pub fn alert(msg: &str) {
     if let Some(window) = window() {
-        let _ = window.alert_with_message(msg);
+        _ = window.alert_with_message(msg);
     }
 }
 

@@ -128,7 +128,7 @@ impl ContextGraphicExt for CanvasRenderingContext2d {
         self.begin_path();
         self.set_stroke_style(&JsValue::from_str("black"));
         self.set_line_width(2.0);
-        let _ = self.arc_with_anticlockwise(0.0, 0.0, radius, 0.0, end, !clockwise);
+        _ = self.arc_with_anticlockwise(0.0, 0.0, radius, 0.0, end, !clockwise);
         self.stroke();
     }
 
@@ -158,7 +158,7 @@ impl ContextGraphicExt for CanvasRenderingContext2d {
         self.set_font("bold 18px Courier");
         self.set_stroke_style(&JsValue::from_str("white"));
         self.set_line_width(7.0);
-        let _ = self.stroke_text(text, location[0].into(), location[1].into());
-        let _ = self.fill_text(text, location[0].into(), location[1].into());
+        _ = self.stroke_text(text, location[0].into(), location[1].into());
+        _ = self.fill_text(text, location[0].into(), location[1].into());
     }
 }
