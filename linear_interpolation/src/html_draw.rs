@@ -44,15 +44,15 @@ impl DrawWithState for HtmlDom {
             let sec = Date::now() as f64 / 2000.0;
             let t = sec - sec.floor();
             let point_c = v_lerp(point_a, point_b, t);
+
             context.draw_dot(&point_c, "");
+            context.draw_dot(&point_a, "A");
+            context.draw_dot(&point_b, "B");
 
             request_animation_frame(animation_f.borrow().as_ref().unwrap());
         }));
 
         request_animation_frame(animation_f_copy.borrow().as_ref().unwrap());
-
-        self.context.draw_dot(&point_a, "A");
-        self.context.draw_dot(&point_b, "B");
 
         Ok(())
     }
