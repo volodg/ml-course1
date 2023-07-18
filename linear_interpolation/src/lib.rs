@@ -1,14 +1,14 @@
-mod html;
 mod app_state;
-mod draw;
 mod app_state_draw;
+mod draw;
+mod html;
 mod html_draw;
 
+use crate::app_state::AppState;
+use crate::draw::Draw;
 use crate::html::HtmlDom;
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
-use crate::app_state::AppState;
-use crate::draw::Draw;
 
 #[wasm_bindgen(start)]
 fn start() -> Result<(), JsValue> {
