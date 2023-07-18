@@ -3,7 +3,7 @@ use crate::draw::DrawWithState;
 use crate::html::HtmlDom;
 use js_sys::Date;
 use std::cell::RefCell;
-use std::f64::consts::TAU;
+use std::f64::consts::{PI, TAU};
 use std::rc::Rc;
 use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::{JsCast, JsValue};
@@ -41,8 +41,8 @@ impl DrawWithState for HtmlDom {
 
             context.clear_rect(0.0, 0.0, canvas.width().into(), canvas.height().into());
 
-            let sec = Date::now() as f64 / 2000.0;
-            let t = sec - sec.floor();
+            let sec = Date::now() as f64 / 1000.0;
+            let t = ((sec * PI).cos() + 1.0) * 0.5;
             let point_c = v_lerp(point_a, point_b, t);
 
             context.draw_dot(&point_c, "");
