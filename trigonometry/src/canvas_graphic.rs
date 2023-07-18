@@ -5,7 +5,6 @@ use crate::draw::DrawWithState;
 use commons::geometry::average;
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, Document};
-use web_commons::log;
 
 #[derive(Clone)]
 pub struct CanvasGraphic {
@@ -35,7 +34,6 @@ impl DrawWithState for CanvasGraphic {
             sign(app_state.get_cos().signum()) * app_state.get_tan().hypot(1.0_f64) * AppState::get_dist_c(),
             0.0
         ];
-        log(std::format!("loc2 x: {}", point_t[0]).as_str());
 
         self.canvas.context.draw_text_with_color(
             std::format!("sin = {:.2}", app_state.get_sin()).as_str(),
