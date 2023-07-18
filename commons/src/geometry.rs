@@ -1,4 +1,3 @@
-
 pub fn distance(a: &[i32; 2], b: &[i32; 2]) -> f64 {
     let x_diff = (a[0] - b[0]) as f64;
     let y_diff = (a[1] - b[1]) as f64;
