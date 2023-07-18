@@ -2,18 +2,17 @@ use crate::app_state::AppState;
 use crate::draw::DrawWithState;
 use crate::html::HtmlDom;
 use js_sys::Array;
-use std::f64::consts::TAU;
+use std::f64::consts::{PI, TAU};
 use js_sys::Math::asin;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
 use commons::geometry::{average, distance};
-use web_commons::log;
 
 impl DrawWithState for HtmlDom {
     fn draw(&self, app_state: &AppState) -> Result<(), JsValue> {
         let dist_c = distance(&app_state.point_a, &app_state.point_b);
         let dist_a = distance(&app_state.point_b, &app_state.point_c);
-        let dist_b = distance(&app_state.point_c, &app_state.point_a);
+        // let dist_b = distance(&app_state.point_c, &app_state.point_a);
 
         self.context.clear_rect(
             (-self.offset[0]).into(),
@@ -32,7 +31,7 @@ impl DrawWithState for HtmlDom {
             &[-app_state.html.offset[0] / 2, (app_state.html.offset[1] as f64 * 0.7) as i32]);
 
         self.context.draw_text(
-            std::format!("θ = a/c = {:.2} ({}°)", theta, theta.to_degrees().round() as i32).as_str(),
+            std::format!("θ = a/c = {:.2} ({}°)", theta, theta.to_degrees().round()  as i32).as_str(),
             &[app_state.html.offset[0] / 2, (app_state.html.offset[1] as f64 * 0.7) as i32]);
 
         self.context.draw_line(&app_state.point_a, &app_state.point_b);
@@ -44,11 +43,21 @@ impl DrawWithState for HtmlDom {
 
         self.context.draw_text("θ", &app_state.point_a);
 
+        let start = if app_state.point_b[0] > app_state.point_a[0] { 0.0 } else { PI };
+        let mut end = if app_state.point_b[1] < app_state.point_c[1] { -theta } else { theta };
+        if app_state.point_b[0] < app_state.point_a[0] {
+            end = PI - end;
+        }
+        let clockwise = (app_state.point_b[1] < app_state.point_c[1]) ^ (app_state.point_b[0] > app_state.point_a[0]);
+
+        self.context.draw_angle(start, end, !clockwise);
+
         Ok(())
     }
 }
 
 trait ContextExt {
+    fn draw_angle(&self, start: f64, end: f64, clockwise: bool);
     fn draw_line(&self, from: &[i32; 2], to: &[i32; 2]);
     fn draw_line_with_color(&self, from: &[i32; 2], to: &[i32; 2], color: &str);
     fn draw_coordinate_system(&self, offset: &[i32; 2]);
@@ -62,6 +71,14 @@ trait ContextExt {
 }
 
 impl ContextExt for CanvasRenderingContext2d {
+    fn draw_angle(&self, start: f64, end: f64, clockwise: bool) {
+        self.begin_path();
+        self.set_stroke_style(&JsValue::from_str("black"));
+        self.set_line_width(2.0);
+        let _ = self.arc_with_anticlockwise(0.0, 0.0, 20.0, start, end, clockwise);
+        self.stroke();
+    }
+
     fn draw_line(&self, from: &[i32; 2], to: &[i32; 2]) {
         self.draw_line_with_color(from, to, "black")
     }
