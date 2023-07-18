@@ -1,5 +1,6 @@
 use crate::app_state::AppState;
 use crate::canvas::Canvas;
+use crate::canvas::ContextExt;
 use crate::draw::DrawWithState;
 use wasm_bindgen::JsValue;
 use web_sys::Document;
@@ -19,6 +20,10 @@ impl CanvasChart {
 
 impl DrawWithState for CanvasChart {
     fn draw(&self, app_state: &AppState) -> Result<(), JsValue> {
-        self.canvas.draw(app_state)
+        self.canvas.draw(app_state)?;
+
+        self.canvas.context.draw_point(&[0, 0]);
+
+        Ok(())
     }
 }

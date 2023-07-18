@@ -1,9 +1,8 @@
 use crate::app_state::AppState;
 use crate::canvas::Canvas;
 use crate::draw::DrawWithState;
-use commons::geometry::{average, distance};
-use js_sys::Math::asin;
-use std::f64::consts::{PI, TAU};
+use commons::geometry::average;
+use std::f64::consts::PI;
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, Document};
 
@@ -22,10 +21,6 @@ impl CanvasGraphic {
 
 impl DrawWithState for CanvasGraphic {
     fn draw(&self, app_state: &AppState) -> Result<(), JsValue> {
-        let dist_c = distance(&app_state.point_a, &app_state.point_b);
-        let dist_a = distance(&app_state.point_b, &app_state.point_c);
-        let dist_b = distance(&app_state.point_c, &app_state.point_a);
-
         self.canvas.context.clear_rect(
             (-self.canvas.offset[0]).into(),
             (-self.canvas.offset[1]).into(),
@@ -35,13 +30,8 @@ impl DrawWithState for CanvasGraphic {
 
         self.canvas.draw(app_state)?;
 
-        let sin = dist_a / dist_c;
-        let cos = dist_b / dist_c;
-        let tan = dist_a / dist_b;
-        let theta = asin(sin);
-
         self.canvas.context.draw_text_with_color(
-            std::format!("sin = a/c = {:.2}", sin).as_str(),
+            std::format!("sin = a/c = {:.2}", app_state.get_sin()).as_str(),
             &[
                 -self.canvas.offset[0] / 2,
                 (self.canvas.offset[1] as f64 * 0.7) as i32,
@@ -50,7 +40,7 @@ impl DrawWithState for CanvasGraphic {
         );
 
         self.canvas.context.draw_text_with_color(
-            std::format!("cos = b/c = {:.2}", cos).as_str(),
+            std::format!("cos = b/c = {:.2}", app_state.get_cos()).as_str(),
             &[
                 -self.canvas.offset[0] / 2,
                 (self.canvas.offset[1] as f64 * 0.8) as i32,
@@ -59,7 +49,7 @@ impl DrawWithState for CanvasGraphic {
         );
 
         self.canvas.context.draw_text_with_color(
-            std::format!("tan = a/b = {:.2}", tan).as_str(),
+            std::format!("tan = a/b = {:.2}", app_state.get_tan()).as_str(),
             &[
                 -self.canvas.offset[0] / 2,
                 (self.canvas.offset[1] as f64 * 0.9) as i32,
@@ -67,11 +57,13 @@ impl DrawWithState for CanvasGraphic {
             "magenta",
         );
 
+        let theta = app_state.get_theta();
+
         self.canvas.context.draw_text(
             std::format!(
                 "θ = a/c = {:.2} ({}°)",
-                theta,
-                theta.to_degrees().round() as i32
+                app_state.get_theta(),
+                app_state.get_theta().to_degrees().round() as i32
             )
             .as_str(),
             &[
@@ -132,10 +124,6 @@ trait ContextGraphicExt {
     fn draw_line(&self, from: &[i32; 2], to: &[i32; 2]);
     fn draw_line_with_color(&self, from: &[i32; 2], to: &[i32; 2], color: &str);
 
-    fn draw_point(&self, location: &[i32; 2]);
-    fn draw_point_with_size(&self, location: &[i32; 2], size: i32);
-    fn draw_point_with_size_and_color(&self, location: &[i32; 2], size: i32, color: &str);
-
     fn draw_text(&self, text: &str, location: &[i32; 2]);
     fn draw_text_with_color(&self, text: &str, location: &[i32; 2], color: &str);
 }
@@ -161,27 +149,6 @@ impl ContextGraphicExt for CanvasRenderingContext2d {
         self.set_line_width(2.0);
         self.set_stroke_style(&JsValue::from_str(color));
         self.stroke();
-    }
-
-    fn draw_point(&self, location: &[i32; 2]) {
-        self.draw_point_with_size(location, 20)
-    }
-
-    fn draw_point_with_size(&self, location: &[i32; 2], size: i32) {
-        self.draw_point_with_size_and_color(location, size, "black")
-    }
-
-    fn draw_point_with_size_and_color(&self, location: &[i32; 2], size: i32, color: &str) {
-        self.begin_path();
-        self.set_fill_style(&JsValue::from_str(color));
-        let _ = self.arc(
-            location[0].into(),
-            location[1].into(),
-            size as f64 / 2.0,
-            0.0,
-            TAU,
-        );
-        self.fill();
     }
 
     fn draw_text(&self, text: &str, location: &[i32; 2]) {
