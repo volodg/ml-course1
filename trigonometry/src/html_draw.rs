@@ -5,9 +5,15 @@ use js_sys::Array;
 use std::f64::consts::TAU;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
+use commons::geometry::{average, distance};
+use web_commons::log;
 
 impl DrawWithState for HtmlDom {
     fn draw(&self, app_state: &AppState) -> Result<(), JsValue> {
+        let dist_c = distance(&app_state.point_a, &app_state.point_b);
+        let dist_a = distance(&app_state.point_b, &app_state.point_c);
+        let dist_b = distance(&app_state.point_c, &app_state.point_a);
+
         self.context.clear_rect(
             (-self.offset[0]).into(),
             (-self.offset[1]).into(),
@@ -17,18 +23,25 @@ impl DrawWithState for HtmlDom {
 
         self.context.draw_coordinate_system(&self.offset);
 
-        self.context.draw_line(&app_state.point_a, &app_state.point_b);
-        self.context.draw_line(&app_state.point_a, &app_state.point_c);
-        self.context.draw_line(&app_state.point_b, &app_state.point_c);
+        let sin = dist_a / dist_c;
+        self.context.draw_text(
+            std::format!("sin = a/c = {:.2}", sin).as_str(),
+            &[-app_state.html.offset[0] / 2, (app_state.html.offset[1] as f64 * 0.7) as i32]);
 
-        self.context.draw_all_points(&app_state);
+        self.context.draw_line(&app_state.point_a, &app_state.point_b);
+        self.context.draw_text("c", &average(&app_state.point_a, &app_state.point_b));
+        self.context.draw_line(&app_state.point_a, &app_state.point_c);
+        self.context.draw_text("b", &average(&app_state.point_a, &app_state.point_c));
+        self.context.draw_line(&app_state.point_b, &app_state.point_c);
+        self.context.draw_text("a", &average(&app_state.point_b, &app_state.point_c));
+
+        self.context.draw_text("θ", &app_state.point_a);
 
         Ok(())
     }
 }
 
 trait ContextExt {
-    fn draw_all_points(&self, app_state: &AppState);
     fn draw_line(&self, from: &[i32; 2], to: &[i32; 2]);
     fn draw_line_with_color(&self, from: &[i32; 2], to: &[i32; 2], color: &str);
     fn draw_coordinate_system(&self, offset: &[i32; 2]);
@@ -42,15 +55,6 @@ trait ContextExt {
 }
 
 impl ContextExt for CanvasRenderingContext2d {
-    fn draw_all_points(&self, app_state: &AppState) {
-        self.draw_point(&app_state.point_a);
-        self.draw_text("A", &app_state.point_a);
-        self.draw_point(&app_state.point_b);
-        self.draw_text("B", &app_state.point_b);
-        self.draw_point(&app_state.point_c);
-        self.draw_text("C", &app_state.point_c);
-    }
-
     fn draw_line(&self, from: &[i32; 2], to: &[i32; 2]) {
         self.draw_line_with_color(from, to, "black")
     }
@@ -103,7 +107,7 @@ impl ContextExt for CanvasRenderingContext2d {
     }
 
     fn draw_text(&self, text: &str, location: &[i32; 2]) {
-        self.draw_text_with_color(text, location, "white")
+        self.draw_text_with_color(text, location, "black")
     }
 
     fn draw_text_with_color(&self, text: &str, location: &[i32; 2], color: &str) {
@@ -111,7 +115,10 @@ impl ContextExt for CanvasRenderingContext2d {
         self.set_fill_style(&JsValue::from_str(color));
         self.set_text_align("center");
         self.set_text_baseline("middle");
-        self.set_font("bold 13px Courier");
+        self.set_font("bold 18px Courier");
+        self.set_stroke_style(&JsValue::from_str("white"));
+        self.set_line_width(7.0);
+        let _ = self.stroke_text(text, location[0].into(), location[1].into());
         let _ = self.fill_text(text, location[0].into(), location[1].into());
     }
 }
