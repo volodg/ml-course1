@@ -89,14 +89,14 @@ impl DrawWithState for CanvasGraphic {
 
         self.canvas
             .context
-            .draw_angle(AppState::get_dist_c(), app_state.get_theta());
+            .draw_angle_clockwise(AppState::get_dist_c(), app_state.get_theta(), app_state.get_theta() >= 0.0);
 
         Ok(())
     }
 }
 
 trait ContextGraphicExt {
-    fn draw_angle(&self, radius: f64, end: f64);
+    fn draw_angle_clockwise(&self, radius: f64, end: f64, clockwise: bool);
     fn draw_line(&self, from: &[f64; 2], to: &[f64; 2]);
     fn draw_line_with_color(&self, from: &[f64; 2], to: &[f64; 2], color: &str);
 
@@ -105,11 +105,11 @@ trait ContextGraphicExt {
 }
 
 impl ContextGraphicExt for CanvasRenderingContext2d {
-    fn draw_angle(&self, radius: f64, end: f64) {
+    fn draw_angle_clockwise(&self, radius: f64, end: f64, clockwise: bool) {
         self.begin_path();
         self.set_stroke_style(&JsValue::from_str("black"));
         self.set_line_width(2.0);
-        let _ = self.arc(0.0, 0.0, radius, 0.0, end);
+        let _ = self.arc_with_anticlockwise(0.0, 0.0, radius, 0.0, end, !clockwise);
         self.stroke();
     }
 
