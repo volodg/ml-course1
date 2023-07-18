@@ -20,4 +20,5 @@ features = [
     'CanvasRenderingContext2d',
     'Document',
     'HtmlCanvasElement',
+    'WheelEvent'
 ]

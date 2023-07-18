@@ -10,7 +10,7 @@ use web_sys::{CanvasRenderingContext2d, Document, HtmlCanvasElement};
 pub struct Canvas {
     pub canvas: HtmlCanvasElement,
     pub context: CanvasRenderingContext2d,
-    pub offset: [i32; 2],
+    pub offset: [f64; 2],
 }
 
 impl Canvas {
@@ -23,7 +23,7 @@ impl Canvas {
             .unwrap()
             .dyn_into::<CanvasRenderingContext2d>()?;
 
-        let offset = [canvas.width() as i32 / 2, canvas.height() as i32 / 2];
+        let offset = [canvas.width() as f64 / 2.0, canvas.height() as f64 / 2.0];
         let _ = context.translate(offset[0].into(), offset[1].into());
 
         Ok(Self {
@@ -42,15 +42,15 @@ impl DrawWithState for Canvas {
 }
 
 pub trait ContextExt {
-    fn draw_coordinate_system(&self, offset: &[i32; 2]);
+    fn draw_coordinate_system(&self, offset: &[f64; 2]);
 
-    fn draw_point(&self, location: &[i32; 2]);
-    fn draw_point_with_size(&self, location: &[i32; 2], size: i32);
-    fn draw_point_with_size_and_color(&self, location: &[i32; 2], size: i32, color: &str);
+    fn draw_point(&self, location: &[f64; 2]);
+    fn draw_point_with_size(&self, location: &[f64; 2], size: f64);
+    fn draw_point_with_size_and_color(&self, location: &[f64; 2], size: f64, color: &str);
 }
 
 impl ContextExt for CanvasRenderingContext2d {
-    fn draw_coordinate_system(&self, offset: &[i32; 2]) {
+    fn draw_coordinate_system(&self, offset: &[f64; 2]) {
         self.begin_path();
         self.move_to((-offset[0]).into(), 0.0);
         self.line_to(offset[0].into(), 0.0);
@@ -66,15 +66,15 @@ impl ContextExt for CanvasRenderingContext2d {
         let _ = self.set_line_dash(&Array::new());
     }
 
-    fn draw_point(&self, location: &[i32; 2]) {
-        self.draw_point_with_size(location, 20)
+    fn draw_point(&self, location: &[f64; 2]) {
+        self.draw_point_with_size(location, 20.0)
     }
 
-    fn draw_point_with_size(&self, location: &[i32; 2], size: i32) {
+    fn draw_point_with_size(&self, location: &[f64; 2], size: f64) {
         self.draw_point_with_size_and_color(location, size, "black")
     }
 
-    fn draw_point_with_size_and_color(&self, location: &[i32; 2], size: i32, color: &str) {
+    fn draw_point_with_size_and_color(&self, location: &[f64; 2], size: f64, color: &str) {
         self.begin_path();
         self.set_fill_style(&JsValue::from_str(color));
         let _ = self.arc(

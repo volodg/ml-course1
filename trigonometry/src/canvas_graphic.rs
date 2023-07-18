@@ -32,28 +32,19 @@ impl DrawWithState for CanvasGraphic {
 
         self.canvas.context.draw_text_with_color(
             std::format!("sin = a/c = {:.2}", app_state.get_sin()).as_str(),
-            &[
-                -self.canvas.offset[0] / 2,
-                (self.canvas.offset[1] as f64 * 0.7) as i32,
-            ],
+            &[-self.canvas.offset[0] / 2.0, self.canvas.offset[1] * 0.7],
             "red",
         );
 
         self.canvas.context.draw_text_with_color(
             std::format!("cos = b/c = {:.2}", app_state.get_cos()).as_str(),
-            &[
-                -self.canvas.offset[0] / 2,
-                (self.canvas.offset[1] as f64 * 0.8) as i32,
-            ],
+            &[-self.canvas.offset[0] / 2.0, self.canvas.offset[1] * 0.8],
             "blue",
         );
 
         self.canvas.context.draw_text_with_color(
             std::format!("tan = a/b = {:.2}", app_state.get_tan()).as_str(),
-            &[
-                -self.canvas.offset[0] / 2,
-                (self.canvas.offset[1] as f64 * 0.9) as i32,
-            ],
+            &[-self.canvas.offset[0] / 2.0, self.canvas.offset[1] * 0.9],
             "magenta",
         );
 
@@ -66,52 +57,54 @@ impl DrawWithState for CanvasGraphic {
                 app_state.get_theta().to_degrees().round() as i32
             )
             .as_str(),
-            &[
-                self.canvas.offset[0] / 2,
-                (self.canvas.offset[1] as f64 * 0.7) as i32,
-            ],
+            &[self.canvas.offset[0] / 2.0, self.canvas.offset[1] * 0.7],
         );
 
         self.canvas
             .context
-            .draw_line(&app_state.point_a, &app_state.point_b);
-        self.canvas
-            .context
-            .draw_text("c", &average(&app_state.point_a, &app_state.point_b));
-        self.canvas
-            .context
-            .draw_line_with_color(&app_state.point_a, &app_state.point_c, "blue");
-        self.canvas.context.draw_text_with_color(
-            "b",
-            &average(&app_state.point_a, &app_state.point_c),
+            .draw_line(&app_state.get_point_a(), &app_state.get_point_b());
+        self.canvas.context.draw_text(
+            "c",
+            &average(&app_state.get_point_a(), &app_state.get_point_b()),
+        );
+        self.canvas.context.draw_line_with_color(
+            &app_state.get_point_a(),
+            &app_state.get_point_c(),
             "blue",
         );
-        self.canvas
-            .context
-            .draw_line_with_color(&app_state.point_b, &app_state.point_c, "red");
+        self.canvas.context.draw_text_with_color(
+            "b",
+            &average(&app_state.get_point_a(), &app_state.get_point_c()),
+            "blue",
+        );
+        self.canvas.context.draw_line_with_color(
+            &app_state.get_point_b(),
+            &app_state.get_point_c(),
+            "red",
+        );
         self.canvas.context.draw_text_with_color(
             "a",
-            &average(&app_state.point_b, &app_state.point_c),
+            &average(&app_state.get_point_b(), &app_state.get_point_c()),
             "red",
         );
 
-        self.canvas.context.draw_text("θ", &app_state.point_a);
+        self.canvas.context.draw_text("θ", &app_state.get_point_a());
 
-        let start = if app_state.point_b[0] > app_state.point_a[0] {
+        let start = if app_state.get_point_b()[0] > app_state.get_point_a()[0] {
             0.0
         } else {
             PI
         };
-        let mut end = if app_state.point_b[1] < app_state.point_c[1] {
+        let mut end = if app_state.get_point_b()[1] < app_state.get_point_c()[1] {
             -theta
         } else {
             theta
         };
-        if app_state.point_b[0] < app_state.point_a[0] {
+        if app_state.get_point_b()[0] < app_state.get_point_a()[0] {
             end = PI - end;
         }
-        let clockwise = (app_state.point_b[1] < app_state.point_c[1])
-            ^ (app_state.point_b[0] > app_state.point_a[0]);
+        let clockwise = (app_state.get_point_b()[1] < app_state.get_point_c()[1])
+            ^ (app_state.get_point_b()[0] > app_state.get_point_a()[0]);
 
         self.canvas.context.draw_angle(start, end, !clockwise);
 
@@ -121,11 +114,11 @@ impl DrawWithState for CanvasGraphic {
 
 trait ContextGraphicExt {
     fn draw_angle(&self, start: f64, end: f64, clockwise: bool);
-    fn draw_line(&self, from: &[i32; 2], to: &[i32; 2]);
-    fn draw_line_with_color(&self, from: &[i32; 2], to: &[i32; 2], color: &str);
+    fn draw_line(&self, from: &[f64; 2], to: &[f64; 2]);
+    fn draw_line_with_color(&self, from: &[f64; 2], to: &[f64; 2], color: &str);
 
-    fn draw_text(&self, text: &str, location: &[i32; 2]);
-    fn draw_text_with_color(&self, text: &str, location: &[i32; 2], color: &str);
+    fn draw_text(&self, text: &str, location: &[f64; 2]);
+    fn draw_text_with_color(&self, text: &str, location: &[f64; 2], color: &str);
 }
 
 impl ContextGraphicExt for CanvasRenderingContext2d {
@@ -137,11 +130,11 @@ impl ContextGraphicExt for CanvasRenderingContext2d {
         self.stroke();
     }
 
-    fn draw_line(&self, from: &[i32; 2], to: &[i32; 2]) {
+    fn draw_line(&self, from: &[f64; 2], to: &[f64; 2]) {
         self.draw_line_with_color(from, to, "black")
     }
 
-    fn draw_line_with_color(&self, from: &[i32; 2], to: &[i32; 2], color: &str) {
+    fn draw_line_with_color(&self, from: &[f64; 2], to: &[f64; 2], color: &str) {
         self.begin_path();
         self.move_to(from[0].into(), from[1].into());
         self.line_to(to[0].into(), to[1].into());
@@ -151,11 +144,11 @@ impl ContextGraphicExt for CanvasRenderingContext2d {
         self.stroke();
     }
 
-    fn draw_text(&self, text: &str, location: &[i32; 2]) {
+    fn draw_text(&self, text: &str, location: &[f64; 2]) {
         self.draw_text_with_color(text, location, "black")
     }
 
-    fn draw_text_with_color(&self, text: &str, location: &[i32; 2], color: &str) {
+    fn draw_text_with_color(&self, text: &str, location: &[f64; 2], color: &str) {
         self.begin_path();
         self.set_fill_style(&JsValue::from_str(color));
         self.set_text_align("center");

@@ -1,58 +1,74 @@
 use crate::html::HtmlDom;
 use commons::geometry::distance;
-use js_sys::Math::asin;
+use js_sys::Math::{asin, cos, sin, tan};
+use std::f64::consts::FRAC_PI_4;
+use web_commons::log;
 
 pub struct AppState {
     pub html: HtmlDom,
 
-    pub point_a: [i32; 2],
-    pub point_b: [i32; 2],
-    pub point_c: [i32; 2],
+    pub theta: f64,
+    point_b: [f64; 2],
+    point_c: [f64; 2],
 }
 
 impl AppState {
     pub fn create(html: HtmlDom) -> Self {
-        let point_a = [0, 0];
-        let point_b = [90, 120];
-        let point_c = [point_b[0], 0];
-
+        let theta = FRAC_PI_4;
+        let point_b = Self::calc_point_b(theta);
+        let point_c = Self::calc_point_c(point_b[0]);
+        log(std::format!("point_b: {:?}", point_b).as_str());
+        log(std::format!("point_c: {:?}", point_c).as_str());
         Self {
             html,
-            point_a,
+            theta,
             point_b,
             point_c,
         }
     }
 
-    pub fn update_points(&mut self, position: &[i32; 2]) {
-        self.point_b[0] = position[0] - self.html.canvas.canvas.offset[0];
-        self.point_b[1] = position[1] - self.html.canvas.canvas.offset[1];
-
-        self.point_c[0] = self.point_b[0];
+    pub fn get_point_a(&self) -> [f64; 2] {
+        [0.0, 0.0]
     }
 
-    fn get_dist_a(&self) -> f64 {
-        distance(&self.point_b, &self.point_c)
+    fn calc_point_b(theta: f64) -> [f64; 2] {
+        [
+            cos(theta) * Self::get_dist_c(),
+            sin(theta) * Self::get_dist_c(),
+        ]
     }
 
-    fn get_dist_b(&self) -> f64 {
-        distance(&self.point_c, &self.point_a)
+    fn calc_point_c(x: f64) -> [f64; 2] {
+        [x, 0.0]
     }
 
-    fn get_dist_c(&self) -> f64 {
-        distance(&self.point_a, &self.point_b)
+    pub fn get_point_b(&self) -> [f64; 2] {
+        self.point_b
+    }
+
+    pub fn get_point_c(&self) -> [f64; 2] {
+        [self.get_point_b()[0], 0.0]
+    }
+
+    pub fn update_points(&mut self) {
+        self.point_b = Self::calc_point_b(self.theta);
+        self.point_b = Self::calc_point_c(self.point_b[0]);
+    }
+
+    fn get_dist_c() -> f64 {
+        100.0
     }
 
     pub fn get_sin(&self) -> f64 {
-        self.get_dist_a() / self.get_dist_c()
+        sin(self.theta)
     }
 
     pub fn get_cos(&self) -> f64 {
-        self.get_dist_b() / self.get_dist_c()
+        cos(self.theta)
     }
 
     pub fn get_tan(&self) -> f64 {
-        self.get_dist_a() / self.get_dist_b()
+        tan(self.theta)
     }
 
     pub fn get_theta(&self) -> f64 {
