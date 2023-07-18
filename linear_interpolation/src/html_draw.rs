@@ -17,6 +17,14 @@ fn v_lerp(a: [f64; 2], b: [f64; 2], t: f64) -> [f64; 2] {
     [lerp(a[0], b[0], t), lerp(a[1], b[1], t)]
 }
 
+fn v_lerp_3d(a: [f64; 3], b: [f64; 3], t: f64) -> [f64; 3] {
+    [
+        lerp(a[0], b[0], t),
+        lerp(a[1], b[1], t),
+        lerp(a[2], b[2], t),
+    ]
+}
+
 fn request_animation_frame(f: &Closure<dyn FnMut()>) {
     window()
         .expect("no global `window` exists")
@@ -28,6 +36,9 @@ impl DrawWithState for HtmlDom {
     fn draw(&self, _app_state: &AppState) -> Result<(), JsValue> {
         let point_a = [100.0, 300.0];
         let point_b = [400.0, 100.0];
+
+        let orange = [230.0, 150.0, 0.0];
+        let blue = [0.0, 70.0, 160.0];
 
         let context = self.context.clone();
         let canvas = self.canvas.clone();
@@ -48,6 +59,13 @@ impl DrawWithState for HtmlDom {
             context.draw_dot(&point_c, "");
             context.draw_dot(&point_a, "A");
             context.draw_dot(&point_b, "B");
+
+            let color = v_lerp_3d(orange, blue, t);
+
+            canvas.style().set_property(
+                "background-color",
+                std::format!("rgb({},{},{})", color[0], color[1], color[2]).as_str()
+            ).unwrap();
 
             request_animation_frame(animation_f.borrow().as_ref().unwrap());
         }));
