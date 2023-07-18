@@ -1,38 +1,55 @@
 use crate::app_state::AppState;
 use crate::draw::DrawWithState;
 use crate::html::HtmlDom;
-use std::f64::consts::TAU;
 use js_sys::Date;
-use wasm_bindgen::JsValue;
-use web_sys::CanvasRenderingContext2d;
+use std::cell::RefCell;
+use std::f64::consts::TAU;
+use std::rc::Rc;
+use wasm_bindgen::prelude::Closure;
+use wasm_bindgen::{JsCast, JsValue};
+use web_sys::{window, CanvasRenderingContext2d};
 
 fn lerp(a: f64, b: f64, t: f64) -> f64 {
     a * (1.0 - t) + b * t
 }
 
 fn v_lerp(a: [f64; 2], b: [f64; 2], t: f64) -> [f64; 2] {
-    [
-        lerp(a[0], b[0], t),
-        lerp(a[1], b[1], t)
-    ]
+    [lerp(a[0], b[0], t), lerp(a[1], b[1], t)]
+}
+
+fn request_animation_frame(f: &Closure<dyn FnMut()>) {
+    window()
+        .expect("no global `window` exists")
+        .request_animation_frame(f.as_ref().unchecked_ref())
+        .expect("should register `requestAnimationFrame` OK");
 }
 
 impl DrawWithState for HtmlDom {
     fn draw(&self, _app_state: &AppState) -> Result<(), JsValue> {
-        self.context.clear_rect(
-            0.0,
-            0.0,
-            self.canvas.width().into(),
-            self.canvas.height().into(),
-        );
-
         let point_a = [100.0, 300.0];
         let point_b = [400.0, 100.0];
 
-        let sec = Date::now() as f64 / 1000.0;
-        let t = sec - sec.floor();
-        let point_c = v_lerp(point_a, point_b, t);
-        self.context.draw_dot(&point_c, "");
+        let context = self.context.clone();
+        let canvas = self.canvas.clone();
+
+        let animation_f = Rc::new(RefCell::new(None));
+        let animation_f_copy = animation_f.clone();
+
+        *animation_f_copy.borrow_mut() = Some(Closure::new(move || {
+            let point_a = point_a.clone();
+            let point_b = point_b.clone();
+
+            context.clear_rect(0.0, 0.0, canvas.width().into(), canvas.height().into());
+
+            let sec = Date::now() as f64 / 2000.0;
+            let t = sec - sec.floor();
+            let point_c = v_lerp(point_a, point_b, t);
+            context.draw_dot(&point_c, "");
+
+            request_animation_frame(animation_f.borrow().as_ref().unwrap());
+        }));
+
+        request_animation_frame(animation_f_copy.borrow().as_ref().unwrap());
 
         self.context.draw_dot(&point_a, "A");
         self.context.draw_dot(&point_b, "B");
