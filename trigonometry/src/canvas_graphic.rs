@@ -2,7 +2,6 @@ use crate::app_state::AppState;
 use crate::canvas::Canvas;
 use crate::draw::DrawWithState;
 use commons::geometry::average;
-use std::f64::consts::PI;
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, Document};
 
@@ -48,8 +47,6 @@ impl DrawWithState for CanvasGraphic {
             "magenta",
         );
 
-        let theta = app_state.get_theta();
-
         self.canvas.context.draw_text(
             std::format!(
                 "θ = a/c = {:.2} ({}°)",
@@ -90,30 +87,16 @@ impl DrawWithState for CanvasGraphic {
 
         self.canvas.context.draw_text("θ", &app_state.get_point_a());
 
-        let start = if app_state.get_point_b()[0] > app_state.get_point_a()[0] {
-            0.0
-        } else {
-            PI
-        };
-        let mut end = if app_state.get_point_b()[1] < app_state.get_point_c()[1] {
-            -theta
-        } else {
-            theta
-        };
-        if app_state.get_point_b()[0] < app_state.get_point_a()[0] {
-            end = PI - end;
-        }
-        let clockwise = (app_state.get_point_b()[1] < app_state.get_point_c()[1])
-            ^ (app_state.get_point_b()[0] > app_state.get_point_a()[0]);
-
-        self.canvas.context.draw_angle(start, end, !clockwise);
+        self.canvas
+            .context
+            .draw_angle(AppState::get_dist_c(), app_state.get_theta());
 
         Ok(())
     }
 }
 
 trait ContextGraphicExt {
-    fn draw_angle(&self, start: f64, end: f64, clockwise: bool);
+    fn draw_angle(&self, radius: f64, end: f64);
     fn draw_line(&self, from: &[f64; 2], to: &[f64; 2]);
     fn draw_line_with_color(&self, from: &[f64; 2], to: &[f64; 2], color: &str);
 
@@ -122,11 +105,11 @@ trait ContextGraphicExt {
 }
 
 impl ContextGraphicExt for CanvasRenderingContext2d {
-    fn draw_angle(&self, start: f64, end: f64, clockwise: bool) {
+    fn draw_angle(&self, radius: f64, end: f64) {
         self.begin_path();
         self.set_stroke_style(&JsValue::from_str("black"));
         self.set_line_width(2.0);
-        let _ = self.arc_with_anticlockwise(0.0, 0.0, 20.0, start, end, clockwise);
+        let _ = self.arc(0.0, 0.0, radius, 0.0, end);
         self.stroke();
     }
 

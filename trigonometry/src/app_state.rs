@@ -1,6 +1,5 @@
 use crate::html::HtmlDom;
-use commons::geometry::distance;
-use js_sys::Math::{asin, cos, sin, tan};
+use js_sys::Math::{cos, sin, tan};
 use std::f64::consts::FRAC_PI_4;
 use web_commons::log;
 
@@ -8,6 +7,7 @@ pub struct AppState {
     pub html: HtmlDom,
 
     pub theta: f64,
+    pub last_x_pos: f64,
     point_b: [f64; 2],
     point_c: [f64; 2],
 }
@@ -22,6 +22,7 @@ impl AppState {
         Self {
             html,
             theta,
+            last_x_pos: 0.0,
             point_b,
             point_c,
         }
@@ -52,10 +53,10 @@ impl AppState {
 
     pub fn update_points(&mut self) {
         self.point_b = Self::calc_point_b(self.theta);
-        self.point_b = Self::calc_point_c(self.point_b[0]);
+        self.point_c = Self::calc_point_c(self.point_b[0]);
     }
 
-    fn get_dist_c() -> f64 {
+    pub fn get_dist_c() -> f64 {
         100.0
     }
 
@@ -72,6 +73,6 @@ impl AppState {
     }
 
     pub fn get_theta(&self) -> f64 {
-        asin(self.get_sin())
+        self.theta
     }
 }
