@@ -2,6 +2,7 @@ use crate::app_state::AppState;
 use crate::draw::DrawWithState;
 use crate::html::HtmlDom;
 use std::f64::consts::TAU;
+use js_sys::Date;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
 
@@ -9,20 +10,29 @@ fn lerp(a: f64, b: f64, t: f64) -> f64 {
     a * (1.0 - t) + b * t
 }
 
+fn v_lerp(a: [f64; 2], b: [f64; 2], t: f64) -> [f64; 2] {
+    [
+        lerp(a[0], b[0], t),
+        lerp(a[1], b[1], t)
+    ]
+}
+
 impl DrawWithState for HtmlDom {
     fn draw(&self, _app_state: &AppState) -> Result<(), JsValue> {
+        self.context.clear_rect(
+            0.0,
+            0.0,
+            self.canvas.width().into(),
+            self.canvas.height().into(),
+        );
+
         let point_a = [100.0, 300.0];
         let point_b = [400.0, 100.0];
 
-        let count = 10;
-        for i in 0..count {
-            let t = i as f64 / count as f64;
-            let point_c = [
-                lerp(point_a[0], point_b[0], t),
-                lerp(point_a[1], point_b[1], t),
-            ];
-            self.context.draw_dot(&point_c, std::format!(".{}", i).as_str());
-        }
+        let sec = Date::now() as f64 / 1000.0;
+        let t = sec - sec.floor();
+        let point_c = v_lerp(point_a, point_b, t);
+        self.context.draw_dot(&point_c, "");
 
         self.context.draw_dot(&point_a, "A");
         self.context.draw_dot(&point_b, "B");
