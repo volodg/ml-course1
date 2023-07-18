@@ -5,19 +5,27 @@ use std::f64::consts::TAU;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
 
+fn lerp(a: f64, b: f64, t: f64) -> f64 {
+    a * (1.0 - t) + b * t
+}
+
 impl DrawWithState for HtmlDom {
     fn draw(&self, _app_state: &AppState) -> Result<(), JsValue> {
-        let point_a = [100.0, 200.0];
-        let point_b = [400.0, 200.0];
+        let point_a = [100.0, 300.0];
+        let point_b = [400.0, 100.0];
 
-        let point_с = [
-            point_a[0] + (point_b[0] - point_a[0]) / 2.0,
-            200.0
-        ];
+        let count = 10;
+        for i in 0..count {
+            let t = i as f64 / count as f64;
+            let point_c = [
+                lerp(point_a[0], point_b[0], t),
+                lerp(point_a[1], point_b[1], t),
+            ];
+            self.context.draw_dot(&point_c, std::format!(".{}", i).as_str());
+        }
 
         self.context.draw_dot(&point_a, "A");
         self.context.draw_dot(&point_b, "B");
-        self.context.draw_dot(&point_с, "C");
 
         Ok(())
     }
