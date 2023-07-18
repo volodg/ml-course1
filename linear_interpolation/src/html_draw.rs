@@ -10,8 +10,14 @@ impl DrawWithState for HtmlDom {
         let point_a = [100.0, 200.0];
         let point_b = [400.0, 200.0];
 
+        let point_с = [
+            point_a[0] + (point_b[0] - point_a[0]) / 2.0,
+            200.0
+        ];
+
         self.context.draw_dot(&point_a, "A");
         self.context.draw_dot(&point_b, "B");
+        self.context.draw_dot(&point_с, "C");
 
         Ok(())
     }
