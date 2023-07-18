@@ -1,9 +1,11 @@
+use js_sys::Math::sign;
 use crate::app_state::AppState;
 use crate::canvas::Canvas;
 use crate::draw::DrawWithState;
 use commons::geometry::average;
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, Document};
+use web_commons::log;
 
 #[derive(Clone)]
 pub struct CanvasGraphic {
@@ -29,27 +31,42 @@ impl DrawWithState for CanvasGraphic {
 
         self.canvas.draw(app_state)?;
 
+        let point_t = [
+            sign(app_state.get_cos().signum()) * app_state.get_tan().hypot(1.0_f64) * AppState::get_dist_c(),
+            0.0
+        ];
+        log(std::format!("loc2 x: {}", point_t[0]).as_str());
+
         self.canvas.context.draw_text_with_color(
-            std::format!("sin = a/c = {:.2}", app_state.get_sin()).as_str(),
+            std::format!("sin = {:.2}", app_state.get_sin()).as_str(),
             &[-self.canvas.offset[0] / 2.0, self.canvas.offset[1] * 0.7],
             "red",
         );
 
         self.canvas.context.draw_text_with_color(
-            std::format!("cos = b/c = {:.2}", app_state.get_cos()).as_str(),
+            std::format!("cos = {:.2}", app_state.get_cos()).as_str(),
             &[-self.canvas.offset[0] / 2.0, self.canvas.offset[1] * 0.8],
             "blue",
         );
 
         self.canvas.context.draw_text_with_color(
-            std::format!("tan = a/b = {:.2}", app_state.get_tan()).as_str(),
+            std::format!("tan = {:.2}", app_state.get_tan()).as_str(),
             &[-self.canvas.offset[0] / 2.0, self.canvas.offset[1] * 0.9],
+            "magenta",
+        );
+
+        self.canvas
+            .context
+            .draw_line_with_color(&app_state.get_point_b(), &point_t, "magenta");
+        self.canvas.context.draw_text_with_color(
+            "tan",
+            &average(&app_state.get_point_b(), &point_t),
             "magenta",
         );
 
         self.canvas.context.draw_text(
             std::format!(
-                "θ = a/c = {:.2} ({}°)",
+                "θ = {:.2} ({}°)",
                 app_state.get_theta(),
                 app_state.get_theta().to_degrees().round() as i32
             )
@@ -61,7 +78,7 @@ impl DrawWithState for CanvasGraphic {
             .context
             .draw_line(&app_state.get_point_a(), &app_state.get_point_b());
         self.canvas.context.draw_text(
-            "c",
+            "1",
             &average(&app_state.get_point_a(), &app_state.get_point_b()),
         );
         self.canvas.context.draw_line_with_color(
