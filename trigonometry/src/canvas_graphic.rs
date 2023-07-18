@@ -1,8 +1,8 @@
-use js_sys::Math::sign;
 use crate::app_state::AppState;
 use crate::canvas::Canvas;
 use crate::draw::DrawWithState;
 use commons::geometry::average;
+use js_sys::Math::sign;
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, Document};
 
@@ -31,8 +31,10 @@ impl DrawWithState for CanvasGraphic {
         self.canvas.draw(app_state)?;
 
         let point_t = [
-            sign(app_state.get_cos().signum()) * app_state.get_tan().hypot(1.0_f64) * AppState::get_dist_c(),
-            0.0
+            sign(app_state.get_cos().signum())
+                * app_state.get_tan().hypot(1.0_f64)
+                * AppState::get_dist_c(),
+            0.0,
         ];
 
         self.canvas.context.draw_text_with_color(
@@ -102,9 +104,11 @@ impl DrawWithState for CanvasGraphic {
 
         self.canvas.context.draw_text("θ", &app_state.get_point_a());
 
-        self.canvas
-            .context
-            .draw_angle_clockwise(AppState::get_dist_c(), app_state.get_theta(), app_state.get_theta() >= 0.0);
+        self.canvas.context.draw_angle_clockwise(
+            AppState::get_dist_c(),
+            app_state.get_theta(),
+            app_state.get_theta() >= 0.0,
+        );
 
         Ok(())
     }
