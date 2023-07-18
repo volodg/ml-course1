@@ -19,8 +19,9 @@ impl StateSubscriber for HtmlDom {
                 let last_x_pos = app_state.borrow().last_x_pos;
                 {
                     let mut borrow = app_state.borrow_mut();
-                    borrow.theta -= sign(last_x_pos - event.offset_x() as f64) / 100.0;
-                    borrow.last_x_pos = last_x_pos;
+                    let next_pos = event.offset_x() as f64;
+                    borrow.theta -= sign(last_x_pos - next_pos) / 20.0;
+                    borrow.last_x_pos = next_pos;
                     borrow.update_points();
                 }
                 app_state.borrow().draw().expect("")
