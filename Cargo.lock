@@ -656,6 +656,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f7012b1bbb0719e1097c47611d3898568c546d597c2e74d66f6087edd5233ff4"
 
 [[package]]
+name = "linear_interpolation"
+version = "0.1.0"
+dependencies = [
+ "commons",
+ "js-sys",
+ "wasm-bindgen",
+ "web-sys",
+ "web_commons",
+]
+
+[[package]]
 name = "log"
 version = "0.4.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
