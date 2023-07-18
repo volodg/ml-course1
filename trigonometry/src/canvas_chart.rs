@@ -22,7 +22,12 @@ impl DrawWithState for CanvasChart {
     fn draw(&self, app_state: &AppState) -> Result<(), JsValue> {
         self.canvas.draw(app_state)?;
 
-        self.canvas.context.draw_point(&[0, 0]);
+        let chart_scale = self.canvas.offset[1] as f64;
+        self.canvas.context.draw_point_with_size_and_color(
+            &[((app_state.get_theta() * chart_scale).round()) as i32, (app_state.get_sin() * chart_scale) as i32],
+            2,
+            "red"
+        );
 
         Ok(())
     }
