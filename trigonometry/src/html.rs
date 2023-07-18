@@ -1,20 +1,20 @@
-use crate::chart_canvas::ChartCanvas;
 use commons::utils::OkExt;
 use wasm_bindgen::JsValue;
 use web_sys::{window, Document};
+use crate::canvas_chart::CanvasChart;
 
 #[derive(Clone)]
 pub struct HtmlDom {
     pub document: Document,
-    pub canvas: ChartCanvas,
-    pub chart_canvas: ChartCanvas,
+    pub canvas: CanvasChart,
+    pub chart_canvas: CanvasChart,
 }
 
 impl HtmlDom {
     pub fn create() -> Result<Self, JsValue> {
         let document = window().unwrap().document().unwrap();
-        let canvas = ChartCanvas::create(&document, "myCanvas")?;
-        let chart_canvas = ChartCanvas::create(&document, "chartCanvas")?;
+        let canvas = CanvasChart::create(&document, "myCanvas")?;
+        let chart_canvas = CanvasChart::create(&document, "chartCanvas")?;
 
         Self {
             document,

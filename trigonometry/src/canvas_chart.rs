@@ -9,13 +9,13 @@ use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, Document, HtmlCanvasElement};
 
 #[derive(Clone)]
-pub struct ChartCanvas {
+pub struct CanvasChart {
     canvas: HtmlCanvasElement,
     context: CanvasRenderingContext2d,
     pub offset: [i32; 2],
 }
 
-impl ChartCanvas {
+impl CanvasChart {
     pub fn create(document: &Document, id: &str) -> Result<Self, JsValue> {
         let canvas = document.get_element_by_id(id).unwrap();
         let canvas = canvas.dyn_into::<HtmlCanvasElement>()?;
@@ -36,7 +36,7 @@ impl ChartCanvas {
     }
 }
 
-impl DrawWithState for ChartCanvas {
+impl DrawWithState for CanvasChart {
     fn draw(&self, app_state: &AppState) -> Result<(), JsValue> {
         let dist_c = distance(&app_state.point_a, &app_state.point_b);
         let dist_a = distance(&app_state.point_b, &app_state.point_c);
