@@ -10,19 +10,19 @@ impl DrawWithState for HtmlDom {
         let point_a = [100.0, 200.0];
         let point_b = [400.0, 200.0];
 
-        self.context.draw_labeled_cycle(&point_a, "A");
-        self.context.draw_labeled_cycle(&point_b, "B");
+        self.context.draw_dot(&point_a, "A");
+        self.context.draw_dot(&point_b, "B");
 
         Ok(())
     }
 }
 
 trait ContextGraphicExt {
-    fn draw_labeled_cycle(&self, location: &[f64; 2], label: &str);
+    fn draw_dot(&self, location: &[f64; 2], label: &str);
 }
 
 impl ContextGraphicExt for CanvasRenderingContext2d {
-    fn draw_labeled_cycle(&self, location: &[f64; 2], label: &str) {
+    fn draw_dot(&self, location: &[f64; 2], label: &str) {
         self.begin_path();
         self.set_fill_style(&JsValue::from_str("white"));
         self.set_stroke_style(&JsValue::from_str("black"));
