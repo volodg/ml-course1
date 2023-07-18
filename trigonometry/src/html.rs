@@ -1,7 +1,7 @@
+use crate::canvas_chart::CanvasChart;
 use commons::utils::OkExt;
 use wasm_bindgen::JsValue;
 use web_sys::{window, Document};
-use crate::canvas_chart::CanvasChart;
 
 #[derive(Clone)]
 pub struct HtmlDom {

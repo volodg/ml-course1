@@ -1,38 +1,23 @@
 use crate::app_state::AppState;
+use crate::canvas::Canvas;
 use crate::draw::DrawWithState;
 use commons::geometry::{average, distance};
 use js_sys::Array;
 use js_sys::Math::asin;
 use std::f64::consts::{PI, TAU};
-use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_sys::{CanvasRenderingContext2d, Document, HtmlCanvasElement};
+use web_sys::{CanvasRenderingContext2d, Document};
 
 #[derive(Clone)]
 pub struct CanvasChart {
-    canvas: HtmlCanvasElement,
-    context: CanvasRenderingContext2d,
-    pub offset: [i32; 2],
+    pub canvas: Canvas,
 }
 
 impl CanvasChart {
     pub fn create(document: &Document, id: &str) -> Result<Self, JsValue> {
-        let canvas = document.get_element_by_id(id).unwrap();
-        let canvas = canvas.dyn_into::<HtmlCanvasElement>()?;
+        let canvas = Canvas::create(document, id)?;
 
-        let context = canvas
-            .get_context("2d")?
-            .unwrap()
-            .dyn_into::<CanvasRenderingContext2d>()?;
-
-        let offset = [canvas.width() as i32 / 2, canvas.height() as i32 / 2];
-        let _ = context.translate(offset[0].into(), offset[1].into());
-
-        Ok(Self {
-            canvas,
-            context,
-            offset,
-        })
+        Ok(Self { canvas })
     }
 }
 
@@ -42,48 +27,50 @@ impl DrawWithState for CanvasChart {
         let dist_a = distance(&app_state.point_b, &app_state.point_c);
         let dist_b = distance(&app_state.point_c, &app_state.point_a);
 
-        self.context.clear_rect(
-            (-self.offset[0]).into(),
-            (-self.offset[1]).into(),
-            self.canvas.width().into(),
-            self.canvas.height().into(),
+        self.canvas.context.clear_rect(
+            (-self.canvas.offset[0]).into(),
+            (-self.canvas.offset[1]).into(),
+            self.canvas.canvas.width().into(),
+            self.canvas.canvas.height().into(),
         );
 
-        self.context.draw_coordinate_system(&self.offset);
+        self.canvas
+            .context
+            .draw_coordinate_system(&self.canvas.offset);
 
         let sin = dist_a / dist_c;
         let cos = dist_b / dist_c;
         let tan = dist_a / dist_b;
         let theta = asin(sin);
 
-        self.context.draw_text_with_color(
+        self.canvas.context.draw_text_with_color(
             std::format!("sin = a/c = {:.2}", sin).as_str(),
             &[
-                -self.offset[0] / 2,
-                (self.offset[1] as f64 * 0.7) as i32,
+                -self.canvas.offset[0] / 2,
+                (self.canvas.offset[1] as f64 * 0.7) as i32,
             ],
             "red",
         );
 
-        self.context.draw_text_with_color(
+        self.canvas.context.draw_text_with_color(
             std::format!("cos = b/c = {:.2}", cos).as_str(),
             &[
-                -self.offset[0] / 2,
-                (self.offset[1] as f64 * 0.8) as i32,
+                -self.canvas.offset[0] / 2,
+                (self.canvas.offset[1] as f64 * 0.8) as i32,
             ],
             "blue",
         );
 
-        self.context.draw_text_with_color(
+        self.canvas.context.draw_text_with_color(
             std::format!("tan = a/b = {:.2}", tan).as_str(),
             &[
-                -self.offset[0] / 2,
-                (self.offset[1] as f64 * 0.9) as i32,
+                -self.canvas.offset[0] / 2,
+                (self.canvas.offset[1] as f64 * 0.9) as i32,
             ],
             "magenta",
         );
 
-        self.context.draw_text(
+        self.canvas.context.draw_text(
             std::format!(
                 "θ = a/c = {:.2} ({}°)",
                 theta,
@@ -91,31 +78,35 @@ impl DrawWithState for CanvasChart {
             )
             .as_str(),
             &[
-                self.offset[0] / 2,
-                (self.offset[1] as f64 * 0.7) as i32,
+                self.canvas.offset[0] / 2,
+                (self.canvas.offset[1] as f64 * 0.7) as i32,
             ],
         );
 
-        self.context
+        self.canvas
+            .context
             .draw_line(&app_state.point_a, &app_state.point_b);
-        self.context
+        self.canvas
+            .context
             .draw_text("c", &average(&app_state.point_a, &app_state.point_b));
-        self.context
+        self.canvas
+            .context
             .draw_line_with_color(&app_state.point_a, &app_state.point_c, "blue");
-        self.context.draw_text_with_color(
+        self.canvas.context.draw_text_with_color(
             "b",
             &average(&app_state.point_a, &app_state.point_c),
             "blue",
         );
-        self.context
+        self.canvas
+            .context
             .draw_line_with_color(&app_state.point_b, &app_state.point_c, "red");
-        self.context.draw_text_with_color(
+        self.canvas.context.draw_text_with_color(
             "a",
             &average(&app_state.point_b, &app_state.point_c),
             "red",
         );
 
-        self.context.draw_text("θ", &app_state.point_a);
+        self.canvas.context.draw_text("θ", &app_state.point_a);
 
         let start = if app_state.point_b[0] > app_state.point_a[0] {
             0.0
@@ -133,7 +124,7 @@ impl DrawWithState for CanvasChart {
         let clockwise = (app_state.point_b[1] < app_state.point_c[1])
             ^ (app_state.point_b[0] > app_state.point_a[0]);
 
-        self.context.draw_angle(start, end, !clockwise);
+        self.canvas.context.draw_angle(start, end, !clockwise);
 
         Ok(())
     }

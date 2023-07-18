@@ -1,5 +1,6 @@
 mod app_state;
 mod app_state_draw;
+mod canvas;
 mod canvas_chart;
 mod draw;
 mod html;
