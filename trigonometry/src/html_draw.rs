@@ -12,7 +12,7 @@ impl DrawWithState for HtmlDom {
     fn draw(&self, app_state: &AppState) -> Result<(), JsValue> {
         let dist_c = distance(&app_state.point_a, &app_state.point_b);
         let dist_a = distance(&app_state.point_b, &app_state.point_c);
-        // let dist_b = distance(&app_state.point_c, &app_state.point_a);
+        let dist_b = distance(&app_state.point_c, &app_state.point_a);
 
         self.context.clear_rect(
             (-self.offset[0]).into(),
@@ -24,22 +24,35 @@ impl DrawWithState for HtmlDom {
         self.context.draw_coordinate_system(&self.offset);
 
         let sin = dist_a / dist_c;
+        let cos = dist_b / dist_c;
+        let tan = dist_a / dist_b;
         let theta = asin(sin);
 
-        self.context.draw_text(
+        self.context.draw_text_with_color(
             std::format!("sin = a/c = {:.2}", sin).as_str(),
-            &[-app_state.html.offset[0] / 2, (app_state.html.offset[1] as f64 * 0.7) as i32]);
+            &[-app_state.html.offset[0] / 2, (app_state.html.offset[1] as f64 * 0.7) as i32],
+            "red");
+
+        self.context.draw_text_with_color(
+            std::format!("cos = b/c = {:.2}", cos).as_str(),
+            &[-app_state.html.offset[0] / 2, (app_state.html.offset[1] as f64 * 0.8) as i32],
+            "blue");
+
+        self.context.draw_text_with_color(
+            std::format!("tan = a/b = {:.2}", tan).as_str(),
+            &[-app_state.html.offset[0] / 2, (app_state.html.offset[1] as f64 * 0.9) as i32],
+            "magenta");
 
         self.context.draw_text(
-            std::format!("θ = a/c = {:.2} ({}°)", theta, theta.to_degrees().round()  as i32).as_str(),
+            std::format!("θ = a/c = {:.2} ({}°)", theta, theta.to_degrees().round() as i32).as_str(),
             &[app_state.html.offset[0] / 2, (app_state.html.offset[1] as f64 * 0.7) as i32]);
 
         self.context.draw_line(&app_state.point_a, &app_state.point_b);
         self.context.draw_text("c", &average(&app_state.point_a, &app_state.point_b));
-        self.context.draw_line(&app_state.point_a, &app_state.point_c);
-        self.context.draw_text("b", &average(&app_state.point_a, &app_state.point_c));
-        self.context.draw_line(&app_state.point_b, &app_state.point_c);
-        self.context.draw_text("a", &average(&app_state.point_b, &app_state.point_c));
+        self.context.draw_line_with_color(&app_state.point_a, &app_state.point_c, "blue");
+        self.context.draw_text_with_color("b", &average(&app_state.point_a, &app_state.point_c), "blue");
+        self.context.draw_line_with_color(&app_state.point_b, &app_state.point_c, "red");
+        self.context.draw_text_with_color("a", &average(&app_state.point_b, &app_state.point_c), "red");
 
         self.context.draw_text("θ", &app_state.point_a);
 
