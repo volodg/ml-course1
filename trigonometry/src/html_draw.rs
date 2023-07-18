@@ -3,6 +3,7 @@ use crate::draw::DrawWithState;
 use crate::html::HtmlDom;
 use js_sys::Array;
 use std::f64::consts::TAU;
+use js_sys::Math::asin;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
 use commons::geometry::{average, distance};
@@ -24,9 +25,15 @@ impl DrawWithState for HtmlDom {
         self.context.draw_coordinate_system(&self.offset);
 
         let sin = dist_a / dist_c;
+        let theta = asin(sin);
+
         self.context.draw_text(
             std::format!("sin = a/c = {:.2}", sin).as_str(),
             &[-app_state.html.offset[0] / 2, (app_state.html.offset[1] as f64 * 0.7) as i32]);
+
+        self.context.draw_text(
+            std::format!("θ = a/c = {:.2} ({}°)", theta, theta.to_degrees().round() as i32).as_str(),
+            &[app_state.html.offset[0] / 2, (app_state.html.offset[1] as f64 * 0.7) as i32]);
 
         self.context.draw_line(&app_state.point_a, &app_state.point_b);
         self.context.draw_text("c", &average(&app_state.point_a, &app_state.point_b));
