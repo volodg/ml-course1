@@ -1,8 +1,9 @@
+use crate::app_state::AppState;
+use crate::draw::DrawWithState;
+use js_sys::Array;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, Document, HtmlCanvasElement};
-use crate::app_state::AppState;
-use crate::draw::DrawWithState;
 
 #[derive(Clone)]
 pub struct Canvas {
@@ -32,8 +33,31 @@ impl Canvas {
     }
 }
 
-// impl DrawWithState for Canvas {
-//     fn draw(&self, app_state: &AppState) -> Result<(), JsValue> {
-//
-//     }
-// }
+impl DrawWithState for Canvas {
+    fn draw(&self, _app_state: &AppState) -> Result<(), JsValue> {
+        self.context.draw_coordinate_system(&self.offset);
+        Ok(())
+    }
+}
+
+trait ContextExt {
+    fn draw_coordinate_system(&self, offset: &[i32; 2]);
+}
+
+impl ContextExt for CanvasRenderingContext2d {
+    fn draw_coordinate_system(&self, offset: &[i32; 2]) {
+        self.begin_path();
+        self.move_to((-offset[0]).into(), 0.0);
+        self.line_to(offset[0].into(), 0.0);
+        self.move_to(0.0, (-offset[1]).into());
+        self.line_to(0.0, offset[1].into());
+
+        let array = Array::of2(&JsValue::from(4.0), &JsValue::from(2.0));
+        let _ = self.set_line_dash(&array);
+        self.set_line_width(1.0);
+        self.set_stroke_style(&JsValue::from_str("gray"));
+        self.stroke();
+
+        let _ = self.set_line_dash(&Array::new());
+    }
+}

@@ -5,6 +5,7 @@ use wasm_bindgen::JsValue;
 
 impl DrawWithState for HtmlDom {
     fn draw(&self, app_state: &AppState) -> Result<(), JsValue> {
-        self.canvas.draw(app_state)
+        self.canvas.draw(app_state)?;
+        self.chart_canvas.draw(app_state)
     }
 }

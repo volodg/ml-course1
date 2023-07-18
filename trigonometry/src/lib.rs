@@ -2,6 +2,7 @@ mod app_state;
 mod app_state_draw;
 mod canvas;
 mod canvas_chart;
+mod canvas_graphic;
 mod draw;
 mod html;
 mod html_draw;
