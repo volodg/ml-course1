@@ -10,6 +10,7 @@ use web_sys::{CanvasRenderingContext2d, Document, HtmlCanvasElement};
 pub struct Canvas {
     pub canvas: HtmlCanvasElement,
     pub context: CanvasRenderingContext2d,
+    offset: [f64; 2],
 }
 
 impl Canvas {
@@ -25,17 +26,22 @@ impl Canvas {
         let offset = [canvas.width() as f64 / 2.0, canvas.height() as f64 / 2.0];
         _ = context.translate(offset[0].into(), offset[1].into())?;
 
-        context.draw_coordinate_system(&offset)?;
-
-        Ok(Self { canvas, context })
+        Ok(Self { canvas, context, offset })
     }
 }
 
 impl DrawWithState for Canvas {
-    fn draw(&self, _app_state: &AppState) -> Result<(), JsValue> {
-        let point = [90.0, 120.0];
+    fn draw(&self, app_state: &AppState) -> Result<(), JsValue> {
+        self.context.clear_rect(
+            -self.offset[0] / 2.0,
+            -self.offset[1] / 2.0,
+            self.canvas.width().into(),
+            self.canvas.height().into(),
+        );
 
-        self.context.draw_point(point)?;
+        self.context.draw_coordinate_system(&self.offset)?;
+
+        self.context.draw_point(app_state.point)?;
 
         Ok(())
     }
@@ -71,3 +77,7 @@ impl ContextExt for CanvasRenderingContext2d {
         Ok(())
     }
 }
+
+// fn magnitude(a: f64, b: f64) -> f64 {
+//     hypot(a, b)
+// }
