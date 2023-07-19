@@ -102,7 +102,9 @@ impl DrawWithState for CanvasGraphic {
             "red",
         )?;
 
-        self.canvas.context.draw_text("θ", &app_state.get_point_a())?;
+        self.canvas
+            .context
+            .draw_text("θ", &app_state.get_point_a())?;
 
         self.canvas.context.draw_angle_clockwise(
             AppState::get_dist_c(),
@@ -118,7 +120,12 @@ trait ContextGraphicExt {
     fn draw_line_with_color(&self, from: &[f64; 2], to: &[f64; 2], color: &str);
 
     fn draw_text(&self, text: &str, location: &[f64; 2]) -> Result<(), JsValue>;
-    fn draw_text_with_color(&self, text: &str, location: &[f64; 2], color: &str) -> Result<(), JsValue>;
+    fn draw_text_with_color(
+        &self,
+        text: &str,
+        location: &[f64; 2],
+        color: &str,
+    ) -> Result<(), JsValue>;
 }
 
 impl ContextGraphicExt for CanvasRenderingContext2d {
@@ -149,7 +156,12 @@ impl ContextGraphicExt for CanvasRenderingContext2d {
         self.draw_text_with_color(text, location, "black")
     }
 
-    fn draw_text_with_color(&self, text: &str, location: &[f64; 2], color: &str) -> Result<(), JsValue> {
+    fn draw_text_with_color(
+        &self,
+        text: &str,
+        location: &[f64; 2],
+        color: &str,
+    ) -> Result<(), JsValue> {
         self.begin_path();
         self.set_fill_style(&JsValue::from_str(color));
         self.set_text_align("center");

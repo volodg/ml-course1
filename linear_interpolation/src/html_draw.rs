@@ -32,43 +32,51 @@ fn request_animation_frame(f: &Closure<dyn FnMut()>) {
         .expect("should register `requestAnimationFrame` OK");
 }
 
+trait HtmlDomExt {
+    fn animation(&self, point_a: [f64; 2], point_b: [f64; 2]) -> Result<(), JsValue>;
+}
+
+impl HtmlDomExt for HtmlDom {
+    fn animation(&self, point_a: [f64; 2], point_b: [f64; 2]) -> Result<(), JsValue> {
+        self.context.clear_rect(
+            0.0,
+            0.0,
+            self.canvas.width().into(),
+            self.canvas.height().into(),
+        );
+
+        let sec = Date::now() as f64 / 1000.0;
+        let t = ((sec * PI).cos() + 1.0) * 0.5;
+        let point_c = v_lerp(point_a, point_b, t);
+
+        self.context.draw_dot(&point_c, "")?;
+        self.context.draw_dot(&point_a, "A")?;
+        self.context.draw_dot(&point_b, "B")?;
+
+        let orange = [230.0, 150.0, 0.0];
+        let blue = [0.0, 70.0, 160.0];
+
+        let color = v_lerp_3d(orange, blue, t);
+
+        self.canvas.style().set_property(
+            "background-color",
+            std::format!("rgb({},{},{})", color[0], color[1], color[2]).as_str(),
+        )
+    }
+}
+
 impl DrawWithState for HtmlDom {
     fn draw(&self, _app_state: &AppState) -> Result<(), JsValue> {
         let point_a = [100.0, 300.0];
         let point_b = [400.0, 100.0];
 
-        let orange = [230.0, 150.0, 0.0];
-        let blue = [0.0, 70.0, 160.0];
-
-        let context = self.context.clone();
-        let canvas = self.canvas.clone();
-
         let animation_f = Rc::new(RefCell::new(None));
         let animation_f_copy = animation_f.clone();
 
+        let html = self.clone();
+
         *animation_f_copy.borrow_mut() = Some(Closure::new(move || {
-            let point_a = point_a.clone();
-            let point_b = point_b.clone();
-
-            context.clear_rect(0.0, 0.0, canvas.width().into(), canvas.height().into());
-
-            let sec = Date::now() as f64 / 1000.0;
-            let t = ((sec * PI).cos() + 1.0) * 0.5;
-            let point_c = v_lerp(point_a, point_b, t);
-
-            context.draw_dot(&point_c, "").expect("");
-            context.draw_dot(&point_a, "A").expect("");
-            context.draw_dot(&point_b, "B").expect("");
-
-            let color = v_lerp_3d(orange, blue, t);
-
-            canvas
-                .style()
-                .set_property(
-                    "background-color",
-                    std::format!("rgb({},{},{})", color[0], color[1], color[2]).as_str(),
-                )
-                .unwrap();
+            html.animation(point_a.clone(), point_b.clone()).expect("");
 
             request_animation_frame(animation_f.borrow().as_ref().unwrap());
         }));

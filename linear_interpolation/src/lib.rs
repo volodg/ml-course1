@@ -5,14 +5,14 @@ mod html;
 mod html_draw;
 mod subscribe_state;
 
-use std::cell::RefCell;
-use std::rc::Rc;
 use crate::app_state::AppState;
 use crate::draw::Draw;
 use crate::html::HtmlDom;
+use crate::subscribe_state::StateSubscriber;
+use std::cell::RefCell;
+use std::rc::Rc;
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
-use crate::subscribe_state::StateSubscriber;
 
 #[wasm_bindgen(start)]
 fn start() -> Result<(), JsValue> {

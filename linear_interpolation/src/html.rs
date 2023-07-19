@@ -1,7 +1,9 @@
 use commons::utils::OkExt;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_sys::{window, AudioContext, CanvasRenderingContext2d, Document, HtmlCanvasElement};
+use web_sys::{
+    window, AudioContext, CanvasRenderingContext2d, Document, HtmlCanvasElement, OscillatorNode,
+};
 
 #[derive(Clone)]
 pub struct HtmlDom {
@@ -9,6 +11,7 @@ pub struct HtmlDom {
     pub context: CanvasRenderingContext2d,
     pub canvas: HtmlCanvasElement,
     pub audio_context: Option<AudioContext>,
+    pub oscillator: Option<OscillatorNode>,
 }
 
 impl HtmlDom {
@@ -34,6 +37,7 @@ impl HtmlDom {
             context,
             canvas,
             audio_context: None,
+            oscillator: None,
         }
         .ok()
     }
@@ -50,7 +54,8 @@ impl HtmlDom {
             osc.connect_with_audio_node(&node)?;
             node.connect_with_audio_node(&audio_context.destination())?;
 
-            self.audio_context = Some(audio_context)
+            self.audio_context = Some(audio_context);
+            self.oscillator = Some(osc)
         }
         Ok(())
     }

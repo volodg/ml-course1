@@ -45,7 +45,12 @@ pub trait ContextExt {
 
     fn draw_point(&self, location: &[f64; 2]) -> Result<(), JsValue>;
     fn draw_point_with_size(&self, location: &[f64; 2], size: f64) -> Result<(), JsValue>;
-    fn draw_point_with_size_and_color(&self, location: &[f64; 2], size: f64, color: &str) -> Result<(), JsValue>;
+    fn draw_point_with_size_and_color(
+        &self,
+        location: &[f64; 2],
+        size: f64,
+        color: &str,
+    ) -> Result<(), JsValue>;
 }
 
 impl ContextExt for CanvasRenderingContext2d {
@@ -73,7 +78,12 @@ impl ContextExt for CanvasRenderingContext2d {
         self.draw_point_with_size_and_color(location, size, "black")
     }
 
-    fn draw_point_with_size_and_color(&self, location: &[f64; 2], size: f64, color: &str) -> Result<(), JsValue> {
+    fn draw_point_with_size_and_color(
+        &self,
+        location: &[f64; 2],
+        size: f64,
+        color: &str,
+    ) -> Result<(), JsValue> {
         self.begin_path();
         self.set_fill_style(&JsValue::from_str(color));
         self.arc(
