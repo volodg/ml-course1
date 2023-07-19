@@ -86,13 +86,7 @@ impl ContextExt for CanvasRenderingContext2d {
     ) -> Result<(), JsValue> {
         self.begin_path();
         self.set_fill_style(&JsValue::from_str(color));
-        self.arc(
-            location[0].into(),
-            location[1].into(),
-            size as f64 / 2.0,
-            0.0,
-            TAU,
-        )?;
+        self.arc(location[0].into(), location[1].into(), size / 2.0, 0.0, TAU)?;
         self.fill();
         Ok(())
     }
