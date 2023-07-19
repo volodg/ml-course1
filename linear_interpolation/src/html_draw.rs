@@ -1,13 +1,12 @@
 use crate::app_state::AppState;
 use crate::draw::DrawWithState;
 use crate::html::HtmlDom;
-use js_sys::Date;
+use js_sys::{Array, Date};
 use std::cell::RefCell;
 use std::f64::consts::{PI, TAU};
 use std::rc::Rc;
 use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::{JsCast, JsValue};
-use web_commons::log;
 use web_sys::{window, CanvasRenderingContext2d};
 
 fn lerp(a: f64, b: f64, t: f64) -> f64 {
@@ -81,6 +80,21 @@ impl HtmlDomExt for HtmlDom {
             let new_frequency = lerp(low_frequency, high_frequency, t) as f32;
             oscillator.frequency().set_value(new_frequency);
         }
+
+        self.context.set_stroke_style(&JsValue::from_str("white"));
+        self.context.set_text_align("center");
+        self.context.set_text_baseline("top");
+        self.context.set_font("bond 100px Arial");
+        let array = Array::of2(&JsValue::from(lerp(50.0, 130.0, t)), &JsValue::from(130.0));
+        self.context.set_line_dash(&array)?;
+        self.context
+            .stroke_text("click for sound", self.canvas.width() as f64 / 2.0, 10.0)?;
+        let array = Array::new();
+        self.context.set_line_dash(&array)?;
+        self.context
+            .set_fill_style(&JsValue::from_str("rgba(255,255,255,0.2)"));
+        self.context
+            .fill_text("click for sound", self.canvas.width() as f64 / 2.0, 10.0)?;
 
         Ok(())
     }
