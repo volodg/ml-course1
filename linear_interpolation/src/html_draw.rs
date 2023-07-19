@@ -7,6 +7,7 @@ use std::f64::consts::{PI, TAU};
 use std::rc::Rc;
 use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::{JsCast, JsValue};
+use web_commons::log;
 use web_sys::{window, CanvasRenderingContext2d};
 
 fn lerp(a: f64, b: f64, t: f64) -> f64 {
@@ -33,11 +34,21 @@ fn request_animation_frame(f: &Closure<dyn FnMut()>) {
 }
 
 trait HtmlDomExt {
-    fn animation(&self, point_a: [f64; 2], point_b: [f64; 2]) -> Result<(), JsValue>;
+    fn animation(
+        &self,
+        app_state: Rc<RefCell<AppState>>,
+        point_a: [f64; 2],
+        point_b: [f64; 2],
+    ) -> Result<(), JsValue>;
 }
 
 impl HtmlDomExt for HtmlDom {
-    fn animation(&self, point_a: [f64; 2], point_b: [f64; 2]) -> Result<(), JsValue> {
+    fn animation(
+        &self,
+        app_state: Rc<RefCell<AppState>>,
+        point_a: [f64; 2],
+        point_b: [f64; 2],
+    ) -> Result<(), JsValue> {
         self.context.clear_rect(
             0.0,
             0.0,
@@ -61,12 +72,22 @@ impl HtmlDomExt for HtmlDom {
         self.canvas.style().set_property(
             "background-color",
             std::format!("rgb({},{},{})", color[0], color[1], color[2]).as_str(),
-        )
+        )?;
+
+        let low_frequency = 200.0;
+        let high_frequency = 600.0;
+
+        if let Some(oscillator) = &app_state.borrow().oscillator {
+            let new_frequency = lerp(low_frequency, high_frequency, t) as f32;
+            oscillator.frequency().set_value(new_frequency);
+        }
+
+        Ok(())
     }
 }
 
 impl DrawWithState for HtmlDom {
-    fn draw(&self, _app_state: &AppState) -> Result<(), JsValue> {
+    fn draw(&self, app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue> {
         let point_a = [100.0, 300.0];
         let point_b = [400.0, 100.0];
 
@@ -76,7 +97,8 @@ impl DrawWithState for HtmlDom {
         let html = self.clone();
 
         *animation_f_copy.borrow_mut() = Some(Closure::new(move || {
-            html.animation(point_a.clone(), point_b.clone()).expect("");
+            html.animation(app_state.clone(), point_a.clone(), point_b.clone())
+                .expect("");
 
             request_animation_frame(animation_f.borrow().as_ref().unwrap());
         }));
