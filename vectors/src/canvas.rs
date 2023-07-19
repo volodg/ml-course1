@@ -10,7 +10,7 @@ use web_sys::{CanvasRenderingContext2d, Document, HtmlCanvasElement};
 pub struct Canvas {
     pub canvas: HtmlCanvasElement,
     pub context: CanvasRenderingContext2d,
-    offset: [f64; 2],
+    pub offset: [f64; 2],
 }
 
 impl Canvas {
@@ -26,7 +26,11 @@ impl Canvas {
         let offset = [canvas.width() as f64 / 2.0, canvas.height() as f64 / 2.0];
         _ = context.translate(offset[0].into(), offset[1].into())?;
 
-        Ok(Self { canvas, context, offset })
+        Ok(Self {
+            canvas,
+            context,
+            offset,
+        })
     }
 }
 

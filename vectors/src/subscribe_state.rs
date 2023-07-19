@@ -15,7 +15,11 @@ impl StateSubscriber for HtmlDom {
     fn subscribe(&self, app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue> {
         self.document
             .add_listener("mousemove", move |event: MouseEvent| {
-                app_state.borrow_mut().point = [event.offset_x() as f64, event.offset_y() as f64];
+                let offset = app_state.borrow().html.canvas.offset;
+                app_state.borrow_mut().point = [
+                    event.offset_x() as f64 - offset[0],
+                    event.offset_y() as f64 - offset[0],
+                ];
                 app_state.borrow().draw().expect("");
             })
     }
