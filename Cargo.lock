@@ -323,7 +323,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "demo_chat"
+name = "demo_chart"
 version = "0.1.0"
 dependencies = [
  "commons",

@@ -51,13 +51,13 @@ pub trait Draw {
 impl Draw for HtmlDom {
     fn create_row(&self, student_name: &str, samples: &[&Sample]) -> Result<(), JsValue> {
         let row = self.document.create_element("div")?;
-        _ = row.class_list().add_1("row")?;
-        _ = self.container.append_child(&row);
+        row.class_list().add_1("row")?;
+        _ = self.container.append_child(&row)?;
 
         let row_label = self.document.create_element("div")?;
         row_label.set_inner_html(student_name);
-        _ = row_label.class_list().add_1("rowLabel")?;
-        _ = row.append_child(&row_label);
+        row_label.class_list().add_1("rowLabel")?;
+        _ = row.append_child(&row_label)?;
 
         for sample in samples {
             let img = self
@@ -71,17 +71,17 @@ impl Draw for HtmlDom {
 
             let sample_label = self.document.create_element("div")?;
             sample_label.set_inner_html(sample.label.as_str());
-            _ = sample_container.append_child(&sample_label);
+            _ = sample_container.append_child(&sample_label)?;
 
             let path = std::format!("{}/{}.png", IMG_DIR, sample.id);
             img.set_src(path.as_str());
-            _ = img.class_list().add_1("thumb")?;
+            img.class_list().add_1("thumb")?;
             if FLAGGED_USERS.contains(&sample.student_id) {
-                _ = img.class_list().add_1("blur")?;
+                img.class_list().add_1("blur")?;
             }
-            _ = sample_container.append_child(&img);
+            sample_container.append_child(&img)?;
 
-            _ = row.append_child(&sample_container);
+            row.append_child(&sample_container)?;
         }
 
         Ok(())

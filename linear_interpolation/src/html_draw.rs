@@ -56,16 +56,19 @@ impl DrawWithState for HtmlDom {
             let t = ((sec * PI).cos() + 1.0) * 0.5;
             let point_c = v_lerp(point_a, point_b, t);
 
-            context.draw_dot(&point_c, "");
-            context.draw_dot(&point_a, "A");
-            context.draw_dot(&point_b, "B");
+            context.draw_dot(&point_c, "").expect("");
+            context.draw_dot(&point_a, "A").expect("");
+            context.draw_dot(&point_b, "B").expect("");
 
             let color = v_lerp_3d(orange, blue, t);
 
-            canvas.style().set_property(
-                "background-color",
-                std::format!("rgb({},{},{})", color[0], color[1], color[2]).as_str()
-            ).unwrap();
+            canvas
+                .style()
+                .set_property(
+                    "background-color",
+                    std::format!("rgb({},{},{})", color[0], color[1], color[2]).as_str(),
+                )
+                .unwrap();
 
             request_animation_frame(animation_f.borrow().as_ref().unwrap());
         }));
@@ -77,21 +80,21 @@ impl DrawWithState for HtmlDom {
 }
 
 trait ContextGraphicExt {
-    fn draw_dot(&self, location: &[f64; 2], label: &str);
+    fn draw_dot(&self, location: &[f64; 2], label: &str) -> Result<(), JsValue>;
 }
 
 impl ContextGraphicExt for CanvasRenderingContext2d {
-    fn draw_dot(&self, location: &[f64; 2], label: &str) {
+    fn draw_dot(&self, location: &[f64; 2], label: &str) -> Result<(), JsValue> {
         self.begin_path();
         self.set_fill_style(&JsValue::from_str("white"));
         self.set_stroke_style(&JsValue::from_str("black"));
-        _ = self.arc(location[0], location[1], 10.0, 0.0, TAU);
+        self.arc(location[0], location[1], 10.0, 0.0, TAU)?;
         self.fill();
         self.stroke();
         self.set_fill_style(&JsValue::from_str("black"));
         self.set_text_align("center");
         self.set_text_baseline("middle");
         self.set_font("bold 14px Arial");
-        _ = self.fill_text(label, location[0], location[1]);
+        self.fill_text(label, location[0], location[1])
     }
 }

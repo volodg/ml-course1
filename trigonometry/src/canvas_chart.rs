@@ -31,7 +31,7 @@ impl DrawWithState for CanvasChart {
             ],
             2.0,
             "red",
-        );
+        )?;
 
         self.canvas.context.draw_point_with_size_and_color(
             &[
@@ -40,7 +40,7 @@ impl DrawWithState for CanvasChart {
             ],
             2.0,
             "blue",
-        );
+        )?;
 
         self.canvas.context.draw_point_with_size_and_color(
             &[
@@ -49,8 +49,6 @@ impl DrawWithState for CanvasChart {
             ],
             2.0,
             "magenta",
-        );
-
-        Ok(())
+        )
     }
 }

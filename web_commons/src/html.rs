@@ -26,10 +26,11 @@ impl Visibility for HtmlElement {
     }
 }
 
-pub fn alert(msg: &str) {
+pub fn alert(msg: &str) -> Result<(), JsValue> {
     if let Some(window) = window() {
-        _ = window.alert_with_message(msg);
+        return window.alert_with_message(msg);
     }
+    Err(JsValue::from_str("no window"))
 }
 
 pub trait AddListener {

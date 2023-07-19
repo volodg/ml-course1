@@ -3,7 +3,7 @@ resolver = "2"
 
 members = [
     "commons",
-    "demo_chat",
+    "demo_chart",
     "drawer",
     "drawing_commons",
     "data_set",

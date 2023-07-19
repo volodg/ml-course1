@@ -20,12 +20,12 @@ use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
 use web_commons::html::alert;
 
-fn handle_next(app_state: &Rc<RefCell<AppState<HtmlDom>>>) {
+fn handle_next(app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Result<(), JsValue> {
     let new_state = {
         let mut app_state = app_state.borrow_mut();
         let state = app_state.drawing_expected_mut().expect("");
         if state.curr_path().is_empty() {
-            alert("Draw something first");
+            alert("Draw something first")?;
             None
         } else if !state.increment_index() {
             let new_state = ReadyState::create(state);
@@ -40,6 +40,8 @@ fn handle_next(app_state: &Rc<RefCell<AppState<HtmlDom>>>) {
     if let Some(new_state) = new_state {
         *app_state.borrow_mut() = AppState::Ready(new_state)
     }
+
+    Ok(())
 }
 
 fn handle_touch_start(state: &mut DrawingState<HtmlDom>, point: Option<Point>) {
@@ -72,7 +74,7 @@ fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Resul
         match app_state.borrow().deref() {
             AppState::Initial(state) => {
                 if state.get_student().is_empty() {
-                    alert("Please type your name");
+                    alert("Please type your name")?;
                     None
                 } else {
                     let new_state = DrawingState::create(state);
@@ -97,7 +99,7 @@ fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Resul
             Action::TurnIntoDrawingState(new_state) => {
                 *app_state.borrow_mut() = AppState::Drawing(new_state)
             }
-            Action::HandleNext => handle_next(&app_state),
+            Action::HandleNext => handle_next(&app_state)?,
             Action::TurnIntoSavedState(new_state) => {
                 *app_state.borrow_mut() = AppState::Saved(new_state)
             }

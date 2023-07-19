@@ -48,17 +48,17 @@ impl Save for ReadyState<HtmlDom> {
         let json = encode_uri_component(json.as_str());
 
         let attribute = std::format!("data:text/plain;charset=utf-8,{}", json);
-        _ = element.set_attribute("href", attribute.as_str());
+        _ = element.set_attribute("href", attribute.as_str())?;
 
         let file_name = std::format!("{}.json", self.session);
-        _ = element.set_attribute("download", file_name.as_str());
+        _ = element.set_attribute("download", file_name.as_str())?;
 
         element.set_display(false);
 
         let body = document.body().unwrap();
-        _ = body.append_child(&element);
+        _ = body.append_child(&element)?;
         element.click();
-        _ = body.remove_child(&element);
+        _ = body.remove_child(&element)?;
 
         SavedState::create(self).ok()
     }
