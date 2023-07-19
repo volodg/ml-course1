@@ -9,6 +9,7 @@ members = [
     "data_set",
     "linear_interpolation",
     "trigonometry",
+    "vectors",
     "viewer",
     "web_commons"
 ]
