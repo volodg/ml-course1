@@ -1,7 +1,7 @@
-use std::f64::consts::TAU;
-use js_sys::Array;
 use crate::app_state::AppState;
 use crate::draw::DrawWithState;
+use js_sys::Array;
+use std::f64::consts::TAU;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, Document, HtmlCanvasElement};
@@ -27,10 +27,7 @@ impl Canvas {
 
         context.draw_coordinate_system(&offset)?;
 
-        Ok(Self {
-            canvas,
-            context,
-        })
+        Ok(Self { canvas, context })
     }
 }
 

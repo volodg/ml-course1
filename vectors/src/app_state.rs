@@ -6,6 +6,6 @@ pub struct AppState {
 
 impl AppState {
     pub fn create(html: HtmlDom) -> Self {
-        Self { html, }
+        Self { html }
     }
 }

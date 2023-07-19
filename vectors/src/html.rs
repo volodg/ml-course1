@@ -1,7 +1,7 @@
+use crate::canvas::Canvas;
 use commons::utils::OkExt;
 use wasm_bindgen::JsValue;
 use web_sys::{window, Document};
-use crate::canvas::Canvas;
 
 #[derive(Clone)]
 pub struct HtmlDom {
@@ -14,10 +14,6 @@ impl HtmlDom {
         let document = window().unwrap().document().unwrap();
         let canvas = Canvas::create(&document, "myCanvas")?;
 
-        Self {
-            document,
-            canvas,
-        }
-        .ok()
+        Self { document, canvas }.ok()
     }
 }
