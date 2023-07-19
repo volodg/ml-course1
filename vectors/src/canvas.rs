@@ -1,6 +1,7 @@
 use crate::app_state::AppState;
 use crate::draw::DrawWithState;
 use js_sys::Array;
+use js_sys::Math::hypot;
 use std::f64::consts::TAU;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
@@ -82,6 +83,12 @@ impl ContextExt for CanvasRenderingContext2d {
     }
 }
 
-// fn magnitude(a: f64, b: f64) -> f64 {
-//     hypot(a, b)
-// }
+#[allow(dead_code)]
+fn direction(point: [f64; 2]) -> f64 {
+    (point[1] / point[0]).atan()
+}
+
+#[allow(dead_code)]
+fn magnitude(point: [f64; 2]) -> f64 {
+    hypot(point[0], point[1])
+}
