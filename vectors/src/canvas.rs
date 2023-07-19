@@ -1,3 +1,4 @@
+use std::f64::consts::TAU;
 use crate::app_state::AppState;
 use crate::draw::DrawWithState;
 use wasm_bindgen::JsCast;
@@ -20,6 +21,9 @@ impl Canvas {
             .unwrap()
             .dyn_into::<CanvasRenderingContext2d>()?;
 
+        let offset = [canvas.width() as f64 / 2.0, canvas.height() as f64 / 2.0];
+        _ = context.translate(offset[0].into(), offset[1].into())?;
+
         Ok(Self {
             canvas,
             context,
@@ -29,6 +33,24 @@ impl Canvas {
 
 impl DrawWithState for Canvas {
     fn draw(&self, _app_state: &AppState) -> Result<(), JsValue> {
+        let point = [90.0, 120.0];
+
+        self.context.draw_point(point)?;
+
+        Ok(())
+    }
+}
+
+trait ContextExt {
+    fn draw_point(&self, point: [f64; 2]) -> Result<(), JsValue>;
+}
+
+impl ContextExt for CanvasRenderingContext2d {
+    fn draw_point(&self, point: [f64; 2]) -> Result<(), JsValue> {
+        self.begin_path();
+        self.set_fill_style(&JsValue::from_str("white"));
+        self.arc(point[0], point[1], 5.0, 0.0, TAU)?;
+        self.fill();
         Ok(())
     }
 }
