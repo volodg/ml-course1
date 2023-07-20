@@ -11,6 +11,10 @@ impl VectorXY {
         Self { x, y }
     }
 
+    pub fn zero() -> Self {
+        Self { x: 0.0, y: 0.0 }
+    }
+
     pub fn direction(&self) -> f64 {
         self.y.atan2(self.x)
     }

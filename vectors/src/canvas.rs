@@ -46,14 +46,15 @@ impl DrawWithState for Canvas {
 
         self.context.draw_coordinate_system(&self.offset)?;
 
-        self.context.draw_point(app_state.point, 5.0, "white")?;
+        let start_point = VectorXY::zero();
+        let point_g = VectorXY::new(0.0, 50.0);
 
-        let polar_point: VectorPolar = app_state.point.into();
-        let xy_point: VectorXY = polar_point.into();
+        self.context.draw_arrow(start_point, app_state.point, "white")?;
+        self.context.draw_arrow(start_point, point_g, "white")?;
 
-        self.context.draw_point(xy_point, 2.0, "red")?;
-
-        self.context.draw_arrow(app_state.point, "white")?;
+        let result = app_state.point + point_g;
+        self.context.draw_arrow(start_point, result, "white")?;
+        self.context.draw_arrow(app_state.point, result, "white")?;
 
         Ok(())
     }
@@ -62,8 +63,8 @@ impl DrawWithState for Canvas {
 trait ContextExt {
     fn draw_coordinate_system(&self, offset: &[f64; 2]) -> Result<(), JsValue>;
     fn draw_point(&self, point: VectorXY, radius: f64, color: &str) -> Result<(), JsValue>;
-    fn draw_arrow(&self, point: VectorXY, color: &str) -> Result<(), JsValue>;
-    fn draw_arrow_with_size(&self, point: VectorXY, color: &str, size: f64) -> Result<(), JsValue>;
+    fn draw_arrow(&self, start: VectorXY, end: VectorXY, color: &str) -> Result<(), JsValue>;
+    fn draw_arrow_with_size(&self, start: VectorXY, end: VectorXY, color: &str, size: f64) -> Result<(), JsValue>;
 }
 
 impl ContextExt for CanvasRenderingContext2d {
@@ -91,30 +92,35 @@ impl ContextExt for CanvasRenderingContext2d {
         Ok(())
     }
 
-    fn draw_arrow(&self, point: VectorXY, color: &str) -> Result<(), JsValue> {
-        self.draw_arrow_with_size(point, color, 50.0)
+    fn draw_arrow(&self, start: VectorXY, end: VectorXY, color: &str) -> Result<(), JsValue> {
+        self.draw_arrow_with_size(start, end, color, 20.0)
     }
 
-    fn draw_arrow_with_size(&self, point: VectorXY, color: &str, size: f64) -> Result<(), JsValue> {
-        let polar_point: VectorPolar = point.into();
+    fn draw_arrow_with_size(&self, start: VectorXY, end: VectorXY, color: &str, size: f64) -> Result<(), JsValue> {
+        let polar_point: VectorPolar = end.into();
 
         let vector1 = VectorPolar::new(polar_point.direction + PI * 0.8, size / 2.0);
         let point1: VectorXY = vector1.into();
-        let t1 = point1 + point;
-
-        self.draw_point(t1, 5.0, "white")?;
+        let t1 = point1 + end;
 
         let vector2 = VectorPolar::new(polar_point.direction - PI * 0.8, size / 2.0);
         let point2: VectorXY = vector2.into();
-        let t2 = point2 + point;
-
-        self.draw_point(t2, 5.0, "white")?;
+        let t2 = point2 + end;
 
         self.begin_path();
-        self.move_to(0.0, 0.0);
-        self.line_to(point.x, point.y);
+        self.move_to(start.x, start.y);
+        self.line_to(end.x, end.y);
         self.set_stroke_style(&JsValue::from_str(color));
         self.stroke();
+
+        self.begin_path();
+        self.move_to(end.x, end.y);
+        self.line_to(t1.x, t1.y);
+        self.line_to(t2.x, t2.y);
+        self.close_path();
+        self.stroke();
+        self.set_fill_style(&JsValue::from_str(color));
+        self.fill();
 
         Ok(())
     }
