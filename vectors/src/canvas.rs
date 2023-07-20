@@ -49,7 +49,8 @@ impl DrawWithState for Canvas {
         let start_point = VectorXY::zero();
         let point_g = VectorXY::new(0.0, 50.0);
 
-        self.context.draw_arrow(start_point, app_state.point, "red")?;
+        self.context
+            .draw_arrow(start_point, app_state.point, "red")?;
         self.context.draw_arrow(start_point, point_g, "red")?;
 
         let result = app_state.point + point_g;
@@ -64,7 +65,13 @@ trait ContextExt {
     fn draw_coordinate_system(&self, offset: &[f64; 2]) -> Result<(), JsValue>;
     fn draw_point(&self, point: VectorXY, radius: f64, color: &str) -> Result<(), JsValue>;
     fn draw_arrow(&self, start: VectorXY, end: VectorXY, color: &str) -> Result<(), JsValue>;
-    fn draw_arrow_with_size(&self, start: VectorXY, end: VectorXY, color: &str, size: f64) -> Result<(), JsValue>;
+    fn draw_arrow_with_size(
+        &self,
+        start: VectorXY,
+        end: VectorXY,
+        color: &str,
+        size: f64,
+    ) -> Result<(), JsValue>;
 }
 
 impl ContextExt for CanvasRenderingContext2d {
@@ -96,7 +103,13 @@ impl ContextExt for CanvasRenderingContext2d {
         self.draw_arrow_with_size(start, end, color, 20.0)
     }
 
-    fn draw_arrow_with_size(&self, start: VectorXY, end: VectorXY, color: &str, size: f64) -> Result<(), JsValue> {
+    fn draw_arrow_with_size(
+        &self,
+        start: VectorXY,
+        end: VectorXY,
+        color: &str,
+        size: f64,
+    ) -> Result<(), JsValue> {
         let polar_point: VectorPolar = end.into();
 
         let vector1 = VectorPolar::new(polar_point.direction + PI * 0.8, size / 2.0);
