@@ -26,12 +26,16 @@ impl VectorXY {
     pub fn scale(&self, scalar: f64) -> Self {
         Self {
             x: self.x * scalar,
-            y: self.y * scalar
+            y: self.y * scalar,
         }
     }
 
     pub fn normalise(&self) -> Self {
         self.scale(1.0 / self.magnitude())
+    }
+
+    pub fn dot(&self, other: Self) -> f64 {
+        self.x * other.x + self.y * other.y
     }
 }
 

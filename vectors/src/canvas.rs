@@ -5,6 +5,7 @@ use js_sys::Array;
 use std::f64::consts::{PI, TAU};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
+use web_commons::log;
 use web_sys::{CanvasRenderingContext2d, Document, HtmlCanvasElement};
 
 #[derive(Clone)]
@@ -49,10 +50,6 @@ impl DrawWithState for Canvas {
         let start_point = VectorXY::zero();
         let point_g = VectorXY::new(20.0, 50.0);
 
-        self.context
-            .draw_arrow(start_point, app_state.point, "red")?;
-        self.context.draw_arrow(start_point, point_g, "red")?;
-
         let result_add = app_state.point + point_g;
 
         self.context.begin_path();
@@ -71,7 +68,14 @@ impl DrawWithState for Canvas {
         self.context.draw_arrow(point_g, app_state.point, "red")?;
 
         let normalised_result_sub = result_sub.normalise().scale(50.0);
-        self.context.draw_arrow(start_point, normalised_result_sub, "white")?;
+        self.context
+            .draw_arrow(start_point, normalised_result_sub, "red")?;
+
+        log(std::format!("{}", point_g.normalise().dot(app_state.point.normalise())).as_str());
+
+        self.context
+            .draw_arrow(start_point, app_state.point, "white")?;
+        self.context.draw_arrow(start_point, point_g, "white")?;
 
         Ok(())
     }
