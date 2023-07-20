@@ -49,11 +49,11 @@ impl DrawWithState for Canvas {
         let start_point = VectorXY::zero();
         let point_g = VectorXY::new(0.0, 50.0);
 
-        self.context.draw_arrow(start_point, app_state.point, "white")?;
-        self.context.draw_arrow(start_point, point_g, "white")?;
+        self.context.draw_arrow(start_point, app_state.point, "red")?;
+        self.context.draw_arrow(start_point, point_g, "red")?;
 
         let result = app_state.point + point_g;
-        self.context.draw_arrow(start_point, result, "white")?;
+        self.context.draw_arrow(start_point, result, "red")?;
         self.context.draw_arrow(app_state.point, result, "white")?;
 
         Ok(())
