@@ -1,8 +1,8 @@
 use crate::app_state::AppState;
 use crate::draw::DrawWithState;
+use crate::vector::{VectorPolar, VectorXY};
 use js_sys::Array;
-use js_sys::Math::hypot;
-use std::f64::consts::TAU;
+use std::f64::consts::{FRAC_PI_2, TAU};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, Document, HtmlCanvasElement};
@@ -48,8 +48,8 @@ impl DrawWithState for Canvas {
 
         self.context.draw_point(app_state.point, 5.0, "white")?;
 
-        let polar_point = to_polar(app_state.point);
-        let xy_point = to_xy(polar_point);
+        let polar_point: VectorPolar = app_state.point.into();
+        let xy_point: VectorXY = polar_point.into();
 
         self.context.draw_point(xy_point, 2.0, "red")?;
 
@@ -61,8 +61,9 @@ impl DrawWithState for Canvas {
 
 trait ContextExt {
     fn draw_coordinate_system(&self, offset: &[f64; 2]) -> Result<(), JsValue>;
-    fn draw_point(&self, point: [f64; 2], radius: f64, color: &str) -> Result<(), JsValue>;
-    fn draw_arrow(&self, point: [f64; 2], color: &str) -> Result<(), JsValue>;
+    fn draw_point(&self, point: VectorXY, radius: f64, color: &str) -> Result<(), JsValue>;
+    fn draw_arrow(&self, point: VectorXY, color: &str) -> Result<(), JsValue>;
+    fn draw_arrow_with_size(&self, point: VectorXY, color: &str, size: f64) -> Result<(), JsValue>;
 }
 
 impl ContextExt for CanvasRenderingContext2d {
@@ -82,43 +83,30 @@ impl ContextExt for CanvasRenderingContext2d {
         self.set_line_dash(&Array::new())
     }
 
-    fn draw_point(&self, point: [f64; 2], radius: f64, color: &str) -> Result<(), JsValue> {
+    fn draw_point(&self, point: VectorXY, radius: f64, color: &str) -> Result<(), JsValue> {
         self.begin_path();
         self.set_fill_style(&JsValue::from_str(color));
-        self.arc(point[0], point[1], radius, 0.0, TAU)?;
+        self.arc(point.x, point.y, radius, 0.0, TAU)?;
         self.fill();
         Ok(())
     }
 
-    fn draw_arrow(&self, point: [f64; 2], color: &str) -> Result<(), JsValue> {
+    fn draw_arrow(&self, point: VectorXY, color: &str) -> Result<(), JsValue> {
+        self.draw_arrow_with_size(point, color, 50.0)
+    }
+
+    fn draw_arrow_with_size(&self, point: VectorXY, color: &str, size: f64) -> Result<(), JsValue> {
+        let polar_point: VectorPolar = point.into();
+        let vector1 = VectorPolar::new(polar_point.direction + FRAC_PI_2, size / 2.0);
+        let point1: VectorXY = vector1.into();
+        self.draw_point(point1, 5.0, "white")?;
+
         self.begin_path();
         self.move_to(0.0, 0.0);
-        self.line_to(point[0], point[1]);
+        self.line_to(point.x, point.y);
         self.set_stroke_style(&JsValue::from_str(color));
         self.stroke();
 
         Ok(())
     }
-}
-
-fn to_xy(point: [f64; 2]) -> [f64; 2] {
-    [
-        point[0].cos() * point[1],
-        point[0].sin() * point[1],
-    ]
-}
-
-fn to_polar(point: [f64; 2]) -> [f64; 2] {
-    [
-        direction(point),
-        magnitude(point),
-    ]
-}
-
-fn direction(point: [f64; 2]) -> f64 {
-    (point[1]).atan2(point[0])
-}
-
-fn magnitude(point: [f64; 2]) -> f64 {
-    hypot(point[0], point[1])
 }

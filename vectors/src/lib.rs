@@ -5,6 +5,7 @@ mod draw;
 mod html;
 mod html_draw;
 mod subscribe_state;
+mod vector;
 
 use crate::app_state::AppState;
 use crate::html::HtmlDom;
