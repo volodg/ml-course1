@@ -53,10 +53,25 @@ impl DrawWithState for Canvas {
             .draw_arrow(start_point, app_state.point, "red")?;
         self.context.draw_arrow(start_point, point_g, "red")?;
 
-        let result = app_state.point + point_g;
-        self.context.draw_arrow(start_point, result, "red")?;
-        self.context.draw_arrow(app_state.point, result, "white")?;
-        self.context.draw_arrow(point_g, result, "white")?;
+        let result_add = app_state.point + point_g;
+
+        self.context.begin_path();
+        let array = Array::of2(&JsValue::from(3), &JsValue::from(3));
+        self.context.set_line_dash(&array)?;
+        self.context.move_to(point_g.x, point_g.y);
+        self.context.line_to(result_add.x, result_add.y);
+        self.context.line_to(app_state.point.x, app_state.point.y);
+        self.context.stroke();
+        self.context.set_line_dash(&Array::new())?;
+
+        self.context.draw_arrow(start_point, result_add, "red")?;
+
+        let result_sub = app_state.point - point_g;
+        self.context.draw_arrow(start_point, result_sub, "red")?;
+        self.context.draw_arrow(point_g, app_state.point, "red")?;
+
+        let scaled_sub = result_sub * (50.0 / result_sub.magnitude());
+        self.context.draw_arrow(start_point, scaled_sub, "white")?;
 
         Ok(())
     }

@@ -22,6 +22,13 @@ impl VectorXY {
     pub fn magnitude(&self) -> f64 {
         hypot(self.x, self.y)
     }
+
+    pub fn scale(&self, scalar: f64) -> Self {
+        Self {
+            x: self.x * scalar,
+            y: self.y * scalar
+        }
+    }
 }
 
 impl std::ops::Add<VectorXY> for VectorXY {
@@ -42,6 +49,17 @@ impl std::ops::Sub<VectorXY> for VectorXY {
         VectorXY {
             x: self.x - other.x,
             y: self.y - other.y,
+        }
+    }
+}
+
+impl std::ops::Mul<f64> for VectorXY {
+    type Output = VectorXY;
+
+    fn mul(self, other: f64) -> VectorXY {
+        VectorXY {
+            x: self.x * other,
+            y: self.y * other,
         }
     }
 }
@@ -68,13 +86,6 @@ impl VectorPolar {
             magnitude,
         }
     }
-
-    // pub fn rotated(self, angle: f64) -> Self {
-    //     Self {
-    //         direction: self.direction + angle,
-    //         ..self
-    //     }
-    // }
 }
 
 impl From<VectorXY> for VectorPolar {
