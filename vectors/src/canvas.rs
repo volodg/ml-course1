@@ -53,6 +53,8 @@ impl DrawWithState for Canvas {
 
         self.context.draw_point(xy_point, 2.0, "red")?;
 
+        self.context.draw_arrow(app_state.point, "white")?;
+
         Ok(())
     }
 }
@@ -60,6 +62,7 @@ impl DrawWithState for Canvas {
 trait ContextExt {
     fn draw_coordinate_system(&self, offset: &[f64; 2]) -> Result<(), JsValue>;
     fn draw_point(&self, point: [f64; 2], radius: f64, color: &str) -> Result<(), JsValue>;
+    fn draw_arrow(&self, point: [f64; 2], color: &str) -> Result<(), JsValue>;
 }
 
 impl ContextExt for CanvasRenderingContext2d {
@@ -84,6 +87,16 @@ impl ContextExt for CanvasRenderingContext2d {
         self.set_fill_style(&JsValue::from_str(color));
         self.arc(point[0], point[1], radius, 0.0, TAU)?;
         self.fill();
+        Ok(())
+    }
+
+    fn draw_arrow(&self, point: [f64; 2], color: &str) -> Result<(), JsValue> {
+        self.begin_path();
+        self.move_to(0.0, 0.0);
+        self.line_to(point[0], point[1]);
+        self.set_stroke_style(&JsValue::from_str(color));
+        self.stroke();
+
         Ok(())
     }
 }
