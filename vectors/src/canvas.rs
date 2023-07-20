@@ -38,15 +38,20 @@ impl Canvas {
 impl DrawWithState for Canvas {
     fn draw(&self, app_state: &AppState) -> Result<(), JsValue> {
         self.context.clear_rect(
-            -self.offset[0] / 2.0,
-            -self.offset[1] / 2.0,
+            -self.offset[0],
+            -self.offset[1],
             self.canvas.width().into(),
             self.canvas.height().into(),
         );
 
         self.context.draw_coordinate_system(&self.offset)?;
 
-        self.context.draw_point(app_state.point)?;
+        self.context.draw_point(app_state.point, 5.0, "white")?;
+
+        let polar_point = to_polar(app_state.point);
+        let xy_point = to_xy(polar_point);
+
+        self.context.draw_point(xy_point, 2.0, "red")?;
 
         Ok(())
     }
@@ -54,7 +59,7 @@ impl DrawWithState for Canvas {
 
 trait ContextExt {
     fn draw_coordinate_system(&self, offset: &[f64; 2]) -> Result<(), JsValue>;
-    fn draw_point(&self, point: [f64; 2]) -> Result<(), JsValue>;
+    fn draw_point(&self, point: [f64; 2], radius: f64, color: &str) -> Result<(), JsValue>;
 }
 
 impl ContextExt for CanvasRenderingContext2d {
@@ -74,21 +79,33 @@ impl ContextExt for CanvasRenderingContext2d {
         self.set_line_dash(&Array::new())
     }
 
-    fn draw_point(&self, point: [f64; 2]) -> Result<(), JsValue> {
+    fn draw_point(&self, point: [f64; 2], radius: f64, color: &str) -> Result<(), JsValue> {
         self.begin_path();
-        self.set_fill_style(&JsValue::from_str("white"));
-        self.arc(point[0], point[1], 5.0, 0.0, TAU)?;
+        self.set_fill_style(&JsValue::from_str(color));
+        self.arc(point[0], point[1], radius, 0.0, TAU)?;
         self.fill();
         Ok(())
     }
 }
 
-#[allow(dead_code)]
-fn direction(point: [f64; 2]) -> f64 {
-    (point[1] / point[0]).atan()
+fn to_xy(point: [f64; 2]) -> [f64; 2] {
+    [
+        point[0].cos() * point[1],
+        point[0].sin() * point[1],
+    ]
 }
 
-#[allow(dead_code)]
+fn to_polar(point: [f64; 2]) -> [f64; 2] {
+    [
+        direction(point),
+        magnitude(point),
+    ]
+}
+
+fn direction(point: [f64; 2]) -> f64 {
+    (point[1]).atan2(point[0])
+}
+
 fn magnitude(point: [f64; 2]) -> f64 {
     hypot(point[0], point[1])
 }
