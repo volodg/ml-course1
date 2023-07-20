@@ -20,6 +20,17 @@ impl VectorXY {
     }
 }
 
+impl std::ops::Add<VectorXY> for VectorXY {
+    type Output = VectorXY;
+
+    fn add(self, other: VectorXY) -> VectorXY {
+        VectorXY {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+}
+
 impl From<VectorPolar> for VectorXY {
     fn from(value: VectorPolar) -> Self {
         Self {

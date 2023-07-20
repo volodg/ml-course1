@@ -2,7 +2,7 @@ use crate::app_state::AppState;
 use crate::draw::DrawWithState;
 use crate::vector::{VectorPolar, VectorXY};
 use js_sys::Array;
-use std::f64::consts::{FRAC_PI_2, TAU};
+use std::f64::consts::{PI, TAU};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, Document, HtmlCanvasElement};
@@ -97,9 +97,18 @@ impl ContextExt for CanvasRenderingContext2d {
 
     fn draw_arrow_with_size(&self, point: VectorXY, color: &str, size: f64) -> Result<(), JsValue> {
         let polar_point: VectorPolar = point.into();
-        let vector1 = VectorPolar::new(polar_point.direction + FRAC_PI_2, size / 2.0);
+
+        let vector1 = VectorPolar::new(polar_point.direction + PI * 0.8, size / 2.0);
         let point1: VectorXY = vector1.into();
-        self.draw_point(point1, 5.0, "white")?;
+        let t1 = point1 + point;
+
+        self.draw_point(t1, 5.0, "white")?;
+
+        let vector2 = VectorPolar::new(polar_point.direction - PI * 0.8, size / 2.0);
+        let point2: VectorXY = vector2.into();
+        let t2 = point2 + point;
+
+        self.draw_point(t2, 5.0, "white")?;
 
         self.begin_path();
         self.move_to(0.0, 0.0);
