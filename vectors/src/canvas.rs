@@ -70,8 +70,8 @@ impl DrawWithState for Canvas {
         self.context.draw_arrow(start_point, result_sub, "red")?;
         self.context.draw_arrow(point_g, app_state.point, "red")?;
 
-        let scaled_sub = result_sub * (50.0 / result_sub.magnitude());
-        self.context.draw_arrow(start_point, scaled_sub, "white")?;
+        let normalised_result_sub = result_sub.normalise().scale(50.0);
+        self.context.draw_arrow(start_point, normalised_result_sub, "white")?;
 
         Ok(())
     }

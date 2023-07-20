@@ -29,6 +29,10 @@ impl VectorXY {
             y: self.y * scalar
         }
     }
+
+    pub fn normalise(&self) -> Self {
+        self.scale(1.0 / self.magnitude())
+    }
 }
 
 impl std::ops::Add<VectorXY> for VectorXY {
