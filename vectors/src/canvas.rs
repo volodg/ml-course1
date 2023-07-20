@@ -47,7 +47,7 @@ impl DrawWithState for Canvas {
         self.context.draw_coordinate_system(&self.offset)?;
 
         let start_point = VectorXY::zero();
-        let point_g = VectorXY::new(0.0, 50.0);
+        let point_g = VectorXY::new(20.0, 50.0);
 
         self.context
             .draw_arrow(start_point, app_state.point, "red")?;
@@ -56,6 +56,7 @@ impl DrawWithState for Canvas {
         let result = app_state.point + point_g;
         self.context.draw_arrow(start_point, result, "red")?;
         self.context.draw_arrow(app_state.point, result, "white")?;
+        self.context.draw_arrow(point_g, result, "white")?;
 
         Ok(())
     }
@@ -110,7 +111,7 @@ impl ContextExt for CanvasRenderingContext2d {
         color: &str,
         size: f64,
     ) -> Result<(), JsValue> {
-        let polar_point: VectorPolar = end.into();
+        let polar_point: VectorPolar = (end - start).into();
 
         let vector1 = VectorPolar::new(polar_point.direction + PI * 0.8, size / 2.0);
         let point1: VectorXY = vector1.into();
