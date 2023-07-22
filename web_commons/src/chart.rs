@@ -15,6 +15,7 @@ pub struct Chart {
     transparency: f64,
     pixel_bounds: Bounds,
     data_bounds: Bounds,
+    options: Options,
 }
 
 impl Chart {
@@ -52,6 +53,7 @@ impl Chart {
             transparency,
             pixel_bounds,
             data_bounds,
+            options
         }
         .ok()
     }
@@ -68,7 +70,10 @@ impl Chart {
     fn get_data_bounds(samples: &[Sample]) -> Bounds {
         let zero_min: Option<f64> = None;
         let zero_max: Option<f64> = None;
-        fn min_max((acc_min, acc_max): (Option<f64>, Option<f64>), el: f64) -> (Option<f64>, Option<f64>) {
+        fn min_max(
+            (acc_min, acc_max): (Option<f64>, Option<f64>),
+            el: f64,
+        ) -> (Option<f64>, Option<f64>) {
             (
                 Some(acc_min.map(|x| x.min(el)).unwrap_or(el)),
                 Some(acc_max.map(|x| x.max(el)).unwrap_or(el)),
@@ -98,10 +103,19 @@ impl Chart {
             self.canvas.height().into(),
         );
 
+        self.draw_axis()?;
+
         self.context.set_global_alpha(self.transparency);
         self.draw_samples()?;
         self.context.set_global_alpha(1.0);
         Ok(())
+    }
+
+    fn draw_axis(&self) -> Result<(), JsValue> {
+        self.context.draw_text(self.options.axis_labels[0].as_str(), &Point {
+            x: self.canvas.width() as f64 / 2.0,
+            y: self.pixel_bounds.bottom + self.margin / 2.0,
+        })
     }
 
     fn draw_samples(&self) -> Result<(), JsValue> {
