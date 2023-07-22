@@ -1,4 +1,6 @@
-use crate::chart_models::{Bounds, Options, Sample};
+use crate::chart_models::{Bounds, Options, Point, Sample};
+use crate::graphics::ContextExt;
+use commons::math::remap;
 use commons::utils::OkExt;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
@@ -94,7 +96,35 @@ impl Chart {
         }
     }
 
-    pub fn draw(&self) {}
+    pub fn draw(&self) -> Result<(), JsValue> {
+        self.context.clear_rect(
+            0.0,
+            0.0,
+            self.canvas.width().into(),
+            self.canvas.height().into(),
+        );
+
+        self.context.set_global_alpha(self.transparency);
+        self.draw_samples()?;
+        self.context.set_global_alpha(1.0);
+        Ok(())
+    }
+
+    fn draw_samples(&self) -> Result<(), JsValue> {
+        for sample in &self.samples {
+            let pixel_location = remap_point(&self.data_bounds, &self.pixel_bounds, &sample.point);
+            self.context.draw_point(&pixel_location)?;
+        }
+
+        Ok(())
+    }
+}
+
+fn remap_point(from: &Bounds, to: &Bounds, point: &Point) -> Point {
+    Point {
+        x: remap(from.left, from.right, to.left, to.right, point.x),
+        y: remap(from.top, from.bottom, to.top, to.bottom, point.y),
+    }
 }
 
 #[cfg(test)]

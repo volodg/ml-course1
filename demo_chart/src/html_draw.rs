@@ -54,8 +54,6 @@ impl DrawWithState for HtmlDom {
             app_state.samples.clone(),
             default_chart_options(),
         )?;
-        chart.draw();
-
-        Ok(())
+        chart.draw()
     }
 }
