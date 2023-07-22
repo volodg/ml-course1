@@ -85,7 +85,7 @@ impl InnerHtmlSetter for Element {
                 .item(i)
                 .expect("")
                 .dyn_into::<HtmlScriptElement>()?;
-            let text: &str = &script.text().unwrap();
+            let text: &str = &script.text()?;
             eval(text)?;
         }
 

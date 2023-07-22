@@ -53,7 +53,7 @@ impl Save for ReadyState<HtmlDom> {
         let file_name = std::format!("{}.json", self.session);
         _ = element.set_attribute("download", file_name.as_str())?;
 
-        element.set_display(false);
+        element.set_display(false)?;
 
         let body = document.body().unwrap();
         _ = body.append_child(&element)?;

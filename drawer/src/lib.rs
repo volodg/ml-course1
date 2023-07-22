@@ -29,10 +29,10 @@ fn handle_next(app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Result<(), JsValue
             None
         } else if !state.increment_index() {
             let new_state = ReadyState::create(state);
-            new_state.draw();
+            new_state.draw()?;
             new_state.some()
         } else {
-            state.draw();
+            state.draw()?;
             None
         }
     };
@@ -53,7 +53,7 @@ fn handle_touch_start(state: &mut DrawingState<HtmlDom>, point: Option<Point>) {
 fn handle_touch_move(state: &mut DrawingState<HtmlDom>, point: Point) {
     if state.is_pressed() {
         state.add_point(point);
-        state.draw()
+        state.draw().unwrap()
     }
 }
 
@@ -78,7 +78,7 @@ fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Resul
                     None
                 } else {
                     let new_state = DrawingState::create(state);
-                    new_state.draw();
+                    new_state.draw()?;
                     new_state.subscribe(app_state.clone())?;
 
                     Action::TurnIntoDrawingState(new_state).some()
@@ -87,7 +87,7 @@ fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Resul
             AppState::Drawing(_) => Action::HandleNext.some(),
             AppState::Ready(state) => {
                 let new_state = state.save()?;
-                new_state.draw();
+                new_state.draw()?;
                 Action::TurnIntoSavedState(new_state).some()
             }
             AppState::Saved(_) => panic!(),

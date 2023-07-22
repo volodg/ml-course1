@@ -108,7 +108,7 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
                 let mut app_state = app_state.borrow_mut();
                 let state = app_state.drawing_expected_mut().expect("");
                 state.undo();
-                state.draw();
+                state.draw().unwrap()
             })
     }
 }
