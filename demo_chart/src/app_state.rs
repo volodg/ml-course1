@@ -55,13 +55,13 @@ impl AppState {
                 } else {
                     CarType::Sport
                 };
-                let km = rng.gen_range(3000.0..300000.0);
-                let price = remap(3000.0, 300000.0, 9000.0, 900.0, km)
-                    + rng.gen_range(-2000.0..2000.0)
+                let km = rng.gen_range(3_000.0..300_000.0);
+                let price = remap(3_000.0, 300_000.0, 9_000.0, 900.0, km)
+                    + rng.gen_range(-2_000.0..2_000.0)
                     + if car_type == CarType::Basic {
                         0.0
                     } else {
-                        5000.0
+                        5_000.0
                     };
 
                 Car {

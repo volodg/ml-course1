@@ -7,19 +7,13 @@ use wasm_bindgen::JsValue;
 use web_sys::{window, CanvasRenderingContext2d, Element, HtmlCanvasElement};
 
 pub struct Chart {
-    #[allow(dead_code)]
     samples: Vec<Sample>,
-    #[allow(dead_code)]
     canvas: HtmlCanvasElement,
-    #[allow(dead_code)]
     context: CanvasRenderingContext2d,
     #[allow(dead_code)]
     margin: f64,
-    #[allow(dead_code)]
     transparency: f64,
-    #[allow(dead_code)]
     pixel_bounds: Bounds,
-    #[allow(dead_code)]
     data_bounds: Bounds,
 }
 
@@ -74,10 +68,10 @@ impl Chart {
     fn get_data_bounds(samples: &[Sample]) -> Bounds {
         let zero_min: Option<f64> = None;
         let zero_max: Option<f64> = None;
-        fn min_max(acc: (Option<f64>, Option<f64>), el: f64) -> (Option<f64>, Option<f64>) {
+        fn min_max((acc_min, acc_max): (Option<f64>, Option<f64>), el: f64) -> (Option<f64>, Option<f64>) {
             (
-                Some(acc.0.map(|x| x.min(el)).unwrap_or(el)),
-                Some(acc.0.map(|x| x.max(el)).unwrap_or(el)),
+                Some(acc_min.map(|x| x.min(el)).unwrap_or(el)),
+                Some(acc_max.map(|x| x.max(el)).unwrap_or(el)),
             )
         }
         let (min_x, max_x) = samples
@@ -153,8 +147,8 @@ mod tests {
             Bounds {
                 left: 1.0,
                 right: 11.0,
-                top: 2.0,
-                bottom: 10.0,
+                top: 10.0,
+                bottom: 2.0,
             }
         );
     }
