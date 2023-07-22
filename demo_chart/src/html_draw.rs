@@ -44,9 +44,9 @@ impl DrawWithState for HtmlDom {
                 .set_inner_html(sample.id.to_string().as_str());
             tr.insert_cell()?.set_inner_html(sample.label.as_str());
             tr.insert_cell()?
-                .set_inner_html(std::format!("sin = {:.0}", sample.point.x).as_str());
+                .set_inner_html(std::format!("{:.0}", sample.point.x).as_str());
             tr.insert_cell()?
-                .set_inner_html(std::format!("sin = {:.0}", sample.point.y).as_str());
+                .set_inner_html(std::format!("{:.0}", sample.point.y).as_str());
         }
 
         let chart = Chart::create(

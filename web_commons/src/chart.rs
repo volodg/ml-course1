@@ -91,8 +91,8 @@ impl Chart {
         Bounds {
             left: min_x.expect(""),
             right: max_x.expect(""),
-            top: min_y.expect(""),
-            bottom: max_y.expect(""),
+            top: max_y.expect(""),
+            bottom: min_y.expect(""),
         }
     }
 
