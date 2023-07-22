@@ -4,24 +4,25 @@ use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{window, Element, EventTarget, HtmlElement, HtmlScriptElement, MouseEvent};
 
 pub trait Visibility {
-    fn set_visible(&self, visible: bool);
-    fn set_display(&self, visible: bool);
+    fn set_visible(&self, visible: bool) -> Result<(), JsValue>;
+    fn set_display(&self, visible: bool) -> Result<(), JsValue>;
 }
 
 impl Visibility for HtmlElement {
-    fn set_visible(&self, visible: bool) {
+    fn set_visible(&self, visible: bool) -> Result<(), JsValue> {
         if visible {
-            self.style().set_property("visibility", "visible").unwrap();
+            self.style().set_property("visibility", "visible")
         } else {
-            self.style().set_property("visibility", "hidden").unwrap();
+            self.style().set_property("visibility", "hidden")
         }
     }
 
-    fn set_display(&self, display: bool) {
+    fn set_display(&self, display: bool) -> Result<(), JsValue> {
         if display {
-            self.style().remove_property("display").unwrap();
+            self.style().remove_property("display")?;
+            Ok(())
         } else {
-            self.style().set_property("display", "none").unwrap();
+            self.style().set_property("display", "none")
         }
     }
 }
