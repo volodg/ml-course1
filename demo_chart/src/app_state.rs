@@ -1,13 +1,13 @@
-use std::fmt;
 use crate::html::HtmlDom;
 use commons::math::remap;
 use rand::Rng;
+use std::fmt;
 use web_commons::chart::{Point, Sample};
 
 #[derive(PartialEq)]
 pub enum CarType {
     Basic,
-    Sport
+    Sport,
 }
 
 impl fmt::Display for CarType {
@@ -34,10 +34,12 @@ pub struct AppState {
 impl From<Car> for Sample {
     fn from(value: Car) -> Self {
         Sample::create(
-            value.id, value.car_type.to_string(), Point {
+            value.id,
+            value.car_type.to_string(),
+            Point {
                 x: value.km,
                 y: value.price,
-            }
+            },
         )
     }
 }
@@ -56,9 +58,19 @@ impl AppState {
                 let km = rng.gen_range(3000.0..300000.0);
                 let price = remap(3000.0, 300000.0, 9000.0, 900.0, km)
                     + rng.gen_range(-2000.0..2000.0)
-                    + if car_type == CarType::Basic { 0.0 } else { 5000.0 };
+                    + if car_type == CarType::Basic {
+                        0.0
+                    } else {
+                        5000.0
+                    };
 
-                Car { id, car_type, km, price, }.into()
+                Car {
+                    id,
+                    car_type,
+                    km,
+                    price,
+                }
+                .into()
             })
             .collect::<Vec<_>>();
 

@@ -1,9 +1,22 @@
-use crate::app_state::AppState;
+use crate::app_state::{AppState, CarType};
 use crate::draw::DrawWithState;
 use crate::html::HtmlDom;
+use std::collections::HashMap;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
+use web_commons::chart::{Chart, Options};
 use web_sys::{HtmlTableRowElement, HtmlTableSectionElement};
+
+fn default_chart_options() -> Options {
+    let mut styles = HashMap::<String, String>::new();
+    styles.insert(CarType::Basic.to_string(), "gray".to_owned());
+    styles.insert(CarType::Sport.to_string(), "red".to_owned());
+    Options {
+        size: 250,
+        axis_labels: ["Kilometers".to_owned(), "Price".to_owned()],
+        styles,
+    }
+}
 
 impl DrawWithState for HtmlDom {
     fn draw(&self, app_state: &AppState) -> Result<(), JsValue> {
@@ -26,11 +39,20 @@ impl DrawWithState for HtmlDom {
 
         for sample in &app_state.samples {
             let tr = body.insert_row()?.dyn_into::<HtmlTableRowElement>()?;
-            tr.insert_cell()?.set_inner_html(sample.id.to_string().as_str());
+            tr.insert_cell()?
+                .set_inner_html(sample.id.to_string().as_str());
             tr.insert_cell()?.set_inner_html(sample.label.as_str());
-            tr.insert_cell()?.set_inner_html(std::format!("sin = {:.0}", sample.km).as_str());
-            tr.insert_cell()?.set_inner_html(std::format!("sin = {:.0}", sample.price).as_str());
+            tr.insert_cell()?
+                .set_inner_html(std::format!("sin = {:.0}", sample.point.x).as_str());
+            tr.insert_cell()?
+                .set_inner_html(std::format!("sin = {:.0}", sample.point.y).as_str());
         }
+
+        let _chart = Chart::create(
+            self.chart_container.clone(),
+            app_state.samples.clone(),
+            default_chart_options(),
+        );
 
         Ok(())
     }

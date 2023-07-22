@@ -23,15 +23,13 @@ impl Sample {
 pub struct Options {
     pub size: u32,
     pub axis_labels: [String; 2],
-    pub styles: HashMap<String, String>
+    pub styles: HashMap<String, String>,
 }
 
-pub struct Chart {
-
-}
+pub struct Chart {}
 
 impl Chart {
     pub fn create(_element: Element, _samples: Vec<Sample>, _options: Options) -> Self {
-        todo!()
+        Self {}
     }
 }
