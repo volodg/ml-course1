@@ -3,7 +3,7 @@ use crate::draw::DrawWithState;
 use crate::html::HtmlDom;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_sys::HtmlTableSectionElement;
+use web_sys::{HtmlTableRowElement, HtmlTableSectionElement};
 
 impl DrawWithState for HtmlDom {
     fn draw(&self, app_state: &AppState) -> Result<(), JsValue> {
@@ -13,7 +13,8 @@ impl DrawWithState for HtmlDom {
             .data_table
             .create_t_head()
             .dyn_into::<HtmlTableSectionElement>()?;
-        let _tr = header.insert_row();
+        let tr = header.insert_row()?.dyn_into::<HtmlTableRowElement>()?;
+        tr.insert_cell()?;
 
         Ok(())
     }

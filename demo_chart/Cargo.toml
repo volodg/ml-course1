@@ -23,5 +23,6 @@ features = [
     'Document',
     'HtmlCanvasElement',
     'HtmlTableElement',
+    'HtmlTableRowElement',
     'HtmlTableSectionElement'
 ]
