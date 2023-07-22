@@ -327,7 +327,9 @@ name = "demo_chart"
 version = "0.1.0"
 dependencies = [
  "commons",
+ "getrandom",
  "js-sys",
+ "rand",
  "wasm-bindgen",
  "web-sys",
  "web_commons",
