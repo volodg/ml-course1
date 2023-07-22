@@ -4,10 +4,9 @@ use crate::html::HtmlDom;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{HtmlTableRowElement, HtmlTableSectionElement};
-use web_commons::log;
 
 impl DrawWithState for HtmlDom {
-    fn draw(&self, _app_state: &AppState) -> Result<(), JsValue> {
+    fn draw(&self, app_state: &AppState) -> Result<(), JsValue> {
         // self.canvas.draw(app_state)?;
 
         let header = self
@@ -19,7 +18,19 @@ impl DrawWithState for HtmlDom {
         tr.insert_cell()?.set_inner_html("Type");
         tr.insert_cell()?.set_inner_html("Km");
         tr.insert_cell()?.set_inner_html("Price");
-        log("HERE1");
+
+        let body = self
+            .data_table
+            .create_t_body()
+            .dyn_into::<HtmlTableSectionElement>()?;
+
+        for sample in &app_state.samples {
+            let tr = body.insert_row()?.dyn_into::<HtmlTableRowElement>()?;
+            tr.insert_cell()?.set_inner_html(sample.id.to_string().as_str());
+            tr.insert_cell()?.set_inner_html(sample.label.as_str());
+            tr.insert_cell()?.set_inner_html(sample.km.to_string().as_str());
+            tr.insert_cell()?.set_inner_html(sample.price.to_string().as_str());
+        }
 
         Ok(())
     }

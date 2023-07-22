@@ -2,5 +2,15 @@ body {
     font-family: Arial;
     background-color: skyblue;
     margin: 0;
+}
 
+table,td {
+    border: 2px solid white;
+    padding: 5px;
+    text-align: center;
+    border-collapse: collapse;
+}
+
+thead {
+    font-weight: bold;
 }

@@ -1,21 +1,19 @@
 use crate::html::HtmlDom;
 use rand::Rng;
 
-struct Car {
+pub struct Car {
+    pub id: i32,
     #[allow(dead_code)]
-    id: i32,
+    pub label: String,
     #[allow(dead_code)]
-    label: String,
+    pub km: i32,
     #[allow(dead_code)]
-    km: i32,
-    #[allow(dead_code)]
-    price: i32,
+    pub price: i32,
 }
 
 pub struct AppState {
     pub html: HtmlDom,
-    #[allow(dead_code)]
-    samples: Vec<Car>,
+    pub samples: Vec<Car>,
 }
 
 impl AppState {
