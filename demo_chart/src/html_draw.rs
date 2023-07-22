@@ -28,8 +28,8 @@ impl DrawWithState for HtmlDom {
             let tr = body.insert_row()?.dyn_into::<HtmlTableRowElement>()?;
             tr.insert_cell()?.set_inner_html(sample.id.to_string().as_str());
             tr.insert_cell()?.set_inner_html(sample.label.as_str());
-            tr.insert_cell()?.set_inner_html(sample.km.to_string().as_str());
-            tr.insert_cell()?.set_inner_html(sample.price.to_string().as_str());
+            tr.insert_cell()?.set_inner_html(std::format!("sin = {:.0}", sample.km).as_str());
+            tr.insert_cell()?.set_inner_html(std::format!("sin = {:.0}", sample.price).as_str());
         }
 
         Ok(())

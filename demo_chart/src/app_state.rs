@@ -1,14 +1,12 @@
 use crate::html::HtmlDom;
 use rand::Rng;
+use commons::math::remap;
 
 pub struct Car {
     pub id: i32,
-    #[allow(dead_code)]
     pub label: String,
-    #[allow(dead_code)]
-    pub km: i32,
-    #[allow(dead_code)]
-    pub price: i32,
+    pub km: f64,
+    pub price: f64,
 }
 
 pub struct AppState {
@@ -27,8 +25,8 @@ impl AppState {
                 } else {
                     "sport"
                 };
-                let km = rng.gen_range(3000..300000);
-                let price = rng.gen_range(900..9000);
+                let km = rng.gen_range(3000.0..300000.0);
+                let price = remap(3000.0, 300000.0, 9000.0, 900.0, km);
                 Car {
                     id,
                     label: type_.to_owned(),
