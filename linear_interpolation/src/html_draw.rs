@@ -1,6 +1,7 @@
 use crate::app_state::AppState;
 use crate::draw::DrawWithState;
 use crate::html::HtmlDom;
+use commons::math::lerp;
 use js_sys::{Array, Date};
 use std::cell::RefCell;
 use std::f64::consts::{PI, TAU};
@@ -8,10 +9,6 @@ use std::rc::Rc;
 use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{window, CanvasRenderingContext2d};
-
-fn lerp(a: f64, b: f64, t: f64) -> f64 {
-    a * (1.0 - t) + b * t
-}
 
 fn v_lerp(a: [f64; 2], b: [f64; 2], t: f64) -> [f64; 2] {
     [lerp(a[0], b[0], t), lerp(a[1], b[1], t)]
