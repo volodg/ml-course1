@@ -49,11 +49,12 @@ impl DrawWithState for HtmlDom {
                 .set_inner_html(std::format!("sin = {:.0}", sample.point.y).as_str());
         }
 
-        let _chart = Chart::create(
+        let chart = Chart::create(
             self.chart_container.clone(),
             app_state.samples.clone(),
             default_chart_options(),
-        );
+        )?;
+        chart.draw();
 
         Ok(())
     }

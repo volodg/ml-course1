@@ -6,6 +6,14 @@ pub struct Point {
     pub y: f64,
 }
 
+#[derive(Debug, PartialEq)]
+pub struct Bounds {
+    pub left: f64,
+    pub right: f64,
+    pub top: f64,
+    pub bottom: f64,
+}
+
 #[derive(Clone)]
 pub struct Sample {
     pub id: i32,
