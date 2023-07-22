@@ -2,7 +2,7 @@ use crate::html::HtmlDom;
 use commons::math::remap;
 use rand::Rng;
 use std::fmt;
-use web_commons::chart::{Point, Sample};
+use web_commons::chart_models::{Point, Sample};
 
 #[derive(PartialEq)]
 pub enum CarType {

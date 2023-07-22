@@ -1,33 +1,8 @@
-use std::collections::HashMap;
+use crate::chart_models::{Options, Sample};
+use commons::utils::OkExt;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_sys::{CanvasRenderingContext2d, Element, HtmlCanvasElement, window};
-use commons::utils::OkExt;
-
-#[derive(Clone)]
-pub struct Point {
-    pub x: f64,
-    pub y: f64,
-}
-
-#[derive(Clone)]
-pub struct Sample {
-    pub id: i32,
-    pub label: String,
-    pub point: Point,
-}
-
-impl Sample {
-    pub fn create(id: i32, label: String, point: Point) -> Self {
-        Self { id, label, point }
-    }
-}
-
-pub struct Options {
-    pub size: u32,
-    pub axis_labels: [String; 2],
-    pub styles: HashMap<String, String>,
-}
+use web_sys::{window, CanvasRenderingContext2d, Element, HtmlCanvasElement};
 
 pub struct Chart {
     #[allow(dead_code)]
@@ -39,9 +14,15 @@ pub struct Chart {
 }
 
 impl Chart {
-    pub fn create(container: Element, samples: Vec<Sample>, options: Options) -> Result<Self, JsValue> {
+    pub fn create(
+        container: Element,
+        samples: Vec<Sample>,
+        options: Options,
+    ) -> Result<Self, JsValue> {
         let document = window().unwrap().document().unwrap();
-        let canvas = document.create_element("canvas")?.dyn_into::<HtmlCanvasElement>()?;
+        let canvas = document
+            .create_element("canvas")?
+            .dyn_into::<HtmlCanvasElement>()?;
 
         canvas.set_width(options.size);
         canvas.set_height(options.size);
@@ -57,7 +38,8 @@ impl Chart {
         Self {
             samples,
             canvas,
-            context
-        }.ok()
+            context,
+        }
+        .ok()
     }
 }

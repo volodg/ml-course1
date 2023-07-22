@@ -1,4 +1,5 @@
 pub mod chart;
+pub mod chart_models;
 pub mod html;
 
 use wasm_bindgen::prelude::wasm_bindgen;

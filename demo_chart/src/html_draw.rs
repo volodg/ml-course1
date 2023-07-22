@@ -4,7 +4,8 @@ use crate::html::HtmlDom;
 use std::collections::HashMap;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_commons::chart::{Chart, Options};
+use web_commons::chart::Chart;
+use web_commons::chart_models::Options;
 use web_sys::{HtmlTableRowElement, HtmlTableSectionElement};
 
 fn default_chart_options() -> Options {
