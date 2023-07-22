@@ -1,5 +1,8 @@
 use std::collections::HashMap;
-use web_sys::Element;
+use wasm_bindgen::JsCast;
+use wasm_bindgen::JsValue;
+use web_sys::{CanvasRenderingContext2d, Element, HtmlCanvasElement, window};
+use commons::utils::OkExt;
 
 #[derive(Clone)]
 pub struct Point {
@@ -26,10 +29,32 @@ pub struct Options {
     pub styles: HashMap<String, String>,
 }
 
-pub struct Chart {}
+pub struct Chart {
+    #[allow(dead_code)]
+    samples: Vec<Sample>,
+    #[allow(dead_code)]
+    canvas: HtmlCanvasElement,
+    #[allow(dead_code)]
+    context: CanvasRenderingContext2d,
+}
 
 impl Chart {
-    pub fn create(_element: Element, _samples: Vec<Sample>, _options: Options) -> Self {
-        Self {}
+    pub fn create(_element: Element, samples: Vec<Sample>, options: Options) -> Result<Self, JsValue> {
+        let document = window().unwrap().document().unwrap();
+        let canvas = document.create_element("canvas")?.dyn_into::<HtmlCanvasElement>()?;
+
+        canvas.set_width(options.size);
+        canvas.set_height(options.size);
+
+        let context = canvas
+            .get_context("2d")?
+            .unwrap()
+            .dyn_into::<CanvasRenderingContext2d>()?;
+
+        Self {
+            samples,
+            canvas,
+            context
+        }.ok()
     }
 }
