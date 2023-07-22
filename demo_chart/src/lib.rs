@@ -22,8 +22,8 @@ fn start() -> Result<(), JsValue> {
     let app_state = AppState::create(html);
     app_state.draw()?;
 
-    let app_state = Rc::new(RefCell::new(app_state));
-    app_state.borrow().html.subscribe(app_state.clone())?;
+    // let app_state = Rc::new(RefCell::new(app_state));
+    // app_state.borrow().html.subscribe(app_state.clone())?;
 
     Ok(())
 }

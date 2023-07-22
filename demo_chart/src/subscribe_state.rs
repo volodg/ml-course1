@@ -12,9 +12,10 @@ pub trait StateSubscriber {
 
 impl StateSubscriber for HtmlDom {
     fn subscribe(&self, _app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue> {
-        self.document
-            .add_listener("mousemove", move |_event: MouseEvent| {
-                // TODO
-            })
+        // self.document
+        //     .add_listener("mousemove", move |_event: MouseEvent| {
+        //         // TODO
+        //     })
+        Ok(())
     }
 }
