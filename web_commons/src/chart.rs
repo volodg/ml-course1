@@ -13,7 +13,6 @@ use js_sys::Math::sign;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{window, CanvasRenderingContext2d, Element, HtmlCanvasElement, MouseEvent, WheelEvent};
-use crate::log;
 
 pub struct Chart {
     samples: Vec<Sample>,
@@ -112,7 +111,7 @@ impl Chart {
                 if chart.drag_info.dragging {
                     let data_loc = chart.get_mouse(event, true);
                     chart.drag_info.end = data_loc;
-                    chart.drag_info.offset = chart.drag_info.start.clone() - chart.drag_info.end.clone();
+                    chart.drag_info.offset = (chart.drag_info.start.clone() - chart.drag_info.end.clone()).scale(chart.data_trans.scale);
                     let new_offset = chart.data_trans.offset.clone() + chart.drag_info.offset.clone();
                     let new_scale = chart.data_trans.scale;
                     chart.update_data_bounds(new_offset, new_scale);
@@ -142,7 +141,8 @@ impl Chart {
                 let new_offset = chart.data_trans.offset.clone();
                 let new_scale = chart.data_trans.scale;
                 chart.update_data_bounds(new_offset, new_scale);
-                chart.draw().expect("")
+                chart.draw().expect("");
+                event.prevent_default();
             })
     }
 

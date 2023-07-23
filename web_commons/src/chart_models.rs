@@ -6,6 +6,15 @@ pub struct Point {
     pub y: f64,
 }
 
+impl Point {
+    pub fn scale(&self, scale: f64) -> Self {
+        Self {
+            x: self.x * scale,
+            y: self.y * scale,
+        }
+    }
+}
+
 impl std::ops::Sub<Point> for Point {
     type Output = Point;
 
