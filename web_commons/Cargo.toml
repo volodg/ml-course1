@@ -20,6 +20,7 @@ features = [
     'HtmlCanvasElement',
     'HtmlCollection',
     'HtmlElement',
+    'HtmlImageElement',
     'HtmlScriptElement',
     'MouseEvent',
     'WheelEvent',

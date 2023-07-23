@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use web_sys::HtmlImageElement;
 
 #[derive(Debug, Clone)]
 pub struct Point {
@@ -78,13 +79,22 @@ impl Sample {
 
 pub struct SampleStyle {
     pub color: String,
-    pub text: Option<String>,
+    pub text: String,
+    pub image: Option<HtmlImageElement>,
+}
+
+#[derive(PartialEq)]
+pub enum SampleStyleType {
+    Image,
+    Text,
+    Dot,
 }
 
 pub struct Options {
     pub size: u32,
     pub axis_labels: [String; 2],
     pub styles: HashMap<String, SampleStyle>,
+    pub icon: SampleStyleType,
 }
 
 pub fn get_data_bounds(samples: &[Sample]) -> Bounds {

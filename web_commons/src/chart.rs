@@ -1,5 +1,5 @@
 use crate::chart_models::{
-    get_data_bounds, Bounds, DataTransformation, DragInto, Options, Point, Sample,
+    get_data_bounds, Bounds, DataTransformation, DragInto, Options, Point, Sample, SampleStyleType,
 };
 use crate::graphics::{ContextExt, DrawTextParams};
 use crate::html::AddListener;
@@ -34,7 +34,7 @@ impl Chart {
     pub fn create(
         container: Element,
         samples: Vec<Sample>,
-        options: Options,
+        mut options: Options,
     ) -> Result<Rc<RefCell<Self>>, JsValue> {
         let document = window().unwrap().document().unwrap();
         let canvas = document
@@ -68,6 +68,10 @@ impl Chart {
         let pixel_bounds = Self::get_pixels_bounds(&canvas, margin);
         let data_bounds = get_data_bounds(&samples);
         let default_data_bounds = data_bounds.clone();
+
+        if options.icon == SampleStyleType::Image {
+            context.generate_images(&mut options.styles)?;
+        }
 
         let result = Self {
             samples,
@@ -354,18 +358,19 @@ impl Chart {
         for sample in &self.samples {
             let pixel_location = remap_point(&self.data_bounds, &self.pixel_bounds, &sample.point);
             let style = self.options.styles.get(&sample.label).expect("");
-            match &style.text {
-                Some(text) => self.context.draw_text_with_params(
-                    text,
+            match self.options.icon {
+                SampleStyleType::Text => self.context.draw_text_with_params(
+                    &style.text,
                     &pixel_location,
                     DrawTextParams {
                         size: 20,
                         ..DrawTextParams::default()
                     },
                 )?,
-                None => self
+                SampleStyleType::Dot => self
                     .context
                     .draw_point_with_color(&pixel_location, &style.color)?,
+                SampleStyleType::Image => (),
             }
         }
 

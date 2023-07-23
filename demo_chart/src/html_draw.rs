@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::chart::Chart;
-use web_commons::chart_models::{Options, SampleStyle};
+use web_commons::chart_models::{Options, SampleStyle, SampleStyleType};
 use web_sys::{HtmlTableRowElement, HtmlTableSectionElement};
 
 fn default_chart_options() -> Options {
@@ -14,20 +14,23 @@ fn default_chart_options() -> Options {
         CarType::Basic.to_string(),
         SampleStyle {
             color: "gray".to_owned(),
-            text: Some("🚗".to_owned()),
+            text: "🚗".to_owned(),
+            image: None,
         },
     );
     styles.insert(
         CarType::Sport.to_string(),
         SampleStyle {
             color: "red".to_owned(),
-            text: Some("🏎".to_owned()),
+            text: "🏎".to_owned(),
+            image: None,
         },
     );
     Options {
         size: 500,
         axis_labels: ["Kilometers".to_owned(), "Price".to_owned()],
         styles,
+        icon: SampleStyleType::Text,
     }
 }
 
