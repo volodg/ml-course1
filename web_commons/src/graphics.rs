@@ -117,6 +117,33 @@ impl ContextExt for CanvasRenderingContext2d {
             context.set_text_align("center");
             context.set_text_baseline("middle");
             context.set_font(std::format!("{}px Courier", size).as_str());
+
+            let mut color_hue_map = HashMap::new();
+            color_hue_map.insert("red".to_owned(), 0);
+            color_hue_map.insert("yellow".to_owned(), 60);
+            color_hue_map.insert("green".to_owned(), 120);
+            color_hue_map.insert("cyan".to_owned(), 180);
+            color_hue_map.insert("blue".to_owned(), 240);
+            color_hue_map.insert("magenta".to_owned(), 300);
+
+            let hue = color_hue_map.get(&style.color);
+
+            if let Some(hue) = hue {
+                let hue = -45 + hue;
+
+                context.set_filter(std::format!("\
+                brightness(2) \
+                contrast(0.3) \
+                sepia(1) \
+                brightness(0.7) \
+                hue-rotate({}deg) \
+                saturate(3) \
+                contrast(3) \
+                ", hue).as_str());
+            } else {
+                context.set_filter("grayscale(1)");
+            }
+
             context.fill_text(&style.text, size as f64 / 2.0, size as f64 / 2.0)?;
 
             let image = document

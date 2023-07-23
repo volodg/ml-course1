@@ -13,7 +13,7 @@ fn default_chart_options() -> Options {
     styles.insert(
         CarType::Basic.to_string(),
         SampleStyle {
-            color: "gray".to_owned(),
+            color: "blue".to_owned(),
             text: "🚗".to_owned(),
             image: None,
         },
@@ -21,7 +21,7 @@ fn default_chart_options() -> Options {
     styles.insert(
         CarType::Sport.to_string(),
         SampleStyle {
-            color: "red".to_owned(),
+            color: "gray".to_owned(),
             text: "🏎".to_owned(),
             image: None,
         },
