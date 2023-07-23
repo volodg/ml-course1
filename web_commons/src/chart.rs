@@ -113,9 +113,28 @@ impl Chart {
                     chart.drag_info.end = data_loc;
                     chart.drag_info.offset = chart.drag_info.start.clone() - chart.drag_info.end.clone();
                     let new_offset = chart.data_trans.offset.clone() + chart.drag_info.offset.clone();
-                    log(std::format!("{:?}", new_offset).as_str())
+                    chart.update_data_bounds(new_offset);
+                }
+            })?;
+        let chart_copy = chart.clone();
+        chart
+            .borrow()
+            .canvas
+            .add_listener("mouseup", move |event: MouseEvent| {
+                let mut chart = chart_copy.borrow_mut();
+                if chart.drag_info.dragging {
+                    chart.data_trans.offset = chart.data_trans.offset.clone() + chart.drag_info.offset.clone();
+                    chart.drag_info.dragging = false;
                 }
             })
+    }
+
+    fn update_data_bounds(&mut self, offset: Point) -> Result<(), JsValue> {
+        self.data_bounds.left = self.default_data_bounds.left + offset.x;
+        self.data_bounds.right = self.default_data_bounds.right + offset.x;
+        self.data_bounds.top = self.default_data_bounds.top + offset.y;
+        self.data_bounds.bottom = self.default_data_bounds.bottom + offset.y;
+        self.draw()
     }
 
     fn get_mouse(&self, event: MouseEvent, is_data_space: bool) -> Point {
