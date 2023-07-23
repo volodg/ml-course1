@@ -1,4 +1,5 @@
 use std::f64::consts::FRAC_PI_2;
+use js_sys::Array;
 use crate::chart_models::{Bounds, get_data_bounds, Options, Point, Sample};
 use crate::graphics::{ContextExt, DrawTextParams};
 use commons::math::remap;
@@ -102,6 +103,16 @@ impl Chart {
         })?;
 
         self.context.restore();
+
+        self.context.begin_path();
+        self.context.move_to(self.pixel_bounds.left, self.pixel_bounds.top);
+        self.context.line_to(self.pixel_bounds.left, self.pixel_bounds.bottom);
+        self.context.line_to(self.pixel_bounds.right, self.pixel_bounds.bottom);
+        let array = Array::of2(&JsValue::from(5), &JsValue::from(4));
+        self.context.set_line_dash(&array)?;
+        self.context.set_line_width(2.0);
+        self.context.set_stroke_style(&JsValue::from_str("lightgray"));
+        self.context.stroke();
 
         Ok(())
     }
