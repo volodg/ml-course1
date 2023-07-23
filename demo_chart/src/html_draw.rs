@@ -13,7 +13,7 @@ fn default_chart_options() -> Options {
     styles.insert(CarType::Basic.to_string(), "gray".to_owned());
     styles.insert(CarType::Sport.to_string(), "red".to_owned());
     Options {
-        size: 250,
+        size: 500,
         axis_labels: ["Kilometers".to_owned(), "Price".to_owned()],
         styles,
     }

@@ -86,65 +86,103 @@ impl Chart {
 
     fn draw_axis(&self) -> Result<(), JsValue> {
         // Draw X Axis text
-        self.context.draw_text_with_params(self.options.axis_labels[0].as_str(), &Point {
-            x: self.canvas.width() as f64 / 2.0,
-            y: self.pixel_bounds.bottom + self.margin / 2.0,
-        }, DrawTextParams {
-            size: (self.margin * 0.6) as u32,
-            ..DrawTextParams::default()
-        })?;
+        {
+            self.context.draw_text_with_params(self.options.axis_labels[0].as_str(), &Point {
+                x: self.canvas.width() as f64 / 2.0,
+                y: self.pixel_bounds.bottom + self.margin / 2.0,
+            }, DrawTextParams {
+                size: (self.margin * 0.6) as u32,
+                ..DrawTextParams::default()
+            })?;
+        }
 
         // Draw Y Axis text
-        self.context.save();
-        self.context.translate(self.pixel_bounds.left - self.margin / 2.0, self.canvas.height() as f64 / 2.0)?;
-        self.context.rotate(-FRAC_PI_2)?;
+        {
+            self.context.save();
+            self.context.translate(self.pixel_bounds.left - self.margin / 2.0, self.canvas.height() as f64 / 2.0)?;
+            self.context.rotate(-FRAC_PI_2)?;
 
-        self.context.draw_text_with_params(self.options.axis_labels[1].as_str(), &Point::zero(), DrawTextParams {
-            size: (self.margin * 0.6) as u32,
-            ..DrawTextParams::default()
-        })?;
+            self.context.draw_text_with_params(self.options.axis_labels[1].as_str(), &Point::zero(), DrawTextParams {
+                size: (self.margin * 0.6) as u32,
+                ..DrawTextParams::default()
+            })?;
 
-        self.context.restore();
+            self.context.restore();
+        }
 
         // Draw Axis
-        self.context.begin_path();
-        self.context.move_to(self.pixel_bounds.left, self.pixel_bounds.top);
-        self.context.line_to(self.pixel_bounds.left, self.pixel_bounds.bottom);
-        self.context.line_to(self.pixel_bounds.right, self.pixel_bounds.bottom);
-        let array = Array::of2(&JsValue::from(5), &JsValue::from(4));
-        self.context.set_line_dash(&array)?;
-        self.context.set_line_width(2.0);
-        self.context.set_stroke_style(&JsValue::from_str("lightgray"));
-        self.context.stroke();
-        self.context.set_line_dash(&Array::new())?;
+        {
+            self.context.begin_path();
+            self.context.move_to(self.pixel_bounds.left, self.pixel_bounds.top);
+            self.context.line_to(self.pixel_bounds.left, self.pixel_bounds.bottom);
+            self.context.line_to(self.pixel_bounds.right, self.pixel_bounds.bottom);
+            let array = Array::of2(&JsValue::from(5), &JsValue::from(4));
+            self.context.set_line_dash(&array)?;
+            self.context.set_line_width(2.0);
+            self.context.set_stroke_style(&JsValue::from_str("lightgray"));
+            self.context.stroke();
+            self.context.set_line_dash(&Array::new())?;
+        }
 
-        // Draw x0 scale
-        let data_min = remap_point(&self.pixel_bounds, &self.data_bounds, &Point {
-            x: self.pixel_bounds.left,
-            y: self.pixel_bounds.bottom,
-        });
-        self.context.draw_text_with_params(std::format!("{:.2}", data_min.x).as_str(), &Point {
-            x: self.pixel_bounds.left,
-            y: self.pixel_bounds.bottom,
-        }, DrawTextParams {
-            size: (self.margin * 0.3) as u32,
-            align: "left".to_owned(),
-            v_align: "top".to_owned(),
-            ..DrawTextParams::default()
-        })?;
+        {
+            // Draw x0 scale
+            let data_min = remap_point(&self.pixel_bounds, &self.data_bounds, &Point {
+                x: self.pixel_bounds.left,
+                y: self.pixel_bounds.bottom,
+            });
+            self.context.draw_text_with_params(std::format!("{:.2}", data_min.x).as_str(), &Point {
+                x: self.pixel_bounds.left,
+                y: self.pixel_bounds.bottom,
+            }, DrawTextParams {
+                size: (self.margin * 0.3) as u32,
+                align: "left".to_owned(),
+                v_align: "top".to_owned(),
+                ..DrawTextParams::default()
+            })?;
 
-        // Draw y0 scale
-        self.context.save();
-        self.context.translate(self.pixel_bounds.left, self.pixel_bounds.bottom)?;
-        self.context.rotate(-FRAC_PI_2)?;
-        self.context.draw_text_with_params(std::format!("{:.2}", data_min.y).as_str(), &Point::zero(), DrawTextParams {
-            size: (self.margin * 0.3) as u32,
-            align: "left".to_owned(),
-            v_align: "bottom".to_owned(),
-            ..DrawTextParams::default()
-        })?;
+            // Draw y0 scale
+            self.context.save();
+            self.context.translate(self.pixel_bounds.left, self.pixel_bounds.bottom)?;
+            self.context.rotate(-FRAC_PI_2)?;
+            self.context.draw_text_with_params(std::format!("{:.2}", data_min.y).as_str(), &Point::zero(), DrawTextParams {
+                size: (self.margin * 0.3) as u32,
+                align: "left".to_owned(),
+                v_align: "bottom".to_owned(),
+                ..DrawTextParams::default()
+            })?;
 
-        self.context.restore();
+            self.context.restore();
+        }
+
+        {
+            // Draw x[-1] scale
+            let data_max = remap_point(&self.pixel_bounds, &self.data_bounds, &Point {
+                x: self.pixel_bounds.right,
+                y: self.pixel_bounds.bottom,
+            });
+            self.context.draw_text_with_params(std::format!("{:.2}", data_max.x).as_str(), &Point {
+                x: self.pixel_bounds.right,
+                y: self.pixel_bounds.bottom,
+            }, DrawTextParams {
+                size: (self.margin * 0.3) as u32,
+                align: "right".to_owned(),
+                v_align: "top".to_owned(),
+                ..DrawTextParams::default()
+            })?;
+
+            // Draw y[-1] scale
+            self.context.save();
+            self.context.translate(self.pixel_bounds.left, self.pixel_bounds.top)?;
+            self.context.rotate(-FRAC_PI_2)?;
+            self.context.draw_text_with_params(std::format!("{:.2}", data_max.y).as_str(), &Point::zero(), DrawTextParams {
+                size: (self.margin * 0.3) as u32,
+                align: "right".to_owned(),
+                v_align: "bottom".to_owned(),
+                ..DrawTextParams::default()
+            })?;
+
+            self.context.restore();
+        }
 
         Ok(())
     }
