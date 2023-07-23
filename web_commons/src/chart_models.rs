@@ -6,16 +6,25 @@ pub struct Point {
     pub y: f64,
 }
 
+pub struct DataTransformation {
+    pub offset: Point,
+    pub scale: f64,
+}
+
+pub struct DragInto {
+    pub start: Point,
+    pub end: Point,
+    pub offset: Point,
+    pub dragging: bool,
+}
+
 impl Point {
     pub fn zero() -> Self {
-        Self {
-            x: 0.0,
-            y: 0.0,
-        }
+        Self { x: 0.0, y: 0.0 }
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Bounds {
     pub left: f64,
     pub right: f64,
@@ -53,13 +62,14 @@ pub fn get_data_bounds(samples: &[Sample]) -> Bounds {
             Some(acc_max.map(|x| x.max(el)).unwrap_or(el)),
         )
     }
-    let (min_x, max_x, min_y, max_y) = samples
-        .iter()
-        .fold((zero_min_max, zero_min_max, zero_min_max, zero_min_max), |(min_x, max_x, min_y, max_y), el| {
+    let (min_x, max_x, min_y, max_y) = samples.iter().fold(
+        (zero_min_max, zero_min_max, zero_min_max, zero_min_max),
+        |(min_x, max_x, min_y, max_y), el| {
             let x_minmax = min_max((min_x, max_x), el.point.x);
             let y_minmax = min_max((min_y, max_y), el.point.y);
             (x_minmax.0, x_minmax.1, y_minmax.0, y_minmax.1)
-        });
+        },
+    );
     Bounds {
         left: min_x.expect(""),
         right: max_x.expect(""),
@@ -70,7 +80,7 @@ pub fn get_data_bounds(samples: &[Sample]) -> Bounds {
 
 #[cfg(test)]
 mod tests {
-    use crate::chart_models::{Bounds, get_data_bounds, Point, Sample};
+    use crate::chart_models::{get_data_bounds, Bounds, Point, Sample};
 
     #[test]
     fn test_data_bounds() {

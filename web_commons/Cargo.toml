@@ -16,6 +16,7 @@ features = [
     'CanvasRenderingContext2d',
     'CssStyleDeclaration',
     'Document',
+    'DomRect',
     'HtmlCanvasElement',
     'HtmlCollection',
     'HtmlElement',

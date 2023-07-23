@@ -21,8 +21,6 @@ fn default_chart_options() -> Options {
 
 impl DrawWithState for HtmlDom {
     fn draw(&self, app_state: &AppState) -> Result<(), JsValue> {
-        // self.canvas.draw(app_state)?;
-
         let header = self
             .data_table
             .create_t_head()
@@ -54,6 +52,7 @@ impl DrawWithState for HtmlDom {
             app_state.samples.clone(),
             default_chart_options(),
         )?;
-        chart.draw()
+        let borrow_chart = chart.borrow();
+        borrow_chart.draw()
     }
 }
