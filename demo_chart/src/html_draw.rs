@@ -30,7 +30,7 @@ fn default_chart_options() -> Options {
         size: 500,
         axis_labels: ["Kilometers".to_owned(), "Price".to_owned()],
         styles,
-        icon: SampleStyleType::Text,
+        icon: SampleStyleType::Image,
     }
 }
 

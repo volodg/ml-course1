@@ -70,7 +70,7 @@ impl Chart {
         let default_data_bounds = data_bounds.clone();
 
         if options.icon == SampleStyleType::Image {
-            context.generate_images(&mut options.styles)?;
+            CanvasRenderingContext2d::generate_images(&mut options.styles)?;
         }
 
         let result = Self {
@@ -370,7 +370,9 @@ impl Chart {
                 SampleStyleType::Dot => self
                     .context
                     .draw_point_with_color(&pixel_location, &style.color)?,
-                SampleStyleType::Image => (),
+                SampleStyleType::Image => self
+                    .context
+                    .draw_image(&style.image.as_ref().expect(""), &pixel_location)?,
             }
         }
 

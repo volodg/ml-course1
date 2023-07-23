@@ -41,12 +41,13 @@ pub trait ContextExt {
         size: f64,
     ) -> Result<(), JsValue>;
 
-    fn generate_images(&self, styles: &mut HashMap<String, SampleStyle>) -> Result<(), JsValue>;
+    fn generate_images(styles: &mut HashMap<String, SampleStyle>) -> Result<(), JsValue>;
     fn generate_images_with_size(
-        &self,
         styles: &mut HashMap<String, SampleStyle>,
         size: u32,
     ) -> Result<(), JsValue>;
+
+    fn draw_image(&self, image: &HtmlImageElement, location: &Point) -> Result<(), JsValue>;
 }
 
 impl ContextExt for CanvasRenderingContext2d {
@@ -91,12 +92,11 @@ impl ContextExt for CanvasRenderingContext2d {
         Ok(())
     }
 
-    fn generate_images(&self, styles: &mut HashMap<String, SampleStyle>) -> Result<(), JsValue> {
-        self.generate_images_with_size(styles, 20)
+    fn generate_images(styles: &mut HashMap<String, SampleStyle>) -> Result<(), JsValue> {
+        Self::generate_images_with_size(styles, 20)
     }
 
     fn generate_images_with_size(
-        &self,
         styles: &mut HashMap<String, SampleStyle>,
         size: u32,
     ) -> Result<(), JsValue> {
@@ -119,7 +119,8 @@ impl ContextExt for CanvasRenderingContext2d {
             context.set_font(std::format!("{}px Courier", size).as_str());
             context.fill_text(&style.text, size as f64 / 2.0, size as f64 / 2.0)?;
 
-            let image = document.create_element("image")
+            let image = document
+                .create_element("image")
                 .unwrap()
                 .dyn_into::<HtmlImageElement>()
                 .unwrap();
@@ -127,6 +128,20 @@ impl ContextExt for CanvasRenderingContext2d {
 
             style.image = Some(image);
         }
+
+        Ok(())
+    }
+
+    fn draw_image(&self, image: &HtmlImageElement, location: &Point) -> Result<(), JsValue> {
+        self.begin_path();
+        self.draw_image_with_html_image_element_and_dw_and_dh(
+            image,
+            location.x - image.width() as f64 / 2.0,
+            location.y - image.height() as f64 / 2.0,
+            image.width() as f64,
+            image.height() as f64,
+        )?;
+        self.fill();
 
         Ok(())
     }
