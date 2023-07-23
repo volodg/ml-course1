@@ -6,6 +6,28 @@ pub struct Point {
     pub y: f64,
 }
 
+impl std::ops::Sub<Point> for Point {
+    type Output = Point;
+
+    fn sub(self, other: Point) -> Point {
+        Point {
+            x: self.x - other.x,
+            y: self.y - other.y,
+        }
+    }
+}
+
+impl std::ops::Add<Point> for Point {
+    type Output = Point;
+
+    fn add(self, other: Point) -> Point {
+        Point {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+}
+
 pub struct DataTransformation {
     pub offset: Point,
     pub scale: f64,

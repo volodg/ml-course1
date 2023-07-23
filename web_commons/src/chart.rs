@@ -3,7 +3,6 @@ use crate::chart_models::{
 };
 use crate::graphics::{ContextExt, DrawTextParams};
 use crate::html::AddListener;
-use crate::log;
 use commons::math::remap;
 use commons::utils::OkExt;
 use js_sys::Array;
@@ -13,6 +12,7 @@ use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{window, CanvasRenderingContext2d, Element, HtmlCanvasElement, MouseEvent};
+use crate::log;
 
 pub struct Chart {
     samples: Vec<Sample>,
@@ -97,13 +97,24 @@ impl Chart {
             .borrow()
             .canvas
             .add_listener("mousedown", move |event: MouseEvent| {
-                let data_loc = chart_copy.borrow().get_mouse(event, true);
-                log(std::format!("{:?}", data_loc).as_str());
-                // let mut chart = chart.borrow_mut();
-                // handle_touch_start(
-                //     app_state.drawing_expected_mut().expect(""),
-                //     Some(event.into()),
-                // )
+                let mut chart = chart_copy.borrow_mut();
+                let data_loc = chart.get_mouse(event, true);
+                chart.drag_info.start = data_loc;
+                chart.drag_info.dragging = true;
+            })?;
+        let chart_copy = chart.clone();
+        chart
+            .borrow()
+            .canvas
+            .add_listener("mousemove", move |event: MouseEvent| {
+                let mut chart = chart_copy.borrow_mut();
+                if chart.drag_info.dragging {
+                    let data_loc = chart.get_mouse(event, true);
+                    chart.drag_info.end = data_loc;
+                    chart.drag_info.offset = chart.drag_info.start.clone() - chart.drag_info.end.clone();
+                    let new_offset = chart.data_trans.offset.clone() + chart.drag_info.offset.clone();
+                    log(std::format!("{:?}", new_offset).as_str())
+                }
             })
     }
 
