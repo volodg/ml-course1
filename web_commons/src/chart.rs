@@ -118,18 +118,33 @@ impl Chart {
         self.context.stroke();
         self.context.set_line_dash(&Array::new())?;
 
-        // Draw scale
+        // Draw x0 scale
         let data_min = remap_point(&self.pixel_bounds, &self.data_bounds, &Point {
             x: self.pixel_bounds.left,
             y: self.pixel_bounds.bottom,
         });
-        self.context.draw_text_with_params(data_min.x.to_string().as_str(), &Point {
+        self.context.draw_text_with_params(std::format!("{:.2}", data_min.x).as_str(), &Point {
             x: self.pixel_bounds.left,
             y: self.pixel_bounds.bottom,
         }, DrawTextParams {
             size: (self.margin * 0.3) as u32,
+            align: "left".to_owned(),
+            v_align: "top".to_owned(),
             ..DrawTextParams::default()
         })?;
+
+        // Draw y0 scale
+        self.context.save();
+        self.context.translate(self.pixel_bounds.left, self.pixel_bounds.bottom)?;
+        self.context.rotate(-FRAC_PI_2)?;
+        self.context.draw_text_with_params(std::format!("{:.2}", data_min.y).as_str(), &Point::zero(), DrawTextParams {
+            size: (self.margin * 0.3) as u32,
+            align: "left".to_owned(),
+            v_align: "bottom".to_owned(),
+            ..DrawTextParams::default()
+        })?;
+
+        self.context.restore();
 
         Ok(())
     }
