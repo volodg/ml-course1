@@ -120,7 +120,7 @@ impl ContextExt for CanvasRenderingContext2d {
             context.fill_text(&style.text, size as f64 / 2.0, size as f64 / 2.0)?;
 
             let image = document
-                .create_element("image")
+                .create_element("img")
                 .unwrap()
                 .dyn_into::<HtmlImageElement>()
                 .unwrap();
