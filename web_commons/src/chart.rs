@@ -163,22 +163,22 @@ impl Chart {
         self.data_bounds.left = lerp(
             center.x,
             self.data_bounds.left,
-            scale
+            scale * scale
         );
         self.data_bounds.right = lerp(
             center.x,
             self.data_bounds.right,
-            scale
+            scale * scale
         );
         self.data_bounds.top = lerp(
             center.y,
             self.data_bounds.top,
-            scale
+            scale * scale
         );
         self.data_bounds.bottom = lerp(
             center.y,
             self.data_bounds.bottom,
-            scale
+            scale * scale
         );
     }
 
