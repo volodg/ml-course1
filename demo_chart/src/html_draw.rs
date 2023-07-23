@@ -10,14 +10,20 @@ use web_sys::{HtmlTableRowElement, HtmlTableSectionElement};
 
 fn default_chart_options() -> Options {
     let mut styles = HashMap::<String, SampleStyle>::new();
-    styles.insert(CarType::Basic.to_string(), SampleStyle {
-        color: "gray".to_owned(),
-        text: Some("🚗".to_owned()),
-    });
-    styles.insert(CarType::Sport.to_string(), SampleStyle {
-        color: "red".to_owned(),
-        text: Some("🏎".to_owned()),
-    });
+    styles.insert(
+        CarType::Basic.to_string(),
+        SampleStyle {
+            color: "gray".to_owned(),
+            text: Some("🚗".to_owned()),
+        },
+    );
+    styles.insert(
+        CarType::Sport.to_string(),
+        SampleStyle {
+            color: "red".to_owned(),
+            text: Some("🏎".to_owned()),
+        },
+    );
     Options {
         size: 500,
         axis_labels: ["Kilometers".to_owned(), "Price".to_owned()],

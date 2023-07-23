@@ -6,13 +6,15 @@ use crate::html::AddListener;
 use commons::math::{lerp, remap};
 use commons::utils::OkExt;
 use js_sys::Array;
+use js_sys::Math::sign;
 use std::cell::RefCell;
 use std::f64::consts::FRAC_PI_2;
 use std::rc::Rc;
-use js_sys::Math::sign;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_sys::{window, CanvasRenderingContext2d, Element, HtmlCanvasElement, MouseEvent, WheelEvent};
+use web_sys::{
+    window, CanvasRenderingContext2d, Element, HtmlCanvasElement, MouseEvent, WheelEvent,
+};
 
 pub struct Chart {
     samples: Vec<Sample>,
@@ -20,13 +22,10 @@ pub struct Chart {
     context: CanvasRenderingContext2d,
     margin: f64,
     transparency: f64,
-    #[allow(dead_code)]
     data_trans: DataTransformation,
-    #[allow(dead_code)]
     drag_info: DragInto,
     pixel_bounds: Bounds,
     data_bounds: Bounds,
-    #[allow(dead_code)]
     default_data_bounds: Bounds,
     options: Options,
 }
@@ -65,7 +64,7 @@ impl Chart {
         };
 
         let margin = options.size as f64 * 0.1;
-        let transparency = 0.5;
+        let transparency = 0.7;
         let pixel_bounds = Self::get_pixels_bounds(&canvas, margin);
         let data_bounds = get_data_bounds(&samples);
         let default_data_bounds = data_bounds.clone();
@@ -111,8 +110,11 @@ impl Chart {
                 if chart.drag_info.dragging {
                     let data_loc = chart.get_mouse(event, true);
                     chart.drag_info.end = data_loc;
-                    chart.drag_info.offset = (chart.drag_info.start.clone() - chart.drag_info.end.clone()).scale(chart.data_trans.scale);
-                    let new_offset = chart.data_trans.offset.clone() + chart.drag_info.offset.clone();
+                    chart.drag_info.offset = (chart.drag_info.start.clone()
+                        - chart.drag_info.end.clone())
+                    .scale(chart.data_trans.scale);
+                    let new_offset =
+                        chart.data_trans.offset.clone() + chart.drag_info.offset.clone();
                     let new_scale = chart.data_trans.scale;
                     chart.update_data_bounds(new_offset, new_scale);
                     chart.draw().expect("")
@@ -125,7 +127,8 @@ impl Chart {
             .add_listener("mouseup", move |_event: MouseEvent| {
                 let mut chart = chart_copy.borrow_mut();
                 if chart.drag_info.dragging {
-                    chart.data_trans.offset = chart.data_trans.offset.clone() + chart.drag_info.offset.clone();
+                    chart.data_trans.offset =
+                        chart.data_trans.offset.clone() + chart.drag_info.offset.clone();
                     chart.drag_info.dragging = false;
                 }
             })?;
@@ -138,9 +141,7 @@ impl Chart {
                 let dir = sign(event.delta_y());
                 let step = 0.02;
                 chart.data_trans.scale += dir * step;
-                chart.data_trans.scale = step.max(
-                    chart.data_trans.scale.min(2.0)
-                );
+                chart.data_trans.scale = step.max(chart.data_trans.scale.min(2.0));
                 let new_offset = chart.data_trans.offset.clone();
                 let new_scale = chart.data_trans.scale;
                 chart.update_data_bounds(new_offset, new_scale);
@@ -160,26 +161,10 @@ impl Chart {
             y: lerp(self.data_bounds.top, self.data_bounds.bottom, 0.5),
         };
 
-        self.data_bounds.left = lerp(
-            center.x,
-            self.data_bounds.left,
-            scale * scale
-        );
-        self.data_bounds.right = lerp(
-            center.x,
-            self.data_bounds.right,
-            scale * scale
-        );
-        self.data_bounds.top = lerp(
-            center.y,
-            self.data_bounds.top,
-            scale * scale
-        );
-        self.data_bounds.bottom = lerp(
-            center.y,
-            self.data_bounds.bottom,
-            scale * scale
-        );
+        self.data_bounds.left = lerp(center.x, self.data_bounds.left, scale * scale);
+        self.data_bounds.right = lerp(center.x, self.data_bounds.right, scale * scale);
+        self.data_bounds.top = lerp(center.y, self.data_bounds.top, scale * scale);
+        self.data_bounds.bottom = lerp(center.y, self.data_bounds.bottom, scale * scale);
     }
 
     fn get_mouse(&self, event: MouseEvent, is_data_space: bool) -> Point {
@@ -370,8 +355,17 @@ impl Chart {
             let pixel_location = remap_point(&self.data_bounds, &self.pixel_bounds, &sample.point);
             let style = self.options.styles.get(&sample.label).expect("");
             match &style.text {
-                Some(text) => self.context.draw_text(text, &pixel_location)?,
-                None => self.context.draw_point_with_color(&pixel_location, &style.color)?,
+                Some(text) => self.context.draw_text_with_params(
+                    text,
+                    &pixel_location,
+                    DrawTextParams {
+                        size: 20,
+                        ..DrawTextParams::default()
+                    },
+                )?,
+                None => self
+                    .context
+                    .draw_point_with_color(&pixel_location, &style.color)?,
             }
         }
 
