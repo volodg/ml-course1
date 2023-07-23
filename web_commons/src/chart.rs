@@ -113,6 +113,7 @@ impl Chart {
         self.context.set_line_width(2.0);
         self.context.set_stroke_style(&JsValue::from_str("lightgray"));
         self.context.stroke();
+        self.set_line_dash(&Array::new())
 
         Ok(())
     }
