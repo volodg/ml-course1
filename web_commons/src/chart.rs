@@ -145,7 +145,7 @@ impl Chart {
         };
 
         if is_data_space {
-            return remap_point(&self.pixel_bounds, &self.data_bounds, &pixel_loc);
+            return remap_point(&self.pixel_bounds, &self.default_data_bounds, &pixel_loc);
         }
 
         pixel_loc
