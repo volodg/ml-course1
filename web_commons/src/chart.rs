@@ -3,15 +3,16 @@ use crate::chart_models::{
 };
 use crate::graphics::{ContextExt, DrawTextParams};
 use crate::html::AddListener;
-use commons::math::remap;
+use commons::math::{lerp, remap};
 use commons::utils::OkExt;
 use js_sys::Array;
 use std::cell::RefCell;
 use std::f64::consts::FRAC_PI_2;
 use std::rc::Rc;
+use js_sys::Math::sign;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_sys::{window, CanvasRenderingContext2d, Element, HtmlCanvasElement, MouseEvent};
+use web_sys::{window, CanvasRenderingContext2d, Element, HtmlCanvasElement, MouseEvent, WheelEvent};
 use crate::log;
 
 pub struct Chart {
@@ -113,28 +114,69 @@ impl Chart {
                     chart.drag_info.end = data_loc;
                     chart.drag_info.offset = chart.drag_info.start.clone() - chart.drag_info.end.clone();
                     let new_offset = chart.data_trans.offset.clone() + chart.drag_info.offset.clone();
-                    chart.update_data_bounds(new_offset);
+                    let new_scale = chart.data_trans.scale;
+                    chart.update_data_bounds(new_offset, new_scale);
+                    chart.draw().expect("")
                 }
             })?;
         let chart_copy = chart.clone();
         chart
             .borrow()
             .canvas
-            .add_listener("mouseup", move |event: MouseEvent| {
+            .add_listener("mouseup", move |_event: MouseEvent| {
                 let mut chart = chart_copy.borrow_mut();
                 if chart.drag_info.dragging {
                     chart.data_trans.offset = chart.data_trans.offset.clone() + chart.drag_info.offset.clone();
                     chart.drag_info.dragging = false;
                 }
+            })?;
+        let chart_copy = chart.clone();
+        chart
+            .borrow()
+            .canvas
+            .add_listener("wheel", move |event: WheelEvent| {
+                let mut chart = chart_copy.borrow_mut();
+                let dir = sign(event.delta_y());
+                let step = 0.02;
+                chart.data_trans.scale += dir * step;
+                let new_offset = chart.data_trans.offset.clone();
+                let new_scale = chart.data_trans.scale;
+                chart.update_data_bounds(new_offset, new_scale);
+                chart.draw().expect("")
             })
     }
 
-    fn update_data_bounds(&mut self, offset: Point) -> Result<(), JsValue> {
+    fn update_data_bounds(&mut self, offset: Point, scale: f64) {
         self.data_bounds.left = self.default_data_bounds.left + offset.x;
         self.data_bounds.right = self.default_data_bounds.right + offset.x;
         self.data_bounds.top = self.default_data_bounds.top + offset.y;
         self.data_bounds.bottom = self.default_data_bounds.bottom + offset.y;
-        self.draw()
+
+        let center = Point {
+            x: lerp(self.data_bounds.left, self.data_bounds.right, 0.5),
+            y: lerp(self.data_bounds.top, self.data_bounds.bottom, 0.5),
+        };
+
+        self.data_bounds.left = lerp(
+            center.x,
+            self.data_bounds.left,
+            scale
+        );
+        self.data_bounds.right = lerp(
+            center.x,
+            self.data_bounds.right,
+            scale
+        );
+        self.data_bounds.top = lerp(
+            center.y,
+            self.data_bounds.top,
+            scale
+        );
+        self.data_bounds.bottom = lerp(
+            center.y,
+            self.data_bounds.bottom,
+            scale
+        );
     }
 
     fn get_mouse(&self, event: MouseEvent, is_data_space: bool) -> Point {

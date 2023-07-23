@@ -22,5 +22,6 @@ features = [
     'HtmlElement',
     'HtmlScriptElement',
     'MouseEvent',
+    'WheelEvent',
     'Window',
 ]
