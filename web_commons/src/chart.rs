@@ -1,4 +1,5 @@
-use crate::chart_models::{Bounds, Options, Point, Sample};
+use std::f64::consts::FRAC_PI_2;
+use crate::chart_models::{Bounds, get_data_bounds, Options, Point, Sample};
 use crate::graphics::{ContextExt, DrawTextParams};
 use commons::math::remap;
 use commons::utils::OkExt;
@@ -42,7 +43,7 @@ impl Chart {
         let margin = options.size as f64 * 0.1;
         let transparency = 0.5;
         let pixel_bounds = Self::get_pixels_bounds(&canvas, margin);
-        let data_bounds = Self::get_data_bounds(&samples);
+        let data_bounds = get_data_bounds(&samples);
 
         Self {
             samples,
@@ -63,32 +64,6 @@ impl Chart {
             right: canvas.width() as f64 - margin,
             top: margin,
             bottom: canvas.height() as f64 - margin,
-        }
-    }
-
-    fn get_data_bounds(samples: &[Sample]) -> Bounds {
-        let zero_min_max: Option<f64> = None;
-        fn min_max(
-            (acc_min, acc_max): (Option<f64>, Option<f64>),
-            el: f64,
-        ) -> (Option<f64>, Option<f64>) {
-            (
-                Some(acc_min.map(|x| x.min(el)).unwrap_or(el)),
-                Some(acc_max.map(|x| x.max(el)).unwrap_or(el)),
-            )
-        }
-        let (min_x, max_x, min_y, max_y) = samples
-            .iter()
-            .fold((zero_min_max, zero_min_max, zero_min_max, zero_min_max), |(min_x, max_x, min_y, max_y), el| {
-                let x_minmax = min_max((min_x, max_x), el.point.x);
-                let y_minmax = min_max((min_y, max_y), el.point.y);
-                (x_minmax.0, x_minmax.1, y_minmax.0, y_minmax.1)
-            });
-        Bounds {
-            left: min_x.expect(""),
-            right: max_x.expect(""),
-            top: max_y.expect(""),
-            bottom: min_y.expect(""),
         }
     }
 
@@ -113,9 +88,22 @@ impl Chart {
             x: self.canvas.width() as f64 / 2.0,
             y: self.pixel_bounds.bottom + self.margin / 2.0,
         }, DrawTextParams {
-            size: self.margin as u32,
+            size: (self.margin * 0.6) as u32,
             ..DrawTextParams::default()
-        })
+        })?;
+
+        self.context.save();
+        self.context.translate(self.pixel_bounds.left - self.margin / 2.0, self.canvas.height() as f64 / 2.0)?;
+        self.context.rotate(-FRAC_PI_2)?;
+
+        self.context.draw_text_with_params(self.options.axis_labels[1].as_str(), &Point::zero(), DrawTextParams {
+            size: (self.margin * 0.6) as u32,
+            ..DrawTextParams::default()
+        })?;
+
+        self.context.restore();
+
+        Ok(())
     }
 
     fn draw_samples(&self) -> Result<(), JsValue> {
@@ -132,38 +120,5 @@ fn remap_point(from: &Bounds, to: &Bounds, point: &Point) -> Point {
     Point {
         x: remap(from.left, from.right, to.left, to.right, point.x),
         y: remap(from.top, from.bottom, to.top, to.bottom, point.y),
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::chart::Chart;
-    use crate::chart_models::{Bounds, Point, Sample};
-
-    #[test]
-    fn test_data_bounds() {
-        let samples = [
-            Sample {
-                id: 0,
-                label: "label1".to_owned(),
-                point: Point { x: 1.0, y: 10.0 },
-            },
-            Sample {
-                id: 1,
-                label: "label2".to_owned(),
-                point: Point { x: 11.0, y: 2.0 },
-            },
-        ];
-
-        let result = Chart::get_data_bounds(&samples);
-        assert_eq!(
-            result,
-            Bounds {
-                left: 1.0,
-                right: 11.0,
-                top: 10.0,
-                bottom: 2.0,
-            }
-        );
     }
 }
