@@ -1,5 +1,5 @@
 use crate::chart_models::{Bounds, Options, Point, Sample};
-use crate::graphics::ContextExt;
+use crate::graphics::{ContextExt, DrawTextParams};
 use commons::math::remap;
 use commons::utils::OkExt;
 use wasm_bindgen::JsCast;
@@ -10,7 +10,6 @@ pub struct Chart {
     samples: Vec<Sample>,
     canvas: HtmlCanvasElement,
     context: CanvasRenderingContext2d,
-    #[allow(dead_code)]
     margin: f64,
     transparency: f64,
     pixel_bounds: Bounds,
@@ -112,9 +111,12 @@ impl Chart {
     }
 
     fn draw_axis(&self) -> Result<(), JsValue> {
-        self.context.draw_text(self.options.axis_labels[0].as_str(), &Point {
+        self.context.draw_text_with_params(self.options.axis_labels[0].as_str(), &Point {
             x: self.canvas.width() as f64 / 2.0,
             y: self.pixel_bounds.bottom + self.margin / 2.0,
+        }, DrawTextParams {
+            size: self.margin as u32,
+            ..DrawTextParams::default()
         })
     }
 
