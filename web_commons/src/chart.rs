@@ -368,7 +368,11 @@ impl Chart {
     fn draw_samples(&self) -> Result<(), JsValue> {
         for sample in &self.samples {
             let pixel_location = remap_point(&self.data_bounds, &self.pixel_bounds, &sample.point);
-            self.context.draw_point(&pixel_location)?;
+            let style = self.options.styles.get(&sample.label).expect("");
+            match &style.text {
+                Some(text) => self.context.draw_text(text, &pixel_location)?,
+                None => self.context.draw_point_with_color(&pixel_location, &style.color)?,
+            }
         }
 
         Ok(())

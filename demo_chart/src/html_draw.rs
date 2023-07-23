@@ -5,13 +5,19 @@ use std::collections::HashMap;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::chart::Chart;
-use web_commons::chart_models::Options;
+use web_commons::chart_models::{Options, SampleStyle};
 use web_sys::{HtmlTableRowElement, HtmlTableSectionElement};
 
 fn default_chart_options() -> Options {
-    let mut styles = HashMap::<String, String>::new();
-    styles.insert(CarType::Basic.to_string(), "gray".to_owned());
-    styles.insert(CarType::Sport.to_string(), "red".to_owned());
+    let mut styles = HashMap::<String, SampleStyle>::new();
+    styles.insert(CarType::Basic.to_string(), SampleStyle {
+        color: "gray".to_owned(),
+        text: Some("🚗".to_owned()),
+    });
+    styles.insert(CarType::Sport.to_string(), SampleStyle {
+        color: "red".to_owned(),
+        text: Some("🏎".to_owned()),
+    });
     Options {
         size: 500,
         axis_labels: ["Kilometers".to_owned(), "Price".to_owned()],

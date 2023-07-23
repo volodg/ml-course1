@@ -76,10 +76,15 @@ impl Sample {
     }
 }
 
+pub struct SampleStyle {
+    pub color: String,
+    pub text: Option<String>,
+}
+
 pub struct Options {
     pub size: u32,
     pub axis_labels: [String; 2],
-    pub styles: HashMap<String, String>,
+    pub styles: HashMap<String, SampleStyle>,
 }
 
 pub fn get_data_bounds(samples: &[Sample]) -> Bounds {
