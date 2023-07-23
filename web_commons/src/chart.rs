@@ -67,8 +67,7 @@ impl Chart {
     }
 
     fn get_data_bounds(samples: &[Sample]) -> Bounds {
-        let zero_min: Option<f64> = None;
-        let zero_max: Option<f64> = None;
+        let zero_min_max: Option<f64> = None;
         fn min_max(
             (acc_min, acc_max): (Option<f64>, Option<f64>),
             el: f64,
@@ -78,14 +77,13 @@ impl Chart {
                 Some(acc_max.map(|x| x.max(el)).unwrap_or(el)),
             )
         }
-        let (min_x, max_x) = samples
+        let (min_x, max_x, min_y, max_y) = samples
             .iter()
-            .map(|el| el.point.x)
-            .fold((zero_min, zero_max), min_max);
-        let (min_y, max_y) = samples
-            .iter()
-            .map(|el| el.point.y)
-            .fold((zero_min, zero_max), min_max);
+            .fold((zero_min_max, zero_min_max, zero_min_max, zero_min_max), |(min_x, max_x, min_y, max_y), el| {
+                let x_minmax = min_max((min_x, max_x), el.point.x);
+                let y_minmax = min_max((min_y, max_y), el.point.y);
+                (x_minmax.0, x_minmax.1, y_minmax.0, y_minmax.1)
+            });
         Bounds {
             left: min_x.expect(""),
             right: max_x.expect(""),
