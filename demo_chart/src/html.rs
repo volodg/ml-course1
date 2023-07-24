@@ -1,13 +1,13 @@
+use crate::app_state::CarType;
+use commons::utils::OkExt;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
-use commons::utils::OkExt;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_sys::{window, Document, Element, HtmlTableElement};
 use web_commons::chart::Chart;
 use web_commons::chart_models::{Options, SampleStyle, SampleStyleType};
-use crate::app_state::CarType;
+use web_sys::{window, Document, HtmlTableElement};
 
 fn default_chart_options() -> Options {
     let mut styles = HashMap::<String, SampleStyle>::new();
@@ -50,10 +50,7 @@ impl HtmlDom {
         let data_table = document.get_element_by_id("dataTable").unwrap();
         let data_table = data_table.dyn_into::<HtmlTableElement>()?;
 
-        let chart = Chart::create(
-            chart_container.clone(),
-            default_chart_options(),
-        )?;
+        let chart = Chart::create(chart_container.clone(), default_chart_options())?;
 
         Self {
             document,

@@ -30,14 +30,11 @@ pub struct Chart {
     options: Options,
     hovered_sample: Option<Sample>,
     selected_sample: Option<Sample>,
-    on_click: Option<Box<dyn FnMut(&Sample)>>,
+    on_click: Option<Rc<RefCell<dyn FnMut(&Sample)>>>,
 }
 
 impl Chart {
-    pub fn create(
-        container: Element,
-        mut options: Options,
-    ) -> Result<Rc<RefCell<Self>>, JsValue> {
+    pub fn create(container: Element, mut options: Options) -> Result<Rc<RefCell<Self>>, JsValue> {
         let document = window().unwrap().document().unwrap();
         let canvas = document
             .create_element("canvas")?
@@ -97,7 +94,7 @@ impl Chart {
         result.ok()
     }
 
-    pub fn set_on_click(&mut self, on_click: Box<dyn FnMut(&Sample)>) {
+    pub fn set_on_click(&mut self, on_click: Rc<RefCell<dyn FnMut(&Sample)>>) {
         self.on_click = Some(on_click);
     }
 
@@ -105,6 +102,12 @@ impl Chart {
         self.data_bounds = get_data_bounds(&samples);
         self.default_data_bounds = self.data_bounds.clone();
         self.samples = samples;
+    }
+
+    pub fn select_sample(&mut self, sample: &Sample) -> Result<(), JsValue> {
+        self.selected_sample = Some(sample.clone());
+        self.draw()?;
+        Ok(())
     }
 
     fn subscribe(chart: &Rc<RefCell<Self>>) -> Result<(), JsValue> {
@@ -193,15 +196,15 @@ impl Chart {
             })?;
         let chart_copy = chart.clone();
         chart.borrow().canvas.on_click(move |_event: MouseEvent| {
-            let mut chart = chart_copy.borrow_mut();
-            if let Some(hovered_sample) = &chart.hovered_sample {
-                let hovered_sample = hovered_sample.clone();
-                if let Some(on_click) = &mut chart.on_click {
-                    on_click(&hovered_sample)
+            let hovered_sample = chart_copy.borrow().hovered_sample.clone();
+            if let Some(hovered_sample) = hovered_sample {
+                chart_copy.borrow_mut().selected_sample = Some(hovered_sample.clone());
+                let on_click = chart_copy.borrow().on_click.clone();
+                if let Some(on_click) = on_click {
+                    on_click.borrow_mut()(&hovered_sample)
                 }
-                chart.selected_sample = Some(hovered_sample);
             }
-            chart.draw().expect("");
+            chart_copy.borrow().draw().expect("");
         })
     }
 

@@ -1,13 +1,11 @@
-use crate::app_state::{AppState, CarType};
+use crate::app_state::AppState;
 use crate::draw::DrawWithState;
 use crate::html::HtmlDom;
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_commons::chart::Chart;
-use web_commons::chart_models::{Options, Sample, SampleStyle, SampleStyleType};
+use web_commons::chart_models::Sample;
 use web_commons::html::AddListener;
 use web_sys::{
     window, Element, HtmlTableRowElement, HtmlTableSectionElement, ScrollBehavior,
@@ -56,13 +54,13 @@ impl DrawWithState for HtmlDom {
 
         let callback_app_state = app_state.clone();
 
-        let on_click_callback = Box::new(move |sample: &Sample| {
+        let on_click_callback = Rc::new(RefCell::new(move |sample: &Sample| {
             callback_app_state
                 .borrow()
                 .html
                 .handle_click(sample, true)
                 .expect("");
-        });
+        }));
 
         let mut chart = self.chart.borrow_mut();
         chart.set_samples(app_state.borrow().samples.clone());
@@ -96,6 +94,8 @@ impl HtmlDomExt for HtmlDom {
             options.block(ScrollLogicalPosition::Center);
             element.scroll_into_view_with_scroll_into_view_options(&options);
         }
+
+        self.chart.borrow_mut().select_sample(sample)?;
 
         Ok(())
     }
