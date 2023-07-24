@@ -15,7 +15,6 @@ use wasm_bindgen::JsValue;
 use web_sys::{
     window, CanvasRenderingContext2d, Element, HtmlCanvasElement, MouseEvent, WheelEvent,
 };
-use crate::log;
 
 pub struct Chart {
     samples: Vec<Sample>,
@@ -29,6 +28,7 @@ pub struct Chart {
     data_bounds: Bounds,
     default_data_bounds: Bounds,
     options: Options,
+    nearest_sample_to_mouse: Option<Sample>
 }
 
 impl Chart {
@@ -86,6 +86,7 @@ impl Chart {
             data_bounds,
             default_data_bounds,
             options,
+            nearest_sample_to_mouse: None
         };
 
         let result = Rc::new(RefCell::new(result));
@@ -122,16 +123,17 @@ impl Chart {
                         chart.data_trans.offset.clone() + chart.drag_info.offset.clone();
                     let new_scale = chart.data_trans.scale;
                     chart.update_data_bounds(new_offset, new_scale);
-                    chart.draw().expect("")
                 }
 
                 let pixel_location = chart.get_mouse(&event, false);
                 let pixel_points = chart.samples.iter().map(|sample| {
-                    chart.data_bounds.remap(&chart.pixel_bounds, &sample.point)
+                    sample.point.remap(&chart.data_bounds, &chart.pixel_bounds)
                 }).collect::<Vec<_>>();
 
-                let nearest = pixel_location.get_nearest(&pixel_points).expect("");
-                log(std::format!("point: {:?}", nearest).as_str())
+                let nearest_sample = pixel_location.get_nearest(&pixel_points).map(|x| chart.samples[x].clone());
+                chart.nearest_sample_to_mouse = nearest_sample;
+
+                chart.draw().expect("")
             })?;
 
         let chart_copy = chart.clone();
@@ -189,7 +191,7 @@ impl Chart {
         };
 
         if is_data_space {
-            return self.pixel_bounds.remap(&self.default_data_bounds, &pixel_loc);
+            return pixel_loc.remap(&self.pixel_bounds, &self.default_data_bounds);
         }
 
         pixel_loc
@@ -217,6 +219,11 @@ impl Chart {
         self.context.set_global_alpha(self.transparency);
         self.draw_samples()?;
         self.context.set_global_alpha(1.0);
+
+        if let Some(nearest) = self.nearest_sample_to_mouse.as_ref() {
+            self.emphasize_samples(nearest)?;
+        }
+
         Ok(())
     }
 
@@ -277,13 +284,10 @@ impl Chart {
 
         {
             // Draw x0 scale
-            let data_min = self.pixel_bounds.remap(
-                &self.data_bounds,
-                &Point {
-                    x: self.pixel_bounds.left,
-                    y: self.pixel_bounds.bottom,
-                },
-            );
+            let data_min = Point {
+                x: self.pixel_bounds.left,
+                y: self.pixel_bounds.bottom,
+            }.remap(&self.pixel_bounds, &self.data_bounds);
             self.context.draw_text_with_params(
                 std::format!("{:.2}", data_min.x).as_str(),
                 &Point {
@@ -319,13 +323,10 @@ impl Chart {
 
         {
             // Draw x[-1] scale
-            let data_max = self.pixel_bounds.remap(
-                &self.data_bounds,
-                &Point {
-                    x: self.pixel_bounds.right,
-                    y: self.pixel_bounds.bottom,
-                },
-            );
+            let data_max = Point {
+                x: self.pixel_bounds.right,
+                y: self.pixel_bounds.bottom,
+            }.remap(&self.pixel_bounds, &self.data_bounds);
             self.context.draw_text_with_params(
                 std::format!("{:.2}", data_max.x).as_str(),
                 &Point {
@@ -362,9 +363,15 @@ impl Chart {
         Ok(())
     }
 
+    fn emphasize_samples(&self, sample: &Sample) -> Result<(), JsValue> {
+        let pixel_location = sample.point.remap(&self.data_bounds, &self.pixel_bounds);
+
+        Ok(())
+    }
+
     fn draw_samples(&self) -> Result<(), JsValue> {
         for sample in &self.samples {
-            let pixel_location = self.data_bounds.remap(&self.pixel_bounds, &sample.point);
+            let pixel_location = sample.point.remap(&self.data_bounds, &self.pixel_bounds);
             let style = self.options.styles.get(&sample.label).expect("");
             match self.options.icon {
                 SampleStyleType::Text => self.context.draw_text_with_params(

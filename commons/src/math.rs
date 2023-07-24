@@ -20,20 +20,27 @@ impl Point {
         ((self.x - to.x).powf(2.0) + (self.y - to.y).powf(2.0)).sqrt()
     }
 
-    pub fn get_nearest(&self, pixel_points: &[Point]) -> Option<Point> {
-        let zero: Option<(f64, Point)> = None;
-        pixel_points.iter().fold(zero, |acc, new_point| {
+    pub fn get_nearest(&self, pixel_points: &[Point]) -> Option<usize> {
+        let zero: Option<(f64, usize)> = None;
+        pixel_points.iter().zip(0..).fold(zero, |acc, (new_point, new_index)| {
             let new_distance = self.distance(new_point);
-            let result = acc.map(|(distance, point)| {
+            let result = acc.map(|(distance, index)| {
                 if new_distance < distance {
-                    (new_distance, new_point.clone())
+                    (new_distance, new_index)
                 } else {
-                    (distance, point)
+                    (distance, index)
                 }
-            }).unwrap_or((new_distance, new_point.clone()));
+            }).unwrap_or((new_distance, new_index));
 
             Some(result)
         }).map(|x| x.1)
+    }
+
+    pub fn remap(&self, from: &Bounds, to: &Bounds) -> Point {
+        Point {
+            x: remap(from.left, from.right, to.left, to.right, self.x),
+            y: remap(from.top, from.bottom, to.top, to.bottom, self.y),
+        }
     }
 }
 
@@ -65,15 +72,6 @@ pub struct Bounds {
     pub right: f64,
     pub top: f64,
     pub bottom: f64,
-}
-
-impl Bounds {
-    pub fn remap(&self, to: &Bounds, point: &Point) -> Point {
-        Point {
-            x: remap(self.left, self.right, to.left, to.right, point.x),
-            y: remap(self.top, self.bottom, to.top, to.bottom, point.y),
-        }
-    }
 }
 
 pub fn lerp(a: f64, b: f64, t: f64) -> f64 {
