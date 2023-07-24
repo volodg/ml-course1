@@ -16,7 +16,7 @@ use web_sys::{
     window, CanvasRenderingContext2d, Element, HtmlCanvasElement, MouseEvent, WheelEvent,
 };
 
-pub struct Chart<F: FnMut(&Sample)> {
+pub struct Chart {
     samples: Vec<Sample>,
     canvas: HtmlCanvasElement,
     context: CanvasRenderingContext2d,
@@ -30,15 +30,13 @@ pub struct Chart<F: FnMut(&Sample)> {
     options: Options,
     hovered_sample: Option<Sample>,
     selected_sample: Option<Sample>,
-    on_click: Option<F>,
+    on_click: Option<Box<dyn FnMut(&Sample)>>,
 }
 
-impl<F: FnMut(&Sample) + 'static> Chart<F> {
+impl Chart {
     pub fn create(
         container: Element,
-        samples: Vec<Sample>,
         mut options: Options,
-        on_click: Option<F>,
     ) -> Result<Rc<RefCell<Self>>, JsValue> {
         let document = window().unwrap().document().unwrap();
         let canvas = document
@@ -70,15 +68,13 @@ impl<F: FnMut(&Sample) + 'static> Chart<F> {
         let margin = options.size as f64 * 0.1;
         let transparency = 0.7;
         let pixel_bounds = Self::get_pixels_bounds(&canvas, margin);
-        let data_bounds = get_data_bounds(&samples);
-        let default_data_bounds = data_bounds.clone();
 
         if options.icon == SampleStyleType::Image {
             CanvasRenderingContext2d::generate_images(&mut options.styles)?;
         }
 
         let result = Self {
-            samples,
+            samples: vec![],
             canvas,
             context,
             margin,
@@ -86,12 +82,12 @@ impl<F: FnMut(&Sample) + 'static> Chart<F> {
             data_trans,
             drag_info,
             pixel_bounds,
-            data_bounds,
-            default_data_bounds,
+            data_bounds: Bounds::zero(),
+            default_data_bounds: Bounds::zero(),
             options,
             hovered_sample: None,
             selected_sample: None,
-            on_click,
+            on_click: None,
         };
 
         let result = Rc::new(RefCell::new(result));
@@ -101,7 +97,17 @@ impl<F: FnMut(&Sample) + 'static> Chart<F> {
         result.ok()
     }
 
-    fn subscribe(chart: &Rc<RefCell<Chart<F>>>) -> Result<(), JsValue> {
+    pub fn set_on_click(&mut self, on_click: Box<dyn FnMut(&Sample)>) {
+        self.on_click = Some(on_click);
+    }
+
+    pub fn set_samples(&mut self, samples: Vec<Sample>) {
+        self.data_bounds = get_data_bounds(&samples);
+        self.default_data_bounds = self.data_bounds.clone();
+        self.samples = samples;
+    }
+
+    fn subscribe(chart: &Rc<RefCell<Self>>) -> Result<(), JsValue> {
         let chart_copy = chart.clone();
         chart
             .borrow()

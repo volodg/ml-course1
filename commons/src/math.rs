@@ -80,6 +80,17 @@ pub struct Bounds {
     pub bottom: f64,
 }
 
+impl Bounds {
+    pub fn zero() -> Self {
+        Self {
+            left: 0.0,
+            right: 0.0,
+            top: 0.0,
+            bottom: 0.0,
+        }
+    }
+}
+
 pub fn lerp(a: f64, b: f64, t: f64) -> f64 {
     a * (1.0 - t) + b * t
 }

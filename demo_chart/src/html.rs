@@ -1,13 +1,44 @@
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::rc::Rc;
 use commons::utils::OkExt;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{window, Document, Element, HtmlTableElement};
+use web_commons::chart::Chart;
+use web_commons::chart_models::{Options, SampleStyle, SampleStyleType};
+use crate::app_state::CarType;
 
-#[derive(Clone)]
+fn default_chart_options() -> Options {
+    let mut styles = HashMap::<String, SampleStyle>::new();
+    styles.insert(
+        CarType::Basic.to_string(),
+        SampleStyle {
+            color: "blue".to_owned(),
+            text: "🚗".to_owned(),
+            image: None,
+        },
+    );
+    styles.insert(
+        CarType::Sport.to_string(),
+        SampleStyle {
+            color: "gray".to_owned(),
+            text: "🏎".to_owned(),
+            image: None,
+        },
+    );
+    Options {
+        size: 500,
+        axis_labels: ["Kilometers".to_owned(), "Price".to_owned()],
+        styles,
+        icon: SampleStyleType::Image,
+    }
+}
+
 pub struct HtmlDom {
     pub document: Document,
-    pub chart_container: Element,
     pub data_table: HtmlTableElement,
+    pub chart: Rc<RefCell<Chart>>,
 }
 
 impl HtmlDom {
@@ -19,10 +50,15 @@ impl HtmlDom {
         let data_table = document.get_element_by_id("dataTable").unwrap();
         let data_table = data_table.dyn_into::<HtmlTableElement>()?;
 
+        let chart = Chart::create(
+            chart_container.clone(),
+            default_chart_options(),
+        )?;
+
         Self {
             document,
-            chart_container,
             data_table,
+            chart,
         }
         .ok()
     }
