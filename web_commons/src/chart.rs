@@ -127,13 +127,11 @@ impl Chart {
 
                 let pixel_location = chart.get_mouse(&event, false);
                 let pixel_points = chart.samples.iter().map(|sample| {
-                    chart.data_bounds.remap(&chart.pixel_bounds, &sample.point);
-                    sample.point.clone()
+                    chart.data_bounds.remap(&chart.pixel_bounds, &sample.point)
                 }).collect::<Vec<_>>();
 
                 let nearest = pixel_location.get_nearest(&pixel_points).expect("");
                 log(std::format!("point: {:?}", nearest).as_str())
-                // let nearest = &chart.samples[index];
             })?;
 
         let chart_copy = chart.clone();

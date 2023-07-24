@@ -25,7 +25,7 @@ impl Point {
         pixel_points.iter().fold(zero, |acc, new_point| {
             let new_distance = self.distance(new_point);
             let result = acc.map(|(distance, point)| {
-                if distance > new_distance {
+                if new_distance < distance {
                     (new_distance, new_point.clone())
                 } else {
                     (distance, point)
@@ -97,6 +97,7 @@ mod tests {
     fn test_nearest_point() {
         let points = [
             Point { x: 2.0, y: 2.0 },
+            Point { x: 3.0, y: 3.0 },
             Point { x: 1.0, y: 1.0 },
         ];
 
@@ -105,6 +106,10 @@ mod tests {
         assert_eq!(nearest, Point { x: 1.0, y: 1.0 });
 
         let point = Point { x: 3.0, y: 3.0 };
+        let nearest = point.get_nearest(&points).expect("");
+        assert_eq!(nearest, Point { x: 3.0, y: 3.0 });
+
+        let point = Point { x: 2.0, y: 2.0 };
         let nearest = point.get_nearest(&points).expect("");
         assert_eq!(nearest, Point { x: 2.0, y: 2.0 })
     }
