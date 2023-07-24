@@ -15,7 +15,6 @@ use wasm_bindgen::JsValue;
 use web_sys::{
     window, CanvasRenderingContext2d, Element, HtmlCanvasElement, MouseEvent, WheelEvent,
 };
-use crate::log;
 
 pub struct Chart {
     samples: Vec<Sample>,
@@ -257,8 +256,6 @@ impl Chart {
             self.canvas.height().into(),
         );
 
-        self.draw_axis()?;
-
         self.context.set_global_alpha(self.transparency);
         self.draw_samples(&self.samples)?;
         self.context.set_global_alpha(1.0);
@@ -271,33 +268,26 @@ impl Chart {
             self.emphasize_samples(selected_sample, "yellow")?;
         }
 
+        self.draw_axis()?;
+
         Ok(())
     }
 
     fn draw_axis(&self) -> Result<(), JsValue> {
-        log("draw_axis");
-        self.context.clear_rect(
-            0.0,
-            0.0,
-            self.canvas.width().into(),
-            self.margin,
-        );
-        self.context.clear_rect(
-            0.0,
-            0.0,
-            self.margin,
-            self.canvas.height().into(),
-        );
+        self.context
+            .clear_rect(0.0, 0.0, self.canvas.width() as f64, self.margin);
+        self.context
+            .clear_rect(0.0, 0.0, self.margin, self.canvas.height() as f64);
         self.context.clear_rect(
             self.canvas.width() as f64 - self.margin,
             0.0,
             self.margin,
-            self.canvas.height().into(),
+            self.canvas.height() as f64,
         );
         self.context.clear_rect(
             0.0,
             self.canvas.height() as f64 - self.margin,
-            self.canvas.width().into(),
+            self.canvas.width() as f64,
             self.margin,
         );
 
