@@ -21,3 +21,7 @@ thead {
     top: 50%;
     transform: translate(0, -50%);
 }
+
+.emphasize {
+    background-color: yellow;
+}

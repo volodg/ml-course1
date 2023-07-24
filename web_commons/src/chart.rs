@@ -254,11 +254,11 @@ impl<F: FnMut(&Sample) + 'static> Chart<F> {
         self.context.set_global_alpha(1.0);
 
         if let Some(hovered_sample) = self.hovered_sample.as_ref() {
-            self.emphasize_samples(hovered_sample)?;
+            self.emphasize_samples(hovered_sample, "white")?;
         }
 
         if let Some(selected_sample) = self.selected_sample.as_ref() {
-            self.emphasize_samples(selected_sample)?;
+            self.emphasize_samples(selected_sample, "yellow")?;
         }
 
         Ok(())
@@ -402,7 +402,7 @@ impl<F: FnMut(&Sample) + 'static> Chart<F> {
         Ok(())
     }
 
-    fn emphasize_samples(&self, sample: &Sample) -> Result<(), JsValue> {
+    fn emphasize_samples(&self, sample: &Sample, color: &str) -> Result<(), JsValue> {
         let pixel_location = sample.point.remap(&self.data_bounds, &self.pixel_bounds);
         let gradient = self.context.create_radial_gradient(
             pixel_location.x,
@@ -412,7 +412,7 @@ impl<F: FnMut(&Sample) + 'static> Chart<F> {
             pixel_location.y,
             self.margin,
         )?;
-        gradient.add_color_stop(0.0, "white")?;
+        gradient.add_color_stop(0.0, color)?;
         gradient.add_color_stop(1.0, "rgba(255, 255, 255, 0)")?;
 
         self.context.draw_point_with_gradient_and_size(

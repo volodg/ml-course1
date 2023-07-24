@@ -22,8 +22,12 @@ features = [
     'CanvasGradient',
     'CanvasRenderingContext2d',
     'Document',
+    'DomTokenList',
     'HtmlCanvasElement',
     'HtmlTableElement',
     'HtmlTableRowElement',
-    'HtmlTableSectionElement'
+    'HtmlTableSectionElement',
+    'ScrollBehavior',
+    'ScrollLogicalPosition',
+    'ScrollIntoViewOptions',
 ]
