@@ -104,11 +104,7 @@ impl ContextExt for CanvasRenderingContext2d {
         color: &str,
         size: f64,
     ) -> Result<(), JsValue> {
-        self.draw_point_with_color_or_gradient_and_size(
-            location,
-            FillStyle::Color(color),
-            size,
-        )
+        self.draw_point_with_color_or_gradient_and_size(location, FillStyle::Color(color), size)
     }
 
     fn draw_point_with_gradient_and_size(

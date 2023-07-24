@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::chart::Chart;
-use web_commons::chart_models::{Options, SampleStyle, SampleStyleType};
+use web_commons::chart_models::{Options, Sample, SampleStyle, SampleStyleType};
 use web_sys::{HtmlTableRowElement, HtmlTableSectionElement};
 
 fn default_chart_options() -> Options {
@@ -62,10 +62,15 @@ impl DrawWithState for HtmlDom {
                 .set_inner_html(std::format!("{:.0}", sample.point.y).as_str());
         }
 
+        let on_click_callback = |_: &Sample| {
+            // todo
+        };
+
         let chart = Chart::create(
             self.chart_container.clone(),
             app_state.samples.clone(),
             default_chart_options(),
+            Some(on_click_callback),
         )?;
         let borrow_chart = chart.borrow();
         borrow_chart.draw()

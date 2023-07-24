@@ -16,7 +16,7 @@ use web_sys::{
     window, CanvasRenderingContext2d, Element, HtmlCanvasElement, MouseEvent, WheelEvent,
 };
 
-pub struct Chart {
+pub struct Chart<F: FnMut(&Sample)> {
     samples: Vec<Sample>,
     canvas: HtmlCanvasElement,
     context: CanvasRenderingContext2d,
@@ -29,13 +29,16 @@ pub struct Chart {
     default_data_bounds: Bounds,
     options: Options,
     hovered_sample: Option<Sample>,
+    selected_sample: Option<Sample>,
+    on_click: Option<F>,
 }
 
-impl Chart {
+impl<F: FnMut(&Sample) + 'static> Chart<F> {
     pub fn create(
         container: Element,
         samples: Vec<Sample>,
         mut options: Options,
+        on_click: Option<F>,
     ) -> Result<Rc<RefCell<Self>>, JsValue> {
         let document = window().unwrap().document().unwrap();
         let canvas = document
@@ -87,6 +90,8 @@ impl Chart {
             default_data_bounds,
             options,
             hovered_sample: None,
+            selected_sample: None,
+            on_click,
         };
 
         let result = Rc::new(RefCell::new(result));
@@ -96,7 +101,7 @@ impl Chart {
         result.ok()
     }
 
-    fn subscribe(chart: &Rc<RefCell<Self>>) -> Result<(), JsValue> {
+    fn subscribe(chart: &Rc<RefCell<Chart<F>>>) -> Result<(), JsValue> {
         let chart_copy = chart.clone();
         chart
             .borrow()
@@ -136,7 +141,10 @@ impl Chart {
                     .get_nearest(&pixel_points)
                     .map(|x| chart.samples[x].clone());
                 chart.hovered_sample = if let Some(nearest_sample) = nearest_sample {
-                    let distance = nearest_sample.point.remap(&chart.data_bounds, &chart.pixel_bounds).distance(&pixel_location);
+                    let distance = nearest_sample
+                        .point
+                        .remap(&chart.data_bounds, &chart.pixel_bounds)
+                        .distance(&pixel_location);
                     if distance < (chart.margin / 2.0) {
                         Some(nearest_sample)
                     } else {
@@ -176,7 +184,19 @@ impl Chart {
                 chart.update_data_bounds(new_offset, new_scale);
                 chart.draw().expect("");
                 event.prevent_default();
-            })
+            })?;
+        let chart_copy = chart.clone();
+        chart.borrow().canvas.on_click(move |_event: MouseEvent| {
+            let mut chart = chart_copy.borrow_mut();
+            if let Some(hovered_sample) = &chart.hovered_sample {
+                let hovered_sample = hovered_sample.clone();
+                if let Some(on_click) = &mut chart.on_click {
+                    on_click(&hovered_sample)
+                }
+                chart.selected_sample = Some(hovered_sample);
+            }
+            chart.draw().expect("");
+        })
     }
 
     fn update_data_bounds(&mut self, offset: Point, scale: f64) {
@@ -233,8 +253,12 @@ impl Chart {
         self.draw_samples(&self.samples)?;
         self.context.set_global_alpha(1.0);
 
-        if let Some(nearest) = self.hovered_sample.as_ref() {
-            self.emphasize_samples(nearest)?;
+        if let Some(hovered_sample) = self.hovered_sample.as_ref() {
+            self.emphasize_samples(hovered_sample)?;
+        }
+
+        if let Some(selected_sample) = self.selected_sample.as_ref() {
+            self.emphasize_samples(selected_sample)?;
         }
 
         Ok(())
@@ -394,7 +418,7 @@ impl Chart {
         self.context.draw_point_with_gradient_and_size(
             &pixel_location,
             &gradient,
-            self.margin * 2.0
+            self.margin * 2.0,
         )?;
 
         self.draw_samples(&[sample.clone()])?;
