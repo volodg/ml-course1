@@ -27,6 +27,7 @@ features = [
     'HtmlTableElement',
     'HtmlTableRowElement',
     'HtmlTableSectionElement',
+    'NodeList',
     'ScrollBehavior',
     'ScrollLogicalPosition',
     'ScrollIntoViewOptions',

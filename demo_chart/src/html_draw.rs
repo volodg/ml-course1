@@ -6,7 +6,10 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::chart::Chart;
 use web_commons::chart_models::{Options, Sample, SampleStyle, SampleStyleType};
-use web_sys::{HtmlTableRowElement, HtmlTableSectionElement, ScrollBehavior, ScrollIntoViewOptions, ScrollLogicalPosition};
+use web_sys::{
+    Element, HtmlTableRowElement, HtmlTableSectionElement, ScrollBehavior, ScrollIntoViewOptions,
+    ScrollLogicalPosition,
+};
 
 fn default_chart_options() -> Options {
     let mut styles = HashMap::<String, SampleStyle>::new();
@@ -65,7 +68,15 @@ impl DrawWithState for HtmlDom {
 
         let document = self.document.clone();
         let on_click_callback = move |sample: &Sample| {
-            let element = document.get_element_by_id(sample.element_id().as_str()).expect("");
+            let selected = document.query_selector_all(".emphasize").expect("");
+            for i in 0..selected.length() {
+                let element = selected.item(i).expect("").dyn_into::<Element>().expect("");
+                element.class_list().remove_1("emphasize").expect("");
+            }
+
+            let element = document
+                .get_element_by_id(sample.element_id().as_str())
+                .expect("");
             element.class_list().add_1("emphasize").expect("");
 
             let mut options = ScrollIntoViewOptions::new();
