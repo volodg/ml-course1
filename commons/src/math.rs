@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Point {
     pub x: f64,
     pub y: f64,
@@ -87,4 +87,25 @@ pub fn inv_lerp(a: f64, b: f64, v: f64) -> f64 {
 pub fn remap(from_a: f64, from_b: f64, to_a: f64, to_b: f64, v: f64) -> f64 {
     let t = inv_lerp(from_a, from_b, v);
     lerp(to_a, to_b, t)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::math::Point;
+
+    #[test]
+    fn test_nearest_point() {
+        let points = [
+            Point { x: 2.0, y: 2.0 },
+            Point { x: 1.0, y: 1.0 },
+        ];
+
+        let point = Point::zero();
+        let nearest = point.get_nearest(&points).expect("");
+        assert_eq!(nearest, Point { x: 1.0, y: 1.0 });
+
+        let point = Point { x: 3.0, y: 3.0 };
+        let nearest = point.get_nearest(&points).expect("");
+        assert_eq!(nearest, Point { x: 2.0, y: 2.0 })
+    }
 }
