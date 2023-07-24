@@ -1,9 +1,9 @@
 use crate::chart_models::{
-    get_data_bounds, Bounds, DataTransformation, DragInto, Options, Point, Sample, SampleStyleType,
+    get_data_bounds, DataTransformation, DragInto, Options, Sample, SampleStyleType,
 };
 use crate::graphics::{ContextExt, DrawTextParams};
 use crate::html::AddListener;
-use commons::math::{lerp, remap};
+use commons::math::{Bounds, lerp, Point};
 use commons::utils::OkExt;
 use js_sys::Array;
 use js_sys::Math::sign;
@@ -101,7 +101,7 @@ impl Chart {
             .canvas
             .add_listener("mousedown", move |event: MouseEvent| {
                 let mut chart = chart_copy.borrow_mut();
-                let data_loc = chart.get_mouse(event, true);
+                let data_loc = chart.get_mouse(&event, true);
                 chart.drag_info.start = data_loc;
                 chart.drag_info.dragging = true;
             })?;
@@ -112,7 +112,7 @@ impl Chart {
             .add_listener("mousemove", move |event: MouseEvent| {
                 let mut chart = chart_copy.borrow_mut();
                 if chart.drag_info.dragging {
-                    let data_loc = chart.get_mouse(event, true);
+                    let data_loc = chart.get_mouse(&event, true);
                     chart.drag_info.end = data_loc;
                     chart.drag_info.offset = (chart.drag_info.start.clone()
                         - chart.drag_info.end.clone())
@@ -123,6 +123,12 @@ impl Chart {
                     chart.update_data_bounds(new_offset, new_scale);
                     chart.draw().expect("")
                 }
+
+                let pixel_location = chart.get_mouse(&event, false);
+                let pixel_points = chart.samples.iter().map(|sample| {
+                    chart.data_bounds.remap(&chart.pixel_bounds, &sample.point);
+                    sample.point.clone()
+                });
             })?;
         let chart_copy = chart.clone();
         chart
@@ -171,7 +177,7 @@ impl Chart {
         self.data_bounds.bottom = lerp(center.y, self.data_bounds.bottom, scale * scale);
     }
 
-    fn get_mouse(&self, event: MouseEvent, is_data_space: bool) -> Point {
+    fn get_mouse(&self, event: &MouseEvent, is_data_space: bool) -> Point {
         let rect = self.canvas.get_bounding_client_rect();
         let pixel_loc = Point {
             x: event.client_x() as f64 - rect.left(),
@@ -179,7 +185,7 @@ impl Chart {
         };
 
         if is_data_space {
-            return remap_point(&self.pixel_bounds, &self.default_data_bounds, &pixel_loc);
+            return self.pixel_bounds.remap(&self.default_data_bounds, &pixel_loc);
         }
 
         pixel_loc
@@ -267,8 +273,7 @@ impl Chart {
 
         {
             // Draw x0 scale
-            let data_min = remap_point(
-                &self.pixel_bounds,
+            let data_min = self.pixel_bounds.remap(
                 &self.data_bounds,
                 &Point {
                     x: self.pixel_bounds.left,
@@ -310,8 +315,7 @@ impl Chart {
 
         {
             // Draw x[-1] scale
-            let data_max = remap_point(
-                &self.pixel_bounds,
+            let data_max = self.pixel_bounds.remap(
                 &self.data_bounds,
                 &Point {
                     x: self.pixel_bounds.right,
@@ -356,7 +360,7 @@ impl Chart {
 
     fn draw_samples(&self) -> Result<(), JsValue> {
         for sample in &self.samples {
-            let pixel_location = remap_point(&self.data_bounds, &self.pixel_bounds, &sample.point);
+            let pixel_location = self.data_bounds.remap(&self.pixel_bounds, &sample.point);
             let style = self.options.styles.get(&sample.label).expect("");
             match self.options.icon {
                 SampleStyleType::Text => self.context.draw_text_with_params(
@@ -377,12 +381,5 @@ impl Chart {
         }
 
         Ok(())
-    }
-}
-
-fn remap_point(from: &Bounds, to: &Bounds, point: &Point) -> Point {
-    Point {
-        x: remap(from.left, from.right, to.left, to.right, point.x),
-        y: remap(from.top, from.bottom, to.top, to.bottom, point.y),
     }
 }

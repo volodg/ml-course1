@@ -1,9 +1,10 @@
-use crate::chart_models::{Point, SampleStyle};
+use crate::chart_models::SampleStyle;
 use std::collections::HashMap;
 use std::f64::consts::TAU;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{window, CanvasRenderingContext2d, HtmlCanvasElement, HtmlImageElement};
+use commons::math::Point;
 
 pub struct DrawTextParams {
     pub align: String,

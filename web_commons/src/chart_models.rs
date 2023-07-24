@@ -1,42 +1,6 @@
 use std::collections::HashMap;
 use web_sys::HtmlImageElement;
-
-#[derive(Debug, Clone)]
-pub struct Point {
-    pub x: f64,
-    pub y: f64,
-}
-
-impl Point {
-    pub fn scale(&self, scale: f64) -> Self {
-        Self {
-            x: self.x * scale,
-            y: self.y * scale,
-        }
-    }
-}
-
-impl std::ops::Sub<Point> for Point {
-    type Output = Point;
-
-    fn sub(self, other: Point) -> Point {
-        Point {
-            x: self.x - other.x,
-            y: self.y - other.y,
-        }
-    }
-}
-
-impl std::ops::Add<Point> for Point {
-    type Output = Point;
-
-    fn add(self, other: Point) -> Point {
-        Point {
-            x: self.x + other.x,
-            y: self.y + other.y,
-        }
-    }
-}
+use commons::math::{Bounds, Point};
 
 pub struct DataTransformation {
     pub offset: Point,
@@ -48,20 +12,6 @@ pub struct DragInto {
     pub end: Point,
     pub offset: Point,
     pub dragging: bool,
-}
-
-impl Point {
-    pub fn zero() -> Self {
-        Self { x: 0.0, y: 0.0 }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct Bounds {
-    pub left: f64,
-    pub right: f64,
-    pub top: f64,
-    pub bottom: f64,
 }
 
 #[derive(Clone)]
