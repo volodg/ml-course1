@@ -382,11 +382,10 @@ impl Chart {
         gradient.add_color_stop(0.0, "white")?;
         gradient.add_color_stop(1.0, "rgba(255, 255, 255, 0)")?;
 
-        self.context.draw_point_with_color_and_size_and_gradient(
+        self.context.draw_point_with_gradient_and_size(
             &pixel_location,
-            "black",
-            self.margin * 2.0,
-            Some(&gradient),
+            &gradient,
+            self.margin * 2.0
         )?;
 
         self.draw_samples(&[sample.clone()])?;

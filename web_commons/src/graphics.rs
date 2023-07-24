@@ -26,6 +26,11 @@ impl Default for DrawTextParams {
     }
 }
 
+pub enum FillStyle<'a> {
+    Color(&'a str),
+    Gradient(&'a CanvasGradient),
+}
+
 pub trait ContextExt {
     fn draw_text(&self, text: &str, location: &Point) -> Result<(), JsValue>;
     fn draw_text_with_params(
@@ -43,12 +48,17 @@ pub trait ContextExt {
         color: &str,
         size: f64,
     ) -> Result<(), JsValue>;
-    fn draw_point_with_color_and_size_and_gradient(
+    fn draw_point_with_gradient_and_size(
         &self,
         location: &Point,
-        color: &str,
+        gradient: &CanvasGradient,
         size: f64,
-        gradient: Option<&CanvasGradient>,
+    ) -> Result<(), JsValue>;
+    fn draw_point_with_color_or_gradient_and_size(
+        &self,
+        location: &Point,
+        fill_style: FillStyle,
+        size: f64,
     ) -> Result<(), JsValue>;
 
     fn generate_images(styles: &mut HashMap<String, SampleStyle>) -> Result<(), JsValue>;
@@ -94,22 +104,37 @@ impl ContextExt for CanvasRenderingContext2d {
         color: &str,
         size: f64,
     ) -> Result<(), JsValue> {
-        self.draw_point_with_color_and_size_and_gradient(location, color, size, None)
+        self.draw_point_with_color_or_gradient_and_size(
+            location,
+            FillStyle::Color(color),
+            size,
+        )
     }
 
-    fn draw_point_with_color_and_size_and_gradient(
+    fn draw_point_with_gradient_and_size(
         &self,
         location: &Point,
-        color: &str,
+        gradient: &CanvasGradient,
         size: f64,
-        gradient: Option<&CanvasGradient>,
+    ) -> Result<(), JsValue> {
+        self.draw_point_with_color_or_gradient_and_size(
+            location,
+            FillStyle::Gradient(gradient),
+            size,
+        )
+    }
+
+    fn draw_point_with_color_or_gradient_and_size(
+        &self,
+        location: &Point,
+        fill_style: FillStyle,
+        size: f64,
     ) -> Result<(), JsValue> {
         self.begin_path();
 
-        if let Some(gradient) = gradient {
-            self.set_fill_style(gradient);
-        } else {
-            self.set_fill_style(&JsValue::from_str(color));
+        match fill_style {
+            FillStyle::Color(color) => self.set_fill_style(&JsValue::from_str(color)),
+            FillStyle::Gradient(gradient) => self.set_fill_style(gradient),
         }
 
         self.arc(location.x, location.y, size / 2.0, 0.0, TAU)?;
