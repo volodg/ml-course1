@@ -1,10 +1,12 @@
 use crate::chart_models::SampleStyle;
+use commons::math::Point;
 use std::collections::HashMap;
 use std::f64::consts::TAU;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_sys::{window, CanvasRenderingContext2d, HtmlCanvasElement, HtmlImageElement};
-use commons::math::Point;
+use web_sys::{
+    window, CanvasGradient, CanvasRenderingContext2d, HtmlCanvasElement, HtmlImageElement,
+};
 
 pub struct DrawTextParams {
     pub align: String,
@@ -40,6 +42,13 @@ pub trait ContextExt {
         location: &Point,
         color: &str,
         size: f64,
+    ) -> Result<(), JsValue>;
+    fn draw_point_with_color_and_size_and_gradient(
+        &self,
+        location: &Point,
+        color: &str,
+        size: f64,
+        gradient: Option<&CanvasGradient>,
     ) -> Result<(), JsValue>;
 
     fn generate_images(styles: &mut HashMap<String, SampleStyle>) -> Result<(), JsValue>;
@@ -85,8 +94,24 @@ impl ContextExt for CanvasRenderingContext2d {
         color: &str,
         size: f64,
     ) -> Result<(), JsValue> {
+        self.draw_point_with_color_and_size_and_gradient(location, color, size, None)
+    }
+
+    fn draw_point_with_color_and_size_and_gradient(
+        &self,
+        location: &Point,
+        color: &str,
+        size: f64,
+        gradient: Option<&CanvasGradient>,
+    ) -> Result<(), JsValue> {
         self.begin_path();
-        self.set_fill_style(&JsValue::from_str(color));
+
+        if let Some(gradient) = gradient {
+            self.set_fill_style(gradient);
+        } else {
+            self.set_fill_style(&JsValue::from_str(color));
+        }
+
         self.arc(location.x, location.y, size / 2.0, 0.0, TAU)?;
         self.fill();
 
@@ -132,7 +157,9 @@ impl ContextExt for CanvasRenderingContext2d {
             if let Some(hue) = hue {
                 let hue = -45 + hue;
 
-                context.set_filter(std::format!("\
+                context.set_filter(
+                    std::format!(
+                        "\
                 brightness(2) \
                 contrast(0.3) \
                 sepia(1) \
@@ -140,7 +167,11 @@ impl ContextExt for CanvasRenderingContext2d {
                 hue-rotate({}deg) \
                 saturate(3) \
                 contrast(3) \
-                ", hue).as_str());
+                ",
+                        hue
+                    )
+                    .as_str(),
+                );
             } else {
                 context.set_filter("grayscale(1)");
             }

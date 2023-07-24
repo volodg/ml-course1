@@ -1,5 +1,5 @@
 use crate::html::HtmlDom;
-use commons::math::{Point, remap};
+use commons::math::{remap, Point};
 use rand::Rng;
 use std::fmt;
 use web_commons::chart_models::Sample;

@@ -22,18 +22,24 @@ impl Point {
 
     pub fn get_nearest(&self, pixel_points: &[Point]) -> Option<usize> {
         let zero: Option<(f64, usize)> = None;
-        pixel_points.iter().zip(0..).fold(zero, |acc, (new_point, new_index)| {
-            let new_distance = self.distance(new_point);
-            let result = acc.map(|(distance, index)| {
-                if new_distance < distance {
-                    (new_distance, new_index)
-                } else {
-                    (distance, index)
-                }
-            }).unwrap_or((new_distance, new_index));
+        pixel_points
+            .iter()
+            .zip(0..)
+            .fold(zero, |acc, (new_point, new_index)| {
+                let new_distance = self.distance(new_point);
+                let result = acc
+                    .map(|(distance, index)| {
+                        if new_distance < distance {
+                            (new_distance, new_index)
+                        } else {
+                            (distance, index)
+                        }
+                    })
+                    .unwrap_or((new_distance, new_index));
 
-            Some(result)
-        }).map(|x| x.1)
+                Some(result)
+            })
+            .map(|x| x.1)
     }
 
     pub fn remap(&self, from: &Bounds, to: &Bounds) -> Point {

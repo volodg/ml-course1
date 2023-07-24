@@ -3,7 +3,7 @@ use crate::chart_models::{
 };
 use crate::graphics::{ContextExt, DrawTextParams};
 use crate::html::AddListener;
-use commons::math::{Bounds, lerp, Point};
+use commons::math::{lerp, Bounds, Point};
 use commons::utils::OkExt;
 use js_sys::Array;
 use js_sys::Math::sign;
@@ -28,7 +28,7 @@ pub struct Chart {
     data_bounds: Bounds,
     default_data_bounds: Bounds,
     options: Options,
-    nearest_sample_to_mouse: Option<Sample>
+    nearest_sample_to_mouse: Option<Sample>,
 }
 
 impl Chart {
@@ -86,7 +86,7 @@ impl Chart {
             data_bounds,
             default_data_bounds,
             options,
-            nearest_sample_to_mouse: None
+            nearest_sample_to_mouse: None,
         };
 
         let result = Rc::new(RefCell::new(result));
@@ -126,11 +126,15 @@ impl Chart {
                 }
 
                 let pixel_location = chart.get_mouse(&event, false);
-                let pixel_points = chart.samples.iter().map(|sample| {
-                    sample.point.remap(&chart.data_bounds, &chart.pixel_bounds)
-                }).collect::<Vec<_>>();
+                let pixel_points = chart
+                    .samples
+                    .iter()
+                    .map(|sample| sample.point.remap(&chart.data_bounds, &chart.pixel_bounds))
+                    .collect::<Vec<_>>();
 
-                let nearest_sample = pixel_location.get_nearest(&pixel_points).map(|x| chart.samples[x].clone());
+                let nearest_sample = pixel_location
+                    .get_nearest(&pixel_points)
+                    .map(|x| chart.samples[x].clone());
                 chart.nearest_sample_to_mouse = nearest_sample;
 
                 chart.draw().expect("")
@@ -217,7 +221,7 @@ impl Chart {
         self.draw_axis()?;
 
         self.context.set_global_alpha(self.transparency);
-        self.draw_samples()?;
+        self.draw_samples(&self.samples)?;
         self.context.set_global_alpha(1.0);
 
         if let Some(nearest) = self.nearest_sample_to_mouse.as_ref() {
@@ -287,7 +291,8 @@ impl Chart {
             let data_min = Point {
                 x: self.pixel_bounds.left,
                 y: self.pixel_bounds.bottom,
-            }.remap(&self.pixel_bounds, &self.data_bounds);
+            }
+            .remap(&self.pixel_bounds, &self.data_bounds);
             self.context.draw_text_with_params(
                 std::format!("{:.2}", data_min.x).as_str(),
                 &Point {
@@ -326,7 +331,8 @@ impl Chart {
             let data_max = Point {
                 x: self.pixel_bounds.right,
                 y: self.pixel_bounds.bottom,
-            }.remap(&self.pixel_bounds, &self.data_bounds);
+            }
+            .remap(&self.pixel_bounds, &self.data_bounds);
             self.context.draw_text_with_params(
                 std::format!("{:.2}", data_max.x).as_str(),
                 &Point {
@@ -365,12 +371,31 @@ impl Chart {
 
     fn emphasize_samples(&self, sample: &Sample) -> Result<(), JsValue> {
         let pixel_location = sample.point.remap(&self.data_bounds, &self.pixel_bounds);
+        let gradient = self.context.create_radial_gradient(
+            pixel_location.x,
+            pixel_location.y,
+            0.0,
+            pixel_location.x,
+            pixel_location.y,
+            self.margin,
+        )?;
+        gradient.add_color_stop(0.0, "white")?;
+        gradient.add_color_stop(1.0, "rgba(255, 255, 255, 0)")?;
+
+        self.context.draw_point_with_color_and_size_and_gradient(
+            &pixel_location,
+            "black",
+            self.margin * 2.0,
+            Some(&gradient),
+        )?;
+
+        self.draw_samples(&[sample.clone()])?;
 
         Ok(())
     }
 
-    fn draw_samples(&self) -> Result<(), JsValue> {
-        for sample in &self.samples {
+    fn draw_samples(&self, samples: &[Sample]) -> Result<(), JsValue> {
+        for sample in samples {
             let pixel_location = sample.point.remap(&self.data_bounds, &self.pixel_bounds);
             let style = self.options.styles.get(&sample.label).expect("");
             match self.options.icon {

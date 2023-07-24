@@ -1,6 +1,6 @@
+use commons::math::{Bounds, Point};
 use std::collections::HashMap;
 use web_sys::HtmlImageElement;
-use commons::math::{Bounds, Point};
 
 pub struct DataTransformation {
     pub offset: Point,
