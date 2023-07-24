@@ -15,6 +15,26 @@ impl Point {
             y: self.y * scale,
         }
     }
+
+    pub fn distance(&self, to: &Self) -> f64 {
+        ((self.x - to.x).powf(2.0) + (self.y - to.y).powf(2.0)).sqrt()
+    }
+
+    pub fn get_nearest(&self, pixel_points: &[Point]) -> Option<Point> {
+        let zero: Option<(f64, Point)> = None;
+        pixel_points.iter().fold(zero, |acc, new_point| {
+            let new_distance = self.distance(new_point);
+            let result = acc.map(|(distance, point)| {
+                if distance > new_distance {
+                    (new_distance, new_point.clone())
+                } else {
+                    (distance, point)
+                }
+            }).unwrap_or((new_distance, new_point.clone()));
+
+            Some(result)
+        }).map(|x| x.1)
+    }
 }
 
 impl std::ops::Sub<Point> for Point {

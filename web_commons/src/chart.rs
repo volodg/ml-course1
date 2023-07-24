@@ -15,6 +15,7 @@ use wasm_bindgen::JsValue;
 use web_sys::{
     window, CanvasRenderingContext2d, Element, HtmlCanvasElement, MouseEvent, WheelEvent,
 };
+use crate::log;
 
 pub struct Chart {
     samples: Vec<Sample>,
@@ -128,8 +129,13 @@ impl Chart {
                 let pixel_points = chart.samples.iter().map(|sample| {
                     chart.data_bounds.remap(&chart.pixel_bounds, &sample.point);
                     sample.point.clone()
-                });
+                }).collect::<Vec<_>>();
+
+                let nearest = pixel_location.get_nearest(&pixel_points).expect("");
+                log(std::format!("point: {:?}", nearest).as_str())
+                // let nearest = &chart.samples[index];
             })?;
+
         let chart_copy = chart.clone();
         chart
             .borrow()
