@@ -28,7 +28,7 @@ pub struct Chart {
     data_bounds: Bounds,
     default_data_bounds: Bounds,
     options: Options,
-    nearest_sample_to_mouse: Option<Sample>,
+    hovered_sample: Option<Sample>,
 }
 
 impl Chart {
@@ -86,7 +86,7 @@ impl Chart {
             data_bounds,
             default_data_bounds,
             options,
-            nearest_sample_to_mouse: None,
+            hovered_sample: None,
         };
 
         let result = Rc::new(RefCell::new(result));
@@ -135,7 +135,16 @@ impl Chart {
                 let nearest_sample = pixel_location
                     .get_nearest(&pixel_points)
                     .map(|x| chart.samples[x].clone());
-                chart.nearest_sample_to_mouse = nearest_sample;
+                chart.hovered_sample = if let Some(nearest_sample) = nearest_sample {
+                    let distance = nearest_sample.point.remap(&chart.data_bounds, &chart.pixel_bounds).distance(&pixel_location);
+                    if distance < (chart.margin / 2.0) {
+                        Some(nearest_sample)
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                };
 
                 chart.draw().expect("")
             })?;
@@ -224,7 +233,7 @@ impl Chart {
         self.draw_samples(&self.samples)?;
         self.context.set_global_alpha(1.0);
 
-        if let Some(nearest) = self.nearest_sample_to_mouse.as_ref() {
+        if let Some(nearest) = self.hovered_sample.as_ref() {
             self.emphasize_samples(nearest)?;
         }
 
