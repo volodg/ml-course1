@@ -30,7 +30,7 @@ pub struct Chart {
     options: Options,
     hovered_sample: Option<Sample>,
     selected_sample: Option<Sample>,
-    on_click: Option<Rc<RefCell<dyn FnMut(&Sample)>>>,
+    on_click: Option<Rc<RefCell<dyn FnMut(Option<&Sample>)>>>,
 }
 
 impl Chart {
@@ -52,17 +52,12 @@ impl Chart {
         container.append_child(&canvas)?;
 
         let data_trans = DataTransformation {
-            offset: Point::zero(),
+            offset: Point::default(),
             scale: 1.0,
         };
-        let drag_info = DragInto {
-            start: Point::zero(),
-            end: Point::zero(),
-            offset: Point::zero(),
-            dragging: false,
-        };
+        let drag_info = DragInto::default();
 
-        let margin = options.size as f64 * 0.1;
+        let margin = options.size as f64 * 0.11;
         let transparency = 0.7;
         let pixel_bounds = Self::get_pixels_bounds(&canvas, margin);
 
@@ -94,7 +89,7 @@ impl Chart {
         result.ok()
     }
 
-    pub fn set_on_click(&mut self, on_click: Rc<RefCell<dyn FnMut(&Sample)>>) {
+    pub fn set_on_click(&mut self, on_click: Rc<RefCell<dyn FnMut(Option<&Sample>)>>) {
         self.on_click = Some(on_click);
     }
 
@@ -104,8 +99,8 @@ impl Chart {
         self.samples = samples;
     }
 
-    pub fn select_sample(&mut self, sample: &Sample) -> Result<(), JsValue> {
-        self.selected_sample = Some(sample.clone());
+    pub fn select_sample(&mut self, sample: Option<&Sample>) -> Result<(), JsValue> {
+        self.selected_sample = sample.map(|x| x.clone());
         self.draw()?;
         Ok(())
     }
@@ -120,6 +115,8 @@ impl Chart {
                 let data_loc = chart.get_mouse(&event, true);
                 chart.drag_info.start = data_loc;
                 chart.drag_info.dragging = true;
+                chart.drag_info.end = Point::default();
+                chart.drag_info.offset = Point::default();
             })?;
         let chart_copy = chart.clone();
         chart
@@ -196,12 +193,22 @@ impl Chart {
             })?;
         let chart_copy = chart.clone();
         chart.borrow().canvas.on_click(move |_event: MouseEvent| {
+            if chart_copy.borrow().drag_info.offset != Point::default() {
+                return;
+            }
+
             let hovered_sample = chart_copy.borrow().hovered_sample.clone();
             if let Some(hovered_sample) = hovered_sample {
-                chart_copy.borrow_mut().selected_sample = Some(hovered_sample.clone());
+                chart_copy.borrow_mut().selected_sample = if chart_copy.borrow().selected_sample.as_ref() == Some(&hovered_sample) {
+                    None
+                } else {
+                    Some(hovered_sample.clone())
+                };
+
                 let on_click = chart_copy.borrow().on_click.clone();
+                let selected_sample = chart_copy.borrow().selected_sample.clone();
                 if let Some(on_click) = on_click {
-                    on_click.borrow_mut()(&hovered_sample)
+                    on_click.borrow_mut()(selected_sample.as_ref())
                 }
             }
             chart_copy.borrow().draw().expect("");
@@ -317,7 +324,7 @@ impl Chart {
 
             self.context.draw_text_with_params(
                 self.options.axis_labels[1].as_str(),
-                &Point::zero(),
+                &Point::default(),
                 DrawTextParams {
                     size: (self.margin * 0.6) as u32,
                     ..DrawTextParams::default()
@@ -373,7 +380,7 @@ impl Chart {
             self.context.rotate(-FRAC_PI_2)?;
             self.context.draw_text_with_params(
                 std::format!("{:.2}", data_min.y).as_str(),
-                &Point::zero(),
+                &Point::default(),
                 DrawTextParams {
                     size: (self.margin * 0.3) as u32,
                     align: "left".to_owned(),
@@ -413,7 +420,7 @@ impl Chart {
             self.context.rotate(-FRAC_PI_2)?;
             self.context.draw_text_with_params(
                 std::format!("{:.2}", data_max.y).as_str(),
-                &Point::zero(),
+                &Point::default(),
                 DrawTextParams {
                     size: (self.margin * 0.3) as u32,
                     align: "right".to_owned(),

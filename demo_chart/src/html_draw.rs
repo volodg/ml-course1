@@ -39,7 +39,7 @@ impl DrawWithState for HtmlDom {
                     app_state
                         .borrow()
                         .html
-                        .handle_click(&sample, false)
+                        .handle_click(Some(&sample), false)
                         .expect("");
                 })?;
             }
@@ -54,7 +54,7 @@ impl DrawWithState for HtmlDom {
 
         let callback_app_state = app_state.clone();
 
-        let on_click_callback = Rc::new(RefCell::new(move |sample: &Sample| {
+        let on_click_callback = Rc::new(RefCell::new(move |sample: Option<&Sample>| {
             callback_app_state
                 .borrow()
                 .html
@@ -71,11 +71,11 @@ impl DrawWithState for HtmlDom {
 }
 
 trait HtmlDomExt {
-    fn handle_click(&self, sample: &Sample, scroll: bool) -> Result<(), JsValue>;
+    fn handle_click(&self, sample: Option<&Sample>, scroll: bool) -> Result<(), JsValue>;
 }
 
 impl HtmlDomExt for HtmlDom {
-    fn handle_click(&self, sample: &Sample, scroll: bool) -> Result<(), JsValue> {
+    fn handle_click(&self, sample: Option<&Sample>, scroll: bool) -> Result<(), JsValue> {
         let document = window().expect("").document().expect("");
         let selected = document.query_selector_all(".emphasize")?;
         for i in 0..selected.length() {
@@ -83,16 +83,18 @@ impl HtmlDomExt for HtmlDom {
             element.class_list().remove_1("emphasize")?;
         }
 
-        let element = document
-            .get_element_by_id(sample.element_id().as_str())
-            .expect("");
-        element.class_list().add_1("emphasize")?;
+        if let Some(sample) = sample {
+            let element = document
+                .get_element_by_id(sample.element_id().as_str())
+                .expect("");
+            element.class_list().add_1("emphasize")?;
 
-        if scroll {
-            let mut options = ScrollIntoViewOptions::new();
-            options.behavior(ScrollBehavior::Auto);
-            options.block(ScrollLogicalPosition::Center);
-            element.scroll_into_view_with_scroll_into_view_options(&options);
+            if scroll {
+                let mut options = ScrollIntoViewOptions::new();
+                options.behavior(ScrollBehavior::Auto);
+                options.block(ScrollLogicalPosition::Center);
+                element.scroll_into_view_with_scroll_into_view_options(&options);
+            }
         }
 
         self.chart.borrow_mut().select_sample(sample)?;

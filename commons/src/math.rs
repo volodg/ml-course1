@@ -1,14 +1,10 @@
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Default, Debug, Clone, PartialEq)]
 pub struct Point {
     pub x: f64,
     pub y: f64,
 }
 
 impl Point {
-    pub fn zero() -> Self {
-        Self { x: 0.0, y: 0.0 }
-    }
-
     pub fn scale(&self, scale: f64) -> Self {
         Self {
             x: self.x * scale,

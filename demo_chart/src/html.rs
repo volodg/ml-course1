@@ -28,7 +28,7 @@ fn default_chart_options() -> Options {
         },
     );
     Options {
-        size: 500,
+        size: 600,
         axis_labels: ["Kilometers".to_owned(), "Price".to_owned()],
         styles,
         icon: SampleStyleType::Image,

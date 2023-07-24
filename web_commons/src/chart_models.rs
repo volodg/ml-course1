@@ -7,6 +7,7 @@ pub struct DataTransformation {
     pub scale: f64,
 }
 
+#[derive(Default)]
 pub struct DragInto {
     pub start: Point,
     pub end: Point,
@@ -14,7 +15,7 @@ pub struct DragInto {
     pub dragging: bool,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Sample {
     pub id: i32,
     pub label: String,
