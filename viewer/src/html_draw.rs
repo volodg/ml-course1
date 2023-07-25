@@ -114,30 +114,39 @@ fn handle_click(
         Ok(())
     };
 
-    de_emphasize()?;
-
     let sample = match sample_id {
         Some(sample_id) => {
             let element = document
                 .get_element_by_id(std::format!("sample_{}", sample_id).as_str())
                 .unwrap();
-            element.class_list().add_1(emphasize_class_name)?;
 
-            if scroll {
-                let mut options = ScrollIntoViewOptions::new();
-                options.behavior(ScrollBehavior::Auto);
-                options.block(ScrollLogicalPosition::Center);
-                element.scroll_into_view_with_scroll_into_view_options(&options);
+            if element.class_list().contains(emphasize_class_name) {
+                element.class_list().remove_1(emphasize_class_name)?;
+                None
+            } else {
+                de_emphasize()?;
+
+                element.class_list().add_1(emphasize_class_name)?;
+
+                if scroll {
+                    let mut options = ScrollIntoViewOptions::new();
+                    options.behavior(ScrollBehavior::Auto);
+                    options.block(ScrollLogicalPosition::Center);
+                    element.scroll_into_view_with_scroll_into_view_options(&options);
+                }
+
+                chart
+                    .borrow()
+                    .samples()
+                    .iter()
+                    .find(|x| x.id == sample_id)
+                    .map(|x| x.clone())
             }
-
-            chart
-                .borrow()
-                .samples()
-                .iter()
-                .find(|x| x.id == sample_id)
-                .map(|x| x.clone())
         }
-        None => None,
+        None => {
+            de_emphasize()?;
+            None
+        },
     };
 
     chart.borrow_mut().select_sample(sample.as_ref())?;
