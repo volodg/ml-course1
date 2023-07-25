@@ -2,49 +2,11 @@ use crate::html::HtmlDom;
 use commons::math::Point;
 use drawing_commons::models::{FeaturesData, Sample};
 use drawing_commons::{FLAGGED_USERS, IMG_DIR};
-use lazy_static::lazy_static;
-use palette::{named::from_str, Srgb};
-use plotly::color::{NamedColor, Rgba};
-use plotly::common::{Marker, Mode, Title};
-use plotly::layout::Axis;
-use plotly::{Layout, Plot, Scatter};
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_commons::html::InnerHtmlSetter;
 use web_sys::{window, HtmlImageElement, ScrollBehavior, ScrollIntoViewOptions, ScrollLogicalPosition, Element};
-
-lazy_static! {
-    static ref COLOR_STYLES: HashMap<String, (Rgba, String)> = (|| {
-        let mut result = HashMap::new();
-
-        result.insert("car".to_owned(), (NamedColor::Gray, "🚗".to_owned()));
-        result.insert("fish".to_owned(), (NamedColor::Red, "🐟".to_owned()));
-        result.insert("house".to_owned(), (NamedColor::Yellow, "🏠".to_owned()));
-        result.insert("tree".to_owned(), (NamedColor::Green, "🌳".to_owned()));
-        result.insert("bicycle".to_owned(), (NamedColor::Cyan, "🚲".to_owned()));
-        result.insert("guitar".to_owned(), (NamedColor::Blue, "🎸".to_owned()));
-        result.insert("pencil".to_owned(), (NamedColor::Magenta, "✏️".to_owned()));
-        result.insert("clock".to_owned(), (NamedColor::LightGray, "⏰".to_owned()));
-
-        result
-            .into_iter()
-            .map(|(key, (color, symbol))| {
-                let color = from_named_srgb_color(&color);
-                let color = Rgba::new(color.red, color.green, color.blue, 0.7);
-                (key, (color, symbol))
-            })
-            .collect()
-    })();
-}
-
-fn from_named_srgb_color(color: &NamedColor) -> Srgb<u8> {
-    let value: serde_json::Value = serde_json::to_value(&color).expect("");
-    let color = value.as_str().expect("");
-    from_str(&color).unwrap()
-}
 
 pub trait Draw {
     fn create_row(&self, student_name: &str, samples: &[&Sample]) -> Result<(), JsValue>;
@@ -153,100 +115,4 @@ fn handle_click(sample: Option<&web_commons::chart_models::Sample>) -> Result<()
     }
 
     Ok(())
-}
-
-#[derive(Default)]
-struct TracesData {
-    traces: HashMap<String, (Vec<usize>, Vec<usize>)>,
-    max: [usize; 2],
-}
-
-impl TracesData {
-    fn into(self) -> Vec<Box<Scatter<usize, usize>>> {
-        self.traces
-            .into_iter()
-            .map(|(key, values)| {
-                let (_, symbol) = COLOR_STYLES.get(&key).expect("");
-                let marker = Marker::new().color(NamedColor::Transparent).size(12);
-                Scatter::new(values.0, values.1)
-                    .mode(Mode::MarkersText)
-                    .name(key)
-                    .text(symbol)
-                    .marker(marker)
-            })
-            .collect()
-    }
-}
-
-fn feature_data_into_traces(feature_data: &FeaturesData) -> TracesData {
-    feature_data
-        .features
-        .iter()
-        .fold(TracesData::default(), |acc, el| {
-            let TracesData {
-                mut traces,
-                mut max,
-            } = acc;
-
-            let (x_values, y_values) = traces.entry(el.label.clone()).or_default();
-            x_values.push(el.point[0]);
-            y_values.push(el.point[1]);
-
-            max[0] = max[0].max(el.point[0]);
-            max[1] = max[1].max(el.point[1]);
-
-            TracesData { traces, max }
-        })
-}
-
-fn plot_statistic_to_html(feature_data: &FeaturesData) -> String {
-    let traces_data = feature_data_into_traces(feature_data);
-
-    let max_x = traces_data.max[0] as f64 + 10.;
-    let max_y = traces_data.max[1] as f64 + 10.;
-
-    let traces = traces_data.into();
-
-    let mut plot = Plot::new();
-    for trace in traces {
-        plot.add_trace(trace);
-    }
-
-    let x_axis_name = feature_data.feature_names[0].as_str();
-    let y_axis_name = feature_data.feature_names[1].as_str();
-
-    let layout = Layout::new()
-        .title(Title::new("Features statistic"))
-        .x_axis(
-            Axis::new()
-                .title(Title::new(x_axis_name))
-                .range(vec![0., max_x]),
-        )
-        .y_axis(
-            Axis::new()
-                .title(Title::new(y_axis_name))
-                .range(vec![0., max_y]),
-        );
-    plot.set_layout(layout);
-    plot.to_inline_html(Some("chart"))
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::html_draw::{from_named_srgb_color, COLOR_STYLES};
-    use plotly::color::NamedColor;
-
-    #[test]
-    fn test_from_named_srgb_color() {
-        let srgb = from_named_srgb_color(&NamedColor::Gray);
-        assert_eq!(srgb.red, 128);
-        assert_eq!(srgb.green, 128);
-        assert_eq!(srgb.blue, 128);
-    }
-
-    #[test]
-    fn test_color_styles() {
-        let size = COLOR_STYLES.len();
-        assert_eq!(size, 8);
-    }
 }
