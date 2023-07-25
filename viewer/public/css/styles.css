@@ -34,7 +34,7 @@ body {
     background-color: yellow;
 }
 #container {
-    width: calc(100% - 400px);
+    width: calc(100% - 500px);
 }
 #chartContainer {
     position: fixed;

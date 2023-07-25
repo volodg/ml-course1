@@ -76,7 +76,7 @@ fn default_chart_options(feature_names: &[String]) -> Options {
     );
 
     Options {
-        size: 400,
+        size: 500,
         axis_labels: [feature_names[0].clone(), feature_names[1].clone()],
         styles,
         icon: SampleStyleType::Image,
