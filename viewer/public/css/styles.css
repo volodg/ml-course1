@@ -38,3 +38,6 @@ body {
 .blur {
     filter: blur(5px);
 }
+.emphasize {
+    background-color: yellow;
+}

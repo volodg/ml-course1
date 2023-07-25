@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use crate::html::HtmlDom;
 use drawing_commons::models::{FeaturesData, Sample};
 use drawing_commons::{FLAGGED_USERS, IMG_DIR};
@@ -8,12 +9,12 @@ use plotly::common::{Marker, Mode, Title};
 use plotly::layout::Axis;
 use plotly::{Layout, Plot, Scatter};
 use std::collections::HashMap;
+use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::html::InnerHtmlSetter;
-use web_sys::HtmlImageElement;
+use web_sys::{HtmlImageElement, ScrollBehavior, ScrollIntoViewOptions, ScrollLogicalPosition, window};
 use commons::math::Point;
-use web_commons::log;
 
 lazy_static! {
     static ref COLOR_STYLES: HashMap<String, (Rgba, String)> = (|| {
@@ -102,7 +103,7 @@ impl Draw for HtmlDom {
 
         use web_commons::chart_models::Sample;
 
-        let samples = feature_data.features.iter().zip(0..).map(|(feature, id)| {
+        let samples = feature_data.features.iter().zip(1..).map(|(feature, id)| {
             Sample {
                 id,
                 label: feature.label.clone(),
@@ -113,12 +114,37 @@ impl Draw for HtmlDom {
             }
         }).collect::<Vec<_>>();
 
-        log(std::format!("samples: {:?}", samples.len()).as_str());
         chart.set_samples(samples);
 
-        chart.draw()?;
-        Ok(())
+        let on_click_callback = Rc::new(RefCell::new(move |sample: Option<&Sample>| {
+            handle_click(sample).expect("")
+        }));
+
+        chart.set_on_click(on_click_callback);
+
+        chart.draw()
     }
+}
+
+fn handle_click(sample: Option<&web_commons::chart_models::Sample>) -> Result<(), JsValue> {
+    let document = window().expect("").document().expect("");
+
+    match sample {
+        Some(sample) => {
+            let emphasize_class_name = "emphasize";
+
+            let element = document.get_element_by_id(std::format!("sample_{}", sample.id).as_str()).unwrap();
+            element.class_list().add_1(emphasize_class_name)?;
+
+            let mut options = ScrollIntoViewOptions::new();
+            options.behavior(ScrollBehavior::Auto);
+            options.block(ScrollLogicalPosition::Center);
+            element.scroll_into_view_with_scroll_into_view_options(&options);
+        },
+        None => (),
+    }
+
+    Ok(())
 }
 
 #[derive(Default)]

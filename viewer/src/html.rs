@@ -80,7 +80,7 @@ fn default_chart_options(feature_names: &[String]) -> Options {
         axis_labels: [feature_names[0].clone(), feature_names[1].clone()],
         styles,
         icon: SampleStyleType::Image,
-        transparency: Some(0.8),
+        transparency: Some(0.7),
     }
 }
 
