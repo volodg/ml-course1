@@ -1,5 +1,5 @@
-use std::cell::RefCell;
 use crate::html::HtmlDom;
+use commons::math::Point;
 use drawing_commons::models::{FeaturesData, Sample};
 use drawing_commons::{FLAGGED_USERS, IMG_DIR};
 use lazy_static::lazy_static;
@@ -8,13 +8,15 @@ use plotly::color::{NamedColor, Rgba};
 use plotly::common::{Marker, Mode, Title};
 use plotly::layout::Axis;
 use plotly::{Layout, Plot, Scatter};
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::html::InnerHtmlSetter;
-use web_sys::{HtmlImageElement, ScrollBehavior, ScrollIntoViewOptions, ScrollLogicalPosition, window};
-use commons::math::Point;
+use web_sys::{
+    window, HtmlImageElement, ScrollBehavior, ScrollIntoViewOptions, ScrollLogicalPosition,
+};
 
 lazy_static! {
     static ref COLOR_STYLES: HashMap<String, (Rgba, String)> = (|| {
@@ -103,16 +105,19 @@ impl Draw for HtmlDom {
 
         use web_commons::chart_models::Sample;
 
-        let samples = feature_data.features.iter().zip(1..).map(|(feature, id)| {
-            Sample {
+        let samples = feature_data
+            .features
+            .iter()
+            .zip(1..)
+            .map(|(feature, id)| Sample {
                 id,
                 label: feature.label.clone(),
                 point: Point {
                     x: feature.point[0] as f64,
                     y: feature.point[1] as f64,
                 },
-            }
-        }).collect::<Vec<_>>();
+            })
+            .collect::<Vec<_>>();
 
         chart.set_samples(samples);
 
@@ -133,14 +138,16 @@ fn handle_click(sample: Option<&web_commons::chart_models::Sample>) -> Result<()
         Some(sample) => {
             let emphasize_class_name = "emphasize";
 
-            let element = document.get_element_by_id(std::format!("sample_{}", sample.id).as_str()).unwrap();
+            let element = document
+                .get_element_by_id(std::format!("sample_{}", sample.id).as_str())
+                .unwrap();
             element.class_list().add_1(emphasize_class_name)?;
 
             let mut options = ScrollIntoViewOptions::new();
             options.behavior(ScrollBehavior::Auto);
             options.block(ScrollLogicalPosition::Center);
             element.scroll_into_view_with_scroll_into_view_options(&options);
-        },
+        }
         None => (),
     }
 
