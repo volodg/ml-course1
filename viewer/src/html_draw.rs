@@ -12,6 +12,8 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::html::InnerHtmlSetter;
 use web_sys::HtmlImageElement;
+use commons::math::Point;
+use web_commons::log;
 
 lazy_static! {
     static ref COLOR_STYLES: HashMap<String, (Rgba, String)> = (|| {
@@ -46,6 +48,7 @@ fn from_named_srgb_color(color: &NamedColor) -> Srgb<u8> {
 pub trait Draw {
     fn create_row(&self, student_name: &str, samples: &[&Sample]) -> Result<(), JsValue>;
     fn plot_statistic(&self, feature_data: &FeaturesData) -> Result<(), JsValue>;
+    fn plot_statistic2(&self, feature_data: &FeaturesData) -> Result<(), JsValue>;
 }
 
 impl Draw for HtmlDom {
@@ -92,6 +95,29 @@ impl Draw for HtmlDom {
 
         let container = self.document.get_element_by_id("chartContainer").unwrap();
         container.set_inner_html_with_script(&html)
+    }
+
+    fn plot_statistic2(&self, feature_data: &FeaturesData) -> Result<(), JsValue> {
+        let mut chart = self.chart.borrow_mut();
+
+        use web_commons::chart_models::Sample;
+
+        let samples = feature_data.features.iter().zip(0..).map(|(feature, id)| {
+            Sample {
+                id,
+                label: feature.label.clone(),
+                point: Point {
+                    x: feature.point[0] as f64,
+                    y: feature.point[1] as f64,
+                },
+            }
+        }).collect::<Vec<_>>();
+
+        log(std::format!("samples: {:?}", samples.len()).as_str());
+        chart.set_samples(samples);
+
+        chart.draw()?;
+        Ok(())
     }
 }
 

@@ -24,6 +24,7 @@ web_commons = { path = "../web_commons" }
 version = "0.3.4"
 features = [
     'CanvasRenderingContext2d',
+    'CanvasGradient',
     'DomTokenList',
     'Document',
     'HtmlCanvasElement',

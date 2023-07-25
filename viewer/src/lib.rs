@@ -22,9 +22,10 @@ lazy_static! {
 
 #[wasm_bindgen(start)]
 fn start() -> Result<(), JsValue> {
-    let html = HtmlDom::create()?;
+    let html = HtmlDom::create(&FEATURES_DATA.feature_names)?;
 
     html.plot_statistic(&FEATURES_DATA)?;
+    html.plot_statistic2(&FEATURES_DATA)?;
 
     for (_id, group) in &SAMPLES_DATA.iter().group_by(|x| x.student_id) {
         let group = group.collect::<Vec<_>>();
