@@ -6,6 +6,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
+use web_commons::chart::Chart;
 use web_commons::html::AddListener;
 use web_sys::{
     window, Element, HtmlImageElement, MouseEvent, ScrollBehavior, ScrollIntoViewOptions,
@@ -38,8 +39,9 @@ impl Draw for HtmlDom {
             sample_container.set_id(std::format!("sample_{}", sample.id).as_str());
 
             let sample_id = sample.id;
+            let chart = self.chart.clone();
             sample_container.on_click(move |_event: MouseEvent| {
-                handle_click(Some(sample_id), false).expect("");
+                handle_click(&chart, Some(sample_id), false).expect("");
             })?;
 
             _ = sample_container.class_list().add_1("sampleContainer")?;
@@ -83,8 +85,9 @@ impl Draw for HtmlDom {
 
         chart.set_samples(samples);
 
+        let on_click_chart = self.chart.clone();
         let on_click_callback = Rc::new(RefCell::new(move |sample: Option<&Sample>| {
-            handle_click(sample.map(|x| x.id), true).expect("")
+            handle_click(&on_click_chart, sample.map(|x| x.id), true).expect("")
         }));
 
         chart.set_on_click(on_click_callback);
@@ -93,7 +96,11 @@ impl Draw for HtmlDom {
     }
 }
 
-fn handle_click(sample_id: Option<usize>, scroll: bool) -> Result<(), JsValue> {
+fn handle_click(
+    chart: &Rc<RefCell<Chart>>,
+    sample_id: Option<usize>,
+    scroll: bool,
+) -> Result<(), JsValue> {
     let document = window().expect("").document().expect("");
     let selected = document.query_selector_all(".emphasize")?;
 
@@ -109,7 +116,7 @@ fn handle_click(sample_id: Option<usize>, scroll: bool) -> Result<(), JsValue> {
 
     de_emphasize()?;
 
-    match sample_id {
+    let sample = match sample_id {
         Some(sample_id) => {
             let element = document
                 .get_element_by_id(std::format!("sample_{}", sample_id).as_str())
@@ -122,9 +129,18 @@ fn handle_click(sample_id: Option<usize>, scroll: bool) -> Result<(), JsValue> {
                 options.block(ScrollLogicalPosition::Center);
                 element.scroll_into_view_with_scroll_into_view_options(&options);
             }
+
+            chart
+                .borrow()
+                .samples()
+                .iter()
+                .find(|x| x.id == sample_id)
+                .map(|x| x.clone())
         }
-        None => (),
-    }
+        None => None,
+    };
+
+    chart.borrow_mut().select_sample(sample.as_ref())?;
 
     Ok(())
 }

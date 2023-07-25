@@ -99,6 +99,10 @@ impl Chart {
         self.samples = samples;
     }
 
+    pub fn samples(&self) -> &[Sample] {
+        self.samples.as_ref()
+    }
+
     pub fn select_sample(&mut self, sample: Option<&Sample>) -> Result<(), JsValue> {
         self.selected_sample = sample.map(|x| x.clone());
         self.draw()?;
