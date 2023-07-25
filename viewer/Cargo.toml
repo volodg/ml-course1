@@ -30,6 +30,7 @@ features = [
     'HtmlCanvasElement',
     'HtmlCollection',
     'HtmlScriptElement',
+    'NodeList',
     'ScrollBehavior',
     'ScrollIntoViewOptions',
     'ScrollLogicalPosition',

@@ -14,9 +14,7 @@ use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::html::InnerHtmlSetter;
-use web_sys::{
-    window, HtmlImageElement, ScrollBehavior, ScrollIntoViewOptions, ScrollLogicalPosition,
-};
+use web_sys::{window, HtmlImageElement, ScrollBehavior, ScrollIntoViewOptions, ScrollLogicalPosition, Element};
 
 lazy_static! {
     static ref COLOR_STYLES: HashMap<String, (Rgba, String)> = (|| {
@@ -133,11 +131,22 @@ impl Draw for HtmlDom {
 
 fn handle_click(sample: Option<&web_commons::chart_models::Sample>) -> Result<(), JsValue> {
     let document = window().expect("").document().expect("");
+    let selected = document.query_selector_all(".emphasize")?;
+
+    let emphasize_class_name = "emphasize";
+
+    let de_emphasize = || -> Result<(), JsValue> {
+        for i in 0..selected.length() {
+            let element = selected.item(i).expect("").dyn_into::<Element>()?;
+            element.class_list().remove_1(emphasize_class_name)?;
+        }
+        Ok(())
+    };
+
+    de_emphasize()?;
 
     match sample {
         Some(sample) => {
-            let emphasize_class_name = "emphasize";
-
             let element = document
                 .get_element_by_id(std::format!("sample_{}", sample.id).as_str())
                 .unwrap();
