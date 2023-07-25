@@ -32,6 +32,7 @@ fn default_chart_options() -> Options {
         axis_labels: ["Kilometers".to_owned(), "Price".to_owned()],
         styles,
         icon: SampleStyleType::Image,
+        transparency: Some(0.8),
     }
 }
 

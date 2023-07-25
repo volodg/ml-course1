@@ -58,7 +58,7 @@ impl Chart {
         let drag_info = DragInto::default();
 
         let margin = options.size as f64 * 0.11;
-        let transparency = 0.7;
+        let transparency = options.transparency.unwrap_or(1.0);
         let pixel_bounds = Self::get_pixels_bounds(&canvas, margin);
 
         if options.icon == SampleStyleType::Image {

@@ -46,6 +46,7 @@ pub struct Options {
     pub axis_labels: [String; 2],
     pub styles: HashMap<String, SampleStyle>,
     pub icon: SampleStyleType,
+    pub transparency: Option<f64>,
 }
 
 pub fn get_data_bounds(samples: &[Sample]) -> Bounds {
