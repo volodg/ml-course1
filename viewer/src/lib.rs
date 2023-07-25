@@ -26,7 +26,7 @@ fn start() -> Result<(), JsValue> {
 
     html.plot_statistic(&FEATURES_DATA)?;
 
-    for (_id, group) in &SAMPLES_DATA.iter().group_by(|x| x.student_id) {
+    for (_, group) in &SAMPLES_DATA.iter().group_by(|x| x.student_id) {
         let group = group.collect::<Vec<_>>();
         html.create_row(group[0].student_name.as_str(), group.as_slice())?;
     }
