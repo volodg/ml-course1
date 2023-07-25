@@ -96,7 +96,7 @@ impl HtmlDom {
         let document = window().unwrap().document().unwrap();
         let container = document.get_element_by_id("container").unwrap();
 
-        let chart_container = document.get_element_by_id("chartContainer2").unwrap();
+        let chart_container = document.get_element_by_id("chartContainer").unwrap();
         let chart = Chart::create(
             chart_container.clone(),
             default_chart_options(feature_names),

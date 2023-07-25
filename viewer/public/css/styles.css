@@ -6,14 +6,6 @@ body {
     background-color: skyblue;
     overscroll-behavior: none;
 }
-#chartContainer {
-    text-align: center;
-    padding: 20px;
-}
-#chartContainer2 {
-    text-align: center;
-    padding: 20px;
-}
 .row {
     display: flex;
     align-items: center;
@@ -40,4 +32,13 @@ body {
 }
 .emphasize {
     background-color: yellow;
+}
+#container {
+    width: calc(100% - 400px);
+}
+#chartContainer {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translate(0, -50%);
 }
