@@ -78,26 +78,30 @@ impl HtmlDomExt for HtmlDom {
     fn handle_click(&self, sample: Option<&Sample>, scroll: bool) -> Result<(), JsValue> {
         let document = window().expect("").document().expect("");
         let selected = document.query_selector_all(".emphasize")?;
-        for i in 0..selected.length() {
-            let element = selected.item(i).expect("").dyn_into::<Element>()?;
-            element.class_list().remove_1("emphasize")?;
-        }
 
-        if let Some(sample) = sample {
-            let element = document
-                .get_element_by_id(sample.element_id().as_str())
-                .expect("");
-            element.class_list().add_1("emphasize")?;
+        match sample {
+            None => {
+                for i in 0..selected.length() {
+                    let element = selected.item(i).expect("").dyn_into::<Element>()?;
+                    element.class_list().remove_1("emphasize")?;
+                }
+            },
+            Some(sample) => {
+                let element = document
+                    .get_element_by_id(sample.element_id().as_str())
+                    .expect("");
+                element.class_list().add_1("emphasize")?;
 
-            if scroll {
-                let mut options = ScrollIntoViewOptions::new();
-                options.behavior(ScrollBehavior::Auto);
-                options.block(ScrollLogicalPosition::Center);
-                element.scroll_into_view_with_scroll_into_view_options(&options);
+                if scroll {
+                    let mut options = ScrollIntoViewOptions::new();
+                    options.behavior(ScrollBehavior::Auto);
+                    options.block(ScrollLogicalPosition::Center);
+                    element.scroll_into_view_with_scroll_into_view_options(&options);
+                }
+
+                self.chart.borrow_mut().select_sample(Some(sample))?;
             }
         }
-
-        self.chart.borrow_mut().select_sample(sample)?;
 
         Ok(())
     }

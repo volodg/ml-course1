@@ -198,19 +198,22 @@ impl Chart {
             }
 
             let hovered_sample = chart_copy.borrow().hovered_sample.clone();
-            if let Some(hovered_sample) = hovered_sample {
-                chart_copy.borrow_mut().selected_sample = if chart_copy.borrow().selected_sample.as_ref() == Some(&hovered_sample) {
+            let selected_sample = if let Some(hovered_sample) = hovered_sample {
+                if chart_copy.borrow().selected_sample.as_ref() == Some(&hovered_sample) {
                     None
                 } else {
                     Some(hovered_sample.clone())
-                };
-
-                let on_click = chart_copy.borrow().on_click.clone();
-                let selected_sample = chart_copy.borrow().selected_sample.clone();
-                if let Some(on_click) = on_click {
-                    on_click.borrow_mut()(selected_sample.as_ref())
                 }
+            } else {
+                None
+            };
+            chart_copy.borrow_mut().selected_sample = selected_sample.clone();
+
+            let on_click = chart_copy.borrow().on_click.clone();
+            if let Some(on_click) = on_click {
+                on_click.borrow_mut()(selected_sample.as_ref())
             }
+
             chart_copy.borrow().draw().expect("");
         })
     }
