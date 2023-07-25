@@ -3,10 +3,11 @@ use commons::math::Point;
 use drawing_commons::models::{FeaturesData, Sample};
 use drawing_commons::{FLAGGED_USERS, IMG_DIR};
 use std::cell::RefCell;
+use web_commons::html::AddListener;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_sys::{window, HtmlImageElement, ScrollBehavior, ScrollIntoViewOptions, ScrollLogicalPosition, Element};
+use web_sys::{window, HtmlImageElement, ScrollBehavior, ScrollIntoViewOptions, ScrollLogicalPosition, Element, MouseEvent};
 
 pub trait Draw {
     fn create_row(&self, student_name: &str, samples: &[&Sample]) -> Result<(), JsValue>;
@@ -32,6 +33,12 @@ impl Draw for HtmlDom {
 
             let sample_container = self.document.create_element("div")?;
             sample_container.set_id(std::format!("sample_{}", sample.id).as_str());
+
+            let sample_id = sample.id;
+            sample_container.on_click(move |_event: MouseEvent| {
+                handle_click(Some(sample_id), false).expect("");
+            })?;
+
             _ = sample_container.class_list().add_1("sampleContainer")?;
 
             let sample_label = self.document.create_element("div")?;
@@ -74,7 +81,7 @@ impl Draw for HtmlDom {
         chart.set_samples(samples);
 
         let on_click_callback = Rc::new(RefCell::new(move |sample: Option<&Sample>| {
-            handle_click(sample).expect("")
+            handle_click(sample.map(|x| x.id), true).expect("")
         }));
 
         chart.set_on_click(on_click_callback);
@@ -83,7 +90,7 @@ impl Draw for HtmlDom {
     }
 }
 
-fn handle_click(sample: Option<&web_commons::chart_models::Sample>) -> Result<(), JsValue> {
+fn handle_click(sample_id: Option<usize>, scroll: bool) -> Result<(), JsValue> {
     let document = window().expect("").document().expect("");
     let selected = document.query_selector_all(".emphasize")?;
 
@@ -99,17 +106,19 @@ fn handle_click(sample: Option<&web_commons::chart_models::Sample>) -> Result<()
 
     de_emphasize()?;
 
-    match sample {
-        Some(sample) => {
+    match sample_id {
+        Some(sample_id) => {
             let element = document
-                .get_element_by_id(std::format!("sample_{}", sample.id).as_str())
+                .get_element_by_id(std::format!("sample_{}", sample_id).as_str())
                 .unwrap();
             element.class_list().add_1(emphasize_class_name)?;
 
-            let mut options = ScrollIntoViewOptions::new();
-            options.behavior(ScrollBehavior::Auto);
-            options.block(ScrollLogicalPosition::Center);
-            element.scroll_into_view_with_scroll_into_view_options(&options);
+            if scroll {
+                let mut options = ScrollIntoViewOptions::new();
+                options.behavior(ScrollBehavior::Auto);
+                options.block(ScrollLogicalPosition::Center);
+                element.scroll_into_view_with_scroll_into_view_options(&options);
+            }
         }
         None => (),
     }

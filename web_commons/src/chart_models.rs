@@ -17,13 +17,13 @@ pub struct DragInto {
 
 #[derive(Clone, PartialEq)]
 pub struct Sample {
-    pub id: i32,
+    pub id: usize,
     pub label: String,
     pub point: Point,
 }
 
 impl Sample {
-    pub fn create(id: i32, label: String, point: Point) -> Self {
+    pub fn create(id: usize, label: String, point: Point) -> Self {
         Self { id, label, point }
     }
 }
