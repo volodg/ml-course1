@@ -20,7 +20,7 @@ impl fmt::Display for CarType {
 }
 
 pub struct Car {
-    pub id: i32,
+    pub id: usize,
     pub car_type: CarType,
     pub km: f64,
     pub price: f64,

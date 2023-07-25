@@ -3,11 +3,14 @@ use commons::math::Point;
 use drawing_commons::models::{FeaturesData, Sample};
 use drawing_commons::{FLAGGED_USERS, IMG_DIR};
 use std::cell::RefCell;
-use web_commons::html::AddListener;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_sys::{window, HtmlImageElement, ScrollBehavior, ScrollIntoViewOptions, ScrollLogicalPosition, Element, MouseEvent};
+use web_commons::html::AddListener;
+use web_sys::{
+    window, Element, HtmlImageElement, MouseEvent, ScrollBehavior, ScrollIntoViewOptions,
+    ScrollLogicalPosition,
+};
 
 pub trait Draw {
     fn create_row(&self, student_name: &str, samples: &[&Sample]) -> Result<(), JsValue>;
