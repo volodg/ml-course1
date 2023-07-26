@@ -5,9 +5,10 @@ use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::html::AddListener;
-use web_sys::{window, CanvasRenderingContext2d, Element, HtmlCanvasElement, MouseEvent};
+use web_sys::{window, CanvasRenderingContext2d, Element, HtmlCanvasElement, MouseEvent, Document};
 
 pub struct SketchPad {
+    document: Document,
     #[allow(dead_code)]
     canvas: HtmlCanvasElement,
     #[allow(dead_code)]
@@ -51,6 +52,7 @@ impl SketchPad {
             .dyn_into::<CanvasRenderingContext2d>()?;
 
         let result = Rc::new(RefCell::new(Self {
+            document,
             canvas,
             context,
             on_update: None,
@@ -97,27 +99,33 @@ impl SketchPad {
                 sketch_pad.is_drawing = true;
             })?;
 
+        let sketch_pad_copy = sketch_pad.clone();
+        sketch_pad
+            .borrow()
+            .canvas
+            .add_listener("mousemove", move |event: MouseEvent| {
+                let mut sketch_pad = sketch_pad_copy.borrow_mut();
+                if sketch_pad.is_drawing {
+                    let mouse = sketch_pad.get_mouse(event);
+                    let last_index = sketch_pad.paths.len() - 1;
+                    sketch_pad.paths[last_index].push(mouse);
+                    sketch_pad.draw();
+                }
+            })?;
+
+        let sketch_pad_copy = sketch_pad.clone();
+        sketch_pad
+            .borrow()
+            .document
+            .add_listener("mouseup", move |_event: MouseEvent| {
+                sketch_pad_copy.borrow_mut().is_drawing = false;
+            })?;
+
         Ok(())
     }
 
     /*
     #addEventListeners(){
-       this.canvas.onmousedown=(evt)=>{
-          const mouse=this.#getMouse(evt);
-          this.paths.push([mouse]);
-          this.isDrawing=true;
-       }
-       this.canvas.onmousemove=(evt)=>{
-          if(this.isDrawing){
-             const mouse=this.#getMouse(evt);
-             const lastPath=this.paths[this.paths.length-1];
-             lastPath.push(mouse);
-             this.#redraw();
-          }
-       }
-       document.onmouseup=()=>{
-          this.isDrawing=false;
-       }
        this.canvas.ontouchstart=(evt)=>{
           const loc=evt.touches[0];
           this.canvas.onmousedown(loc);
@@ -153,4 +161,9 @@ impl SketchPad {
        }
     }
       */
+
+    fn draw(&mut self) {
+
+    }
+
 }
