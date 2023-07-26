@@ -102,7 +102,7 @@ pub fn get_feature_names() -> [String; 2] {
     ["Width".to_owned(), "Height".to_owned()]
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct SampleWithFeatures {
     pub label: String,
     pub point: [usize; 2],

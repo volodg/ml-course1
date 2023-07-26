@@ -30,7 +30,7 @@ pub struct Chart {
     options: Options,
     hovered_sample: Option<Sample>,
     selected_sample: Option<Sample>,
-    dynamic_point: Option<(Point, String)>,
+    dynamic_point: Option<(Point, String, Sample)>,
     on_click: Option<Rc<RefCell<dyn FnMut(Option<&Sample>)>>>,
 }
 
@@ -101,7 +101,7 @@ impl Chart {
         self.samples = samples;
     }
 
-    pub fn show_dynamic_point(&mut self, point: Option<(Point, String)>) -> Result<(), JsValue> {
+    pub fn show_dynamic_point(&mut self, point: Option<(Point, String, Sample)>) -> Result<(), JsValue> {
         self.dynamic_point = point;
         self.draw()
     }
@@ -289,13 +289,19 @@ impl Chart {
             self.emphasize_samples(selected_sample, "yellow")?;
         }
 
-        if let Some((dynamic_point, label)) = self.dynamic_point.as_ref() {
+        if let Some((dynamic_point, label, sample)) = self.dynamic_point.as_ref() {
             let pixel_location = dynamic_point.remap(&self.data_bounds, &self.pixel_bounds);
             self.context.draw_point_with_color_and_size(
                 &pixel_location,
                 "rgba(255,255,255,0.7)",
                 10000000.0,
             )?;
+
+            self.context.begin_path();
+            self.context.move_to(pixel_location.x, pixel_location.y);
+            let line_to = sample.point.remap(&self.data_bounds, &self.pixel_bounds);
+            self.context.line_to(line_to.x, line_to.y);
+            self.context.stroke();
 
             self.context.draw_image(
                 &self.options.styles.get(label).expect("").image.clone().expect(""),

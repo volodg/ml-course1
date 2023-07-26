@@ -1,12 +1,13 @@
 use crate::html::HtmlDom;
 use commons::math::Point;
-use drawing_commons::models::{DrawingPaths, Features, FeaturesData};
+use drawing_commons::models::{DrawingPaths, Features, FeaturesData, SampleWithFeatures};
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::{JsCast, JsValue};
 use web_commons::html::AddListener;
 use web_commons::html::Visibility;
 use web_sys::{window, HtmlElement, MouseEvent};
+use web_commons::chart_models::Sample;
 
 pub trait DrawingAnalyzer {
     fn toggle_input(&self) -> Result<(), JsValue>;
@@ -45,12 +46,20 @@ impl DrawingAnalyzer for HtmlDom {
         let on_update_callback = Rc::new(RefCell::new(move |drawing: &DrawingPaths<Point>| {
             let point = drawing.get_feature(|x| x.x, |x| x.y);
 
-            let label = classify(&point, feature_data);
+            let (label, sample) = classify(&point, feature_data);
             predicted_label_container.set_inner_html(std::format!("Is it a {:?} ?", label).as_str());
+            let sample = Sample {
+                id: 0,
+                label: sample.label,
+                point: Point {
+                    x: sample.point[0] as f64,
+                    y: sample.point[1] as f64,
+                },
+            };
 
             chart
                 .borrow_mut()
-                .show_dynamic_point(Some((point, label)))
+                .show_dynamic_point(Some((point, label, sample)))
                 .expect("");
         }));
 
@@ -58,7 +67,7 @@ impl DrawingAnalyzer for HtmlDom {
     }
 }
 
-fn classify(point: &Point, feature_data: &'static FeaturesData) -> String {
+fn classify(point: &Point, feature_data: &'static FeaturesData) -> (String, SampleWithFeatures) {
     let sample_points = feature_data
         .features
         .iter()
@@ -71,5 +80,5 @@ fn classify(point: &Point, feature_data: &'static FeaturesData) -> String {
     let index = point.get_nearest(&sample_points).unwrap_or(0);
     let sample = &feature_data.features[index];
 
-    sample.label.to_owned()
+    (sample.label.to_owned(), sample.clone())
 }

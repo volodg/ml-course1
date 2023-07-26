@@ -64,10 +64,15 @@ pub fn get_data_bounds(samples: &[Sample]) -> Bounds {
             )
         },
     );
+
+    let delta_x = max_x.expect("") - min_x.expect("");
+    let delta_y = max_y.expect("") - min_y.expect("");
+    let max_delta = delta_x.max(delta_y);
+
     Bounds {
         left: min_x.expect(""),
-        right: max_x.expect(""),
-        top: max_y.expect(""),
+        right: min_x.expect("") + max_delta,
+        top: min_y.expect("") + max_delta,
         bottom: min_y.expect(""),
     }
 }
