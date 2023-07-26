@@ -54,7 +54,7 @@ impl SketchPad {
             .unwrap()
             .dyn_into::<CanvasRenderingContext2d>()?;
 
-        let result = Rc::new(RefCell::new(Self {
+        let result = Self {
             document,
             canvas,
             context,
@@ -62,7 +62,11 @@ impl SketchPad {
             on_update: None,
             paths: vec![],
             is_drawing: false,
-        }));
+        };
+
+        result.draw();
+
+        let result = Rc::new(RefCell::new(result));
 
         Self::add_event_listeners(&result)?;
 
