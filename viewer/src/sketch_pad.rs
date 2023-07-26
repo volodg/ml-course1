@@ -2,6 +2,7 @@ use commons::math::Point;
 use commons::utils::OkExt;
 use std::cell::RefCell;
 use std::rc::Rc;
+use itertools::Itertools;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::geometry::try_convert_touch_event_into_point;
@@ -12,15 +13,10 @@ use web_sys::{
 
 pub struct SketchPad {
     document: Document,
-    #[allow(dead_code)]
     canvas: HtmlCanvasElement,
-    #[allow(dead_code)]
     context: CanvasRenderingContext2d,
-    #[allow(dead_code)]
     on_update: Option<Rc<RefCell<dyn FnMut()>>>,
-    #[allow(dead_code)]
     paths: Vec<Vec<Point>>,
-    #[allow(dead_code)]
     is_drawing: bool,
 }
 
@@ -86,13 +82,21 @@ impl SketchPad {
         let rect = self.canvas.get_bounding_client_rect();
         Point {
             x: event.client_x() as f64 - rect.left(),
-            y: event.client_y() as f64 - rect.right(),
+            y: event.client_y() as f64 - rect.top(),
         }
     }
 
     fn handle_touch_start(&mut self, point: Point) {
         self.paths.push(vec![point]);
         self.is_drawing = true;
+    }
+
+    fn handle_touch_move(&mut self, point: Point) {
+        if self.is_drawing {
+            let last_index = self.paths.len() - 1;
+            self.paths[last_index].push(point);
+            self.draw();
+        }
     }
 
     fn add_event_listeners(sketch_pad: &Rc<RefCell<Self>>) -> Result<(), JsValue> {
@@ -112,12 +116,8 @@ impl SketchPad {
             .canvas
             .add_listener("mousemove", move |event: MouseEvent| {
                 let mut sketch_pad = sketch_pad_copy.borrow_mut();
-                if sketch_pad.is_drawing {
-                    let mouse = sketch_pad.get_mouse(event);
-                    let last_index = sketch_pad.paths.len() - 1;
-                    sketch_pad.paths[last_index].push(mouse);
-                    sketch_pad.draw();
-                }
+                let mouse = sketch_pad.get_mouse(event);
+                sketch_pad.handle_touch_move(mouse);
             })?;
 
         let sketch_pad_copy = sketch_pad.clone();
@@ -139,15 +139,22 @@ impl SketchPad {
                 }
             })?;
 
+        let sketch_pad_copy = sketch_pad.clone();
+        sketch_pad
+            .borrow()
+            .canvas
+            .add_listener("touchmove", move |event: TouchEvent| {
+                let point = try_convert_touch_event_into_point(event).ok();
+                if let Some(point) = point {
+                    sketch_pad_copy.borrow_mut().handle_touch_start(point);
+                }
+            })?;
+
         Ok(())
     }
 
     /*
     #addEventListeners(){
-       this.canvas.ontouchstart=(evt)=>{
-          const loc=evt.touches[0];
-          this.canvas.onmousedown(loc);
-       }
        this.canvas.ontouchmove=(evt)=>{
           const loc=evt.touches[0];
           this.canvas.onmousemove(loc);
@@ -162,15 +169,7 @@ impl SketchPad {
     }
 
     #redraw(){
-       this.ctx.clearRect(0,0,
-          this.canvas.width,this.canvas.height);
-       draw.paths(this.ctx,this.paths);
-       if(this.paths.length>0){
-          this.undoBtn.disabled=false;
-       }else{
-          this.undoBtn.disabled=true;
-       }
-       this.triggerUpdate();
+
     }
 
     triggerUpdate(){
@@ -180,5 +179,43 @@ impl SketchPad {
     }
       */
 
-    fn draw(&mut self) {}
+    fn draw_path(&self) {
+        for path in &self.paths {
+            if path.is_empty() {
+                continue;
+            }
+
+            for (from, to) in path.iter().tuple_windows() {
+                self.context.begin_path();
+                self.context.set_line_width(3.0);
+                self.context.set_line_cap("round");
+                self.context.set_line_join("round");
+
+                self.context.move_to(from.x as f64, from.y as f64);
+                self.context.line_to(to.x as f64, to.y as f64);
+
+                self.context.stroke();
+            }
+        }
+    }
+
+    fn draw(&self) {
+        self.context.clear_rect(
+            0.0,
+            0.0,
+            self.canvas.width().into(),
+            self.canvas.height().into(),
+        );
+
+        self.draw_path();
+
+        // if (this.paths.length>0) {
+        //     this.undoBtn.disabled=false;
+        //
+        // } else {
+        //     this.undoBtn.disabled=true;
+        // }
+        //
+        // this.triggerUpdate();
+    }
 }
