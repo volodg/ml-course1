@@ -103,7 +103,7 @@ impl HtmlDom {
             default_chart_options(feature_names),
         )?;
 
-        let sketch_pad = SketchPad {};
+        let sketch_pad = SketchPad::create("inputContainer")?;
 
         Self {
             document,

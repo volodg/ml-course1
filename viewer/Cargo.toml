@@ -23,6 +23,7 @@ version = "0.3.4"
 features = [
     'CanvasRenderingContext2d',
     'CanvasGradient',
+    'CssStyleDeclaration',
     'DomTokenList',
     'Document',
     'HtmlCanvasElement',
