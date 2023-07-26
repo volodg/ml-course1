@@ -9,17 +9,22 @@ use std::rc::Rc;
 use web_sys::{HtmlElement, MouseEvent, window};
 
 pub trait DrawingAnalyzer {
-    fn subscribe_control_panel(&self) -> Result<(), JsValue>;
+    fn toggle_input(&self) -> Result<(), JsValue>;
     fn subscribe_drawing_updates(&self);
 }
 
 impl DrawingAnalyzer for HtmlDom {
-    fn subscribe_control_panel(&self) -> Result<(), JsValue> {
+    fn toggle_input(&self) -> Result<(), JsValue> {
+        let chart = self.chart.clone();
         self.control_panel_button.on_click(move |_event: MouseEvent| {
             let document = window().expect("").document().expect("");
             let container = document.get_element_by_id("inputContainer").unwrap().dyn_into::<HtmlElement>().expect("");
 
-            container.set_display(!container.is_displayed()).expect("");
+            let is_displayed = container.is_displayed();
+            container.set_display(!is_displayed).expect("");
+            if is_displayed {
+                chart.borrow_mut().show_dynamic_point(None).expect("");
+            }
         })
     }
 
