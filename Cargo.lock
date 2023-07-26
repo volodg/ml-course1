@@ -226,6 +226,7 @@ dependencies = [
 name = "drawing_commons"
 version = "0.1.0"
 dependencies = [
+ "commons",
  "const_format",
  "serde",
  "serde_json",

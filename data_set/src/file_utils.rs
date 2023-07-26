@@ -10,7 +10,7 @@ use termion::clear;
 use termion::cursor::Goto;
 use termion::raw::IntoRawMode;
 
-type SortedDrawings = Vec<(String, DrawingPaths)>;
+type SortedDrawings = Vec<(String, DrawingPaths<[i32; 2]>)>;
 
 pub struct SortedDrawingData {
     session: u64,
@@ -148,7 +148,7 @@ pub fn build_features() -> Result<(), std::io::Error> {
 
             let draw_paths = std::fs::read_to_string(path)
                 .and_then(|content| {
-                    serde_json::from_str::<DrawingPaths>(content.as_str())
+                    serde_json::from_str::<DrawingPaths<[i32; 2]>>(content.as_str())
                         .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))
                 })
                 .expect("");

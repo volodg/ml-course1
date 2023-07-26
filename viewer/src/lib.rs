@@ -1,8 +1,9 @@
-mod draw;
+mod drawing_analyzer;
 mod html;
 mod html_draw;
 mod sketch_pad;
 
+use crate::drawing_analyzer::DrawingAnalyzer;
 use crate::html::HtmlDom;
 use crate::html_draw::Draw;
 use drawing_commons::models::FeaturesData;
@@ -32,6 +33,8 @@ fn start() -> Result<(), JsValue> {
         let group = group.collect::<Vec<_>>();
         html.create_row(group[0].student_name.as_str(), group.as_slice())?;
     }
+
+    html.subscribe_drawing_updates();
 
     Ok(())
 }

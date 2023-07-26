@@ -40,7 +40,7 @@ impl DrawingData {
     }
 }
 
-pub type DrawingPaths = Vec<Vec<[i32; 2]>>;
+pub type DrawingPaths<T> = Vec<Vec<T>>;
 
 pub trait Features {
     fn path_count(&self) -> usize;
@@ -48,7 +48,7 @@ pub trait Features {
     fn point_count(&self) -> usize;
 }
 
-impl Features for DrawingPaths {
+impl<T> Features for DrawingPaths<T> {
     fn path_count(&self) -> usize {
         self.len()
     }

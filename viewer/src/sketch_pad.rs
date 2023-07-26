@@ -1,5 +1,6 @@
 use commons::math::Point;
 use commons::utils::OkExt;
+use drawing_commons::models::DrawingPaths;
 use itertools::Itertools;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -78,7 +79,7 @@ impl SketchPad {
     }
 
     #[allow(dead_code)]
-    pub fn set_on_update(&mut self, on_update: Rc<RefCell<dyn FnMut(&Vec<Vec<Point>>)>>) {
+    pub fn set_on_update(&mut self, on_update: Rc<RefCell<dyn FnMut(&DrawingPaths<Point>)>>) {
         self.on_update = Some(on_update)
     }
 
@@ -167,11 +168,14 @@ impl SketchPad {
             })?;
 
         let sketch_pad_copy = sketch_pad.clone();
-        sketch_pad.borrow().undo_btn.on_click(move |_event: MouseEvent| {
-            let mut sketch_pad = sketch_pad_copy.borrow_mut();
-            sketch_pad.paths.pop();
-            sketch_pad.draw();
-        })?;
+        sketch_pad
+            .borrow()
+            .undo_btn
+            .on_click(move |_event: MouseEvent| {
+                let mut sketch_pad = sketch_pad_copy.borrow_mut();
+                sketch_pad.paths.pop();
+                sketch_pad.draw();
+            })?;
 
         Ok(())
     }
