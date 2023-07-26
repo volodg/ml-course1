@@ -105,7 +105,10 @@ impl SketchPad {
     }
 
     fn handle_touch_end(&mut self) {
-        self.is_drawing = false;
+        if self.is_drawing {
+            self.is_drawing = false;
+            self.trigger_update();
+        }
     }
 
     fn add_event_listeners(sketch_pad: &Rc<RefCell<Self>>) -> Result<(), JsValue> {
@@ -217,7 +220,5 @@ impl SketchPad {
         self.draw_path();
 
         self.undo_btn.set_disabled(self.paths.is_empty());
-
-        self.trigger_update();
     }
 }

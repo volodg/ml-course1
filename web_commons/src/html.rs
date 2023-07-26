@@ -19,7 +19,11 @@ impl Visibility for HtmlElement {
     }
 
     fn is_displayed(&self) -> bool {
-        self.style().get_property_value("display").ok().map(|x| x != "none").unwrap_or(true)
+        self.style()
+            .get_property_value("display")
+            .ok()
+            .map(|x| x != "none")
+            .unwrap_or(true)
     }
 
     fn set_display(&self, display: bool) -> Result<(), JsValue> {

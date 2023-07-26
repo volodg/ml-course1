@@ -43,18 +43,49 @@ impl DrawingData {
 pub type DrawingPaths<T> = Vec<Vec<T>>;
 
 pub trait Features {
+    type ElType;
+
     fn path_count(&self) -> usize;
 
     fn point_count(&self) -> usize;
+
+    fn get_width(&self, x_getter: impl Fn(&Self::ElType) -> f64) -> usize;
 }
 
 impl<T> Features for DrawingPaths<T> {
+    type ElType = T;
+
     fn path_count(&self) -> usize {
         self.len()
     }
 
     fn point_count(&self) -> usize {
         self.iter().fold(0, |acc, drawing| acc + drawing.len())
+    }
+
+    fn get_width(&self, x_getter: impl Fn(&Self::ElType) -> f64) -> usize {
+        let zero_min_max: Option<f64> = None;
+        fn min_max(
+            (acc_min, acc_max): (Option<f64>, Option<f64>),
+            el: f64,
+        ) -> (Option<f64>, Option<f64>) {
+            (
+                Some(acc_min.map(|x| x.min(el)).unwrap_or(el)),
+                Some(acc_max.map(|x| x.max(el)).unwrap_or(el)),
+            )
+        }
+        let (min_x, max_x) =
+            self.iter()
+                .flatten()
+                .fold((zero_min_max, zero_min_max), |(min_x, max_x), el| {
+                    let x_minmax = min_max((min_x, max_x), x_getter(el));
+                    (x_minmax.0, x_minmax.1)
+                });
+
+        match (max_x, min_x) {
+            (Some(max_x), Some(min_x)) => (max_x.round() as i32 - min_x.round() as i32) as usize,
+            (_, _) => 0,
+        }
     }
 }
 
