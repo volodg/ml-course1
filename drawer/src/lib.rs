@@ -8,10 +8,10 @@ mod subscribe_state;
 
 use crate::app_state::{AppState, DrawingState, InitialState, ReadyState, SavedState};
 use crate::draw::Draw;
-use crate::geometry::Point;
 use crate::html::HtmlDom;
 use crate::html_state::Save;
 use crate::subscribe_state::StateSubscriber;
+use commons::math::Point;
 use commons::utils::SomeExt;
 use std::cell::RefCell;
 use std::ops::Deref;

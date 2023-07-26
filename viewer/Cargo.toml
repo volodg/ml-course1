@@ -33,5 +33,6 @@ features = [
     'ScrollBehavior',
     'ScrollIntoViewOptions',
     'ScrollLogicalPosition',
+    'TouchEvent',
     'Window',
 ]

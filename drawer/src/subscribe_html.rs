@@ -1,12 +1,14 @@
 use crate::app_state::{AppState, DrawingState, InitialState};
 use crate::draw::Draw;
-use crate::geometry::{Point, Rect};
+use crate::geometry::Rect;
 use crate::html::HtmlDom;
 use crate::subscribe_state::StateSubscriber;
 use crate::{handle_advance_btn_click, handle_touch_end, handle_touch_move, handle_touch_start};
+use commons::math::Point;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
+use web_commons::geometry::{convert_mouse_event_into_point, try_convert_touch_event_into_point};
 use web_commons::html::AddListener;
 use web_sys::{MouseEvent, TouchEvent};
 
@@ -31,8 +33,8 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
         let canvas_rect: Rect = view.canvas.get_bounding_client_rect().into();
         let adjust_location = move |pos: Point| -> Point {
             Point {
-                x: pos.x - canvas_rect.x,
-                y: pos.y - canvas_rect.y,
+                x: pos.x - canvas_rect.x as f64,
+                y: pos.y - canvas_rect.y as f64,
             }
         };
 
@@ -43,7 +45,7 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
                     let mut app_state = app_state.borrow_mut();
                     handle_touch_start(
                         app_state.drawing_expected_mut().expect(""),
-                        Some(event.into()),
+                        Some(convert_mouse_event_into_point(event)),
                     )
                 })?
         }
@@ -52,7 +54,10 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
             view.canvas
                 .add_listener("mousemove", move |event: MouseEvent| {
                     let mut app_state = app_state.borrow_mut();
-                    handle_touch_move(app_state.drawing_expected_mut().expect(""), event.into())
+                    handle_touch_move(
+                        app_state.drawing_expected_mut().expect(""),
+                        convert_mouse_event_into_point(event),
+                    )
                 })?
         }
         {
@@ -69,7 +74,9 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
             let app_state = app_state.clone();
             view.canvas
                 .add_listener("touchstart", move |event: TouchEvent| {
-                    let point = event.try_into().ok().map(adjust_location);
+                    let point = try_convert_touch_event_into_point(event)
+                        .ok()
+                        .map(adjust_location);
                     let mut app_state = app_state.borrow_mut();
                     handle_touch_start(app_state.drawing_expected_mut().expect(""), point)
                 })?
@@ -78,7 +85,9 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
             let app_state = app_state.clone();
             view.canvas
                 .add_listener("touchmove", move |event: TouchEvent| {
-                    let point = event.try_into().ok().map(adjust_location);
+                    let point = try_convert_touch_event_into_point(event)
+                        .ok()
+                        .map(adjust_location);
                     if let Some(point) = point {
                         let mut app_state = app_state.borrow_mut();
                         handle_touch_move(app_state.drawing_expected_mut().expect(""), point)

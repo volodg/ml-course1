@@ -1,4 +1,4 @@
-use crate::geometry::Point;
+use commons::math::Point;
 use commons::utils::SomeExt;
 use js_sys::Date;
 

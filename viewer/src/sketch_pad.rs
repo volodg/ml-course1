@@ -4,8 +4,11 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
+use web_commons::geometry::try_convert_touch_event_into_point;
 use web_commons::html::AddListener;
-use web_sys::{window, CanvasRenderingContext2d, Element, HtmlCanvasElement, MouseEvent, Document};
+use web_sys::{
+    window, CanvasRenderingContext2d, Document, Element, HtmlCanvasElement, MouseEvent, TouchEvent,
+};
 
 pub struct SketchPad {
     document: Document,
@@ -87,6 +90,11 @@ impl SketchPad {
         }
     }
 
+    fn handle_touch_start(&mut self, point: Point) {
+        self.paths.push(vec![point]);
+        self.is_drawing = true;
+    }
+
     fn add_event_listeners(sketch_pad: &Rc<RefCell<Self>>) -> Result<(), JsValue> {
         let sketch_pad_copy = sketch_pad.clone();
         sketch_pad
@@ -95,8 +103,7 @@ impl SketchPad {
             .add_listener("mousedown", move |event: MouseEvent| {
                 let mut sketch_pad = sketch_pad_copy.borrow_mut();
                 let mouse = sketch_pad.get_mouse(event);
-                sketch_pad.paths.push(vec![mouse]);
-                sketch_pad.is_drawing = true;
+                sketch_pad.handle_touch_start(mouse);
             })?;
 
         let sketch_pad_copy = sketch_pad.clone();
@@ -119,6 +126,17 @@ impl SketchPad {
             .document
             .add_listener("mouseup", move |_event: MouseEvent| {
                 sketch_pad_copy.borrow_mut().is_drawing = false;
+            })?;
+
+        let sketch_pad_copy = sketch_pad.clone();
+        sketch_pad
+            .borrow()
+            .canvas
+            .add_listener("touchstart", move |event: TouchEvent| {
+                let point = try_convert_touch_event_into_point(event).ok();
+                if let Some(point) = point {
+                    sketch_pad_copy.borrow_mut().handle_touch_start(point);
+                }
             })?;
 
         Ok(())
@@ -162,8 +180,5 @@ impl SketchPad {
     }
       */
 
-    fn draw(&mut self) {
-
-    }
-
+    fn draw(&mut self) {}
 }

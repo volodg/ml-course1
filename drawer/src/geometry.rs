@@ -1,35 +1,4 @@
-use commons::utils::OkExt;
-use web_sys::{DomRect, MouseEvent, TouchEvent};
-
-#[derive(Clone)]
-pub struct Point {
-    pub x: i32,
-    pub y: i32,
-}
-
-impl From<MouseEvent> for Point {
-    fn from(event: MouseEvent) -> Self {
-        Self {
-            x: event.offset_x(),
-            y: event.offset_y(),
-        }
-    }
-}
-
-impl TryFrom<TouchEvent> for Point {
-    type Error = ();
-
-    fn try_from(event: TouchEvent) -> Result<Self, Self::Error> {
-        match event.touches().get(0) {
-            Some(touch) => Self {
-                x: touch.client_x(),
-                y: touch.client_y(),
-            }
-            .ok(),
-            None => Err(()),
-        }
-    }
-}
+use web_sys::DomRect;
 
 #[derive(Debug, Clone)]
 pub struct Rect {
