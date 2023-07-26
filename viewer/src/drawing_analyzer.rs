@@ -40,9 +40,13 @@ impl DrawingAnalyzer for HtmlDom {
     fn subscribe_drawing_updates(&self, feature_data: &'static FeaturesData) {
         let mut sketch_pad = self.sketch_pad.borrow_mut();
         let chart = self.chart.clone();
+        let predicted_label_container = self.predicted_label_container.clone();
 
         let on_update_callback = Rc::new(RefCell::new(move |drawing: &DrawingPaths<Point>| {
             let point = drawing.get_feature(|x| x.x, |x| x.y);
+
+            let label = classify(&point, feature_data);
+            predicted_label_container.set_inner_html(std::format!("Is it a {:?}?", label).as_str());
 
             chart
                 .borrow_mut()
@@ -54,21 +58,18 @@ impl DrawingAnalyzer for HtmlDom {
     }
 }
 
-trait HtmlDomExt {
-    fn classify(point: &Point, feature_data: &'static FeaturesData) -> String;
-}
+fn classify(point: &Point, feature_data: &'static FeaturesData) -> String {
+    let sample_points = feature_data
+        .features
+        .iter()
+        .map(|x| Point {
+            x: x.point[0] as f64,
+            y: x.point[1] as f64,
+        })
+        .collect::<Vec<_>>();
 
-impl HtmlDomExt for HtmlDom {
-    fn classify(_point: &Point, feature_data: &'static FeaturesData) -> String {
-        let sample_points = feature_data
-            .features
-            .iter()
-            .map(|x| Point {
-                x: x.point[0] as f64,
-                y: x.point[1] as f64,
-            })
-            .collect::<Vec<_>>();
+    let index = point.get_nearest(&sample_points).unwrap_or(0);
+    let sample = &feature_data.features[index];
 
-        "".to_owned()
-    }
+    sample.label.to_owned()
 }
