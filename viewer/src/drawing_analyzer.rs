@@ -46,11 +46,11 @@ impl DrawingAnalyzer for HtmlDom {
             let point = drawing.get_feature(|x| x.x, |x| x.y);
 
             let label = classify(&point, feature_data);
-            predicted_label_container.set_inner_html(std::format!("Is it a {:?}?", label).as_str());
+            predicted_label_container.set_inner_html(std::format!("Is it a {:?} ?", label).as_str());
 
             chart
                 .borrow_mut()
-                .show_dynamic_point(Some(point))
+                .show_dynamic_point(Some((point, label)))
                 .expect("");
         }));
 
