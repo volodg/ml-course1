@@ -38,6 +38,10 @@ impl SketchPad {
             .style()
             .set_property("box-shadow", "0px 0px 10px 2px black")?;
 
+        let mut canvas_css = canvas.style().css_text();
+        canvas_css.push_str("outline:10000px solid rgba(0,0,0,0.7)");
+        canvas.style().set_css_text(&canvas_css);
+
         container.append_child(&canvas)?;
 
         let line_break = document.create_element("br")?.dyn_into::<Element>()?;
