@@ -9,7 +9,22 @@
 <body>
 <h1 class="centered-title">Data Viewer</h1>
 <div id="inputContainer"></div>
+<div id="controlPanel">
+    <button onclick="toggleInput()">
+        Toggle Input
+    </button>
+</div>
 <div id="chartContainer"></div>
 <div id="container"></div>
 </body>
+<script>
+    function toggleInput() {
+        if (inputContainer.style.display == "none") {
+            inputContainer.style.display = "block";
+        } else {
+            inputContainer.style.display = "none";
+        }
+        console.log("HERE 2");
+    }
+</script>
 </html>
