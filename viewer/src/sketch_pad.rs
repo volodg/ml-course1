@@ -76,8 +76,8 @@ impl SketchPad {
           Math.round(evt.clientX-rect.left),
           Math.round(evt.clientY-rect.top)
        ];
-    }
-     */
+    }*/
+
     fn get_mouse(&self, event: MouseEvent) -> Point {
         let rect = self.canvas.get_bounding_client_rect();
         Point {
@@ -97,6 +97,10 @@ impl SketchPad {
             self.paths[last_index].push(point);
             self.draw();
         }
+    }
+
+    fn handle_touch_end(&mut self) {
+        self.is_drawing = false;
     }
 
     fn add_event_listeners(sketch_pad: &Rc<RefCell<Self>>) -> Result<(), JsValue> {
@@ -125,7 +129,7 @@ impl SketchPad {
             .borrow()
             .document
             .add_listener("mouseup", move |_event: MouseEvent| {
-                sketch_pad_copy.borrow_mut().is_drawing = false;
+                sketch_pad_copy.borrow_mut().handle_touch_end();
             })?;
 
         let sketch_pad_copy = sketch_pad.clone();
@@ -150,18 +154,19 @@ impl SketchPad {
                 }
             })?;
 
+        let sketch_pad_copy = sketch_pad.clone();
+        sketch_pad
+            .borrow()
+            .canvas
+            .add_listener("touchend", move |_event: TouchEvent| {
+                sketch_pad_copy.borrow_mut().handle_touch_end();
+            })?;
+
         Ok(())
     }
 
     /*
     #addEventListeners(){
-       this.canvas.ontouchmove=(evt)=>{
-          const loc=evt.touches[0];
-          this.canvas.onmousemove(loc);
-       }
-       document.ontouchend=()=>{
-          document.onmouseup();
-       }
        this.undoBtn.onclick=()=>{
           this.paths.pop();
           this.#redraw();
