@@ -146,7 +146,7 @@ fn handle_click(
         None => {
             de_emphasize()?;
             None
-        },
+        }
     };
 
     chart.borrow_mut().select_sample(sample.as_ref())?;

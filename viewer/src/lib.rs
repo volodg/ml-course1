@@ -1,5 +1,7 @@
+mod draw;
 mod html;
 mod html_draw;
+mod sketch_pad;
 
 use crate::html::HtmlDom;
 use crate::html_draw::Draw;

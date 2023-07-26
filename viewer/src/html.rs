@@ -1,3 +1,4 @@
+use crate::sketch_pad::SketchPad;
 use commons::utils::OkExt;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -84,11 +85,11 @@ fn default_chart_options(feature_names: &[String]) -> Options {
     }
 }
 
-#[derive(Clone)]
 pub struct HtmlDom {
     pub document: Document,
     pub container: Element,
     pub chart: Rc<RefCell<Chart>>,
+    pub sketch_pad: SketchPad,
 }
 
 impl HtmlDom {
@@ -102,10 +103,13 @@ impl HtmlDom {
             default_chart_options(feature_names),
         )?;
 
+        let sketch_pad = SketchPad {};
+
         Self {
             document,
             container,
             chart,
+            sketch_pad,
         }
         .ok()
     }
