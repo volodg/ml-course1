@@ -1,6 +1,7 @@
 use crate::draw::generate_image_file;
 use drawing_commons::models::{
-    DrawingData, DrawingPaths, Features, FeaturesData, Sample, SampleWithFeatures,
+    get_feature_names, DrawingData, DrawingPaths, Features, FeaturesData, Sample,
+    SampleWithFeatures,
 };
 use drawing_commons::{FEATURES, IMG_DIR, JSON_DIR, RAW_DIR, SAMPLES};
 use std::collections::HashMap;
@@ -153,11 +154,12 @@ pub fn build_features() -> Result<(), std::io::Error> {
                 })
                 .expect("");
 
-            SampleWithFeatures::create(sample, [draw_paths.path_count(), draw_paths.point_count()])
+            let feature = draw_paths.get_feature(|x| x[0] as f64, |x| x[1] as f64);
+            SampleWithFeatures::create(sample, [feature.x as usize, feature.y as usize])
         })
         .collect::<Vec<_>>();
 
-    let feature_names = vec!["Path Count", "Point Count"]
+    let feature_names = get_feature_names()
         .into_iter()
         .map(|x| x.to_owned())
         .collect();

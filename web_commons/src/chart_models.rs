@@ -56,7 +56,12 @@ pub fn get_data_bounds(samples: &[Sample]) -> Bounds {
         |(min_x, max_x, min_y, max_y), el| {
             let x_minmax = min_max((min_x, max_x), el.point.x);
             let y_minmax = min_max((min_y, max_y), el.point.y);
-            (Some(x_minmax.0), Some(x_minmax.1), Some(y_minmax.0), Some(y_minmax.1))
+            (
+                Some(x_minmax.0),
+                Some(x_minmax.1),
+                Some(y_minmax.0),
+                Some(y_minmax.1),
+            )
         },
     );
     Bounds {

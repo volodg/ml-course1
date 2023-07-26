@@ -52,7 +52,11 @@ pub trait Features {
 
     fn get_width(&self, el_getter: impl Fn(&Self::ElType) -> f64) -> usize;
 
-    fn get_feature(&self, x_getter: impl Fn(&Self::ElType) -> f64, y_getter: impl Fn(&Self::ElType) -> f64) -> Point;
+    fn get_feature(
+        &self,
+        x_getter: impl Fn(&Self::ElType) -> f64,
+        y_getter: impl Fn(&Self::ElType) -> f64,
+    ) -> Point;
 }
 
 impl<T> Features for DrawingPaths<T> {
@@ -82,12 +86,20 @@ impl<T> Features for DrawingPaths<T> {
         }
     }
 
-    fn get_feature(&self, x_getter: impl Fn(&Self::ElType) -> f64, y_getter: impl Fn(&Self::ElType) -> f64) -> Point {
+    fn get_feature(
+        &self,
+        x_getter: impl Fn(&Self::ElType) -> f64,
+        y_getter: impl Fn(&Self::ElType) -> f64,
+    ) -> Point {
         Point {
             x: self.get_width(x_getter) as f64,
             y: self.get_width(y_getter) as f64,
         }
     }
+}
+
+pub fn get_feature_names() -> [String; 2] {
+    ["Width".to_owned(), "Height".to_owned()]
 }
 
 #[derive(Deserialize, Serialize)]
