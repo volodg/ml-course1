@@ -2,16 +2,30 @@ use crate::html::HtmlDom;
 use commons::math::Point;
 use drawing_commons::models::{DrawingPaths, Features};
 use std::cell::RefCell;
+use web_commons::html::AddListener;
+use wasm_bindgen::{JsCast, JsValue};
+use web_commons::html::Visibility;
 use std::rc::Rc;
-use web_commons::log;
+use web_sys::{HtmlElement, MouseEvent, window};
 
 pub trait DrawingAnalyzer {
+    fn subscribe_control_panel(&self) -> Result<(), JsValue>;
     fn subscribe_drawing_updates(&self);
 }
 
 impl DrawingAnalyzer for HtmlDom {
+    fn subscribe_control_panel(&self) -> Result<(), JsValue> {
+        self.control_panel_button.on_click(move |_event: MouseEvent| {
+            let document = window().expect("").document().expect("");
+            let container = document.get_element_by_id("inputContainer").unwrap().dyn_into::<HtmlElement>().expect("");
+
+            container.set_display(!container.is_displayed()).expect("");
+        })
+    }
+
     fn subscribe_drawing_updates(&self) {
         let mut sketch_pad = self.sketch_pad.borrow_mut();
+        let chart = self.chart.clone();
 
         let on_update_callback = Rc::new(RefCell::new(move |drawing: &DrawingPaths<Point>| {
             let point = Point {
@@ -19,7 +33,10 @@ impl DrawingAnalyzer for HtmlDom {
                 y: drawing.point_count() as f64,
             };
 
-            log(std::format!("point: {:?}", point).as_str())
+            chart
+                .borrow_mut()
+                .show_dynamic_point(Some(point))
+                .expect("");
         }));
 
         sketch_pad.set_on_update(on_update_callback)

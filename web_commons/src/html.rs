@@ -5,6 +5,7 @@ use web_sys::{window, Element, EventTarget, HtmlElement, HtmlScriptElement, Mous
 
 pub trait Visibility {
     fn set_visible(&self, visible: bool) -> Result<(), JsValue>;
+    fn is_displayed(&self) -> bool;
     fn set_display(&self, visible: bool) -> Result<(), JsValue>;
 }
 
@@ -15,6 +16,10 @@ impl Visibility for HtmlElement {
         } else {
             self.style().set_property("visibility", "hidden")
         }
+    }
+
+    fn is_displayed(&self) -> bool {
+        self.style().get_property_value("display").ok().map(|x| x != "none").unwrap_or(true)
     }
 
     fn set_display(&self, display: bool) -> Result<(), JsValue> {

@@ -35,6 +35,7 @@ fn start() -> Result<(), JsValue> {
     }
 
     html.subscribe_drawing_updates();
+    html.subscribe_control_panel()?;
 
     Ok(())
 }

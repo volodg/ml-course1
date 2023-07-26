@@ -3,10 +3,11 @@ use commons::utils::OkExt;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
+use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::chart::Chart;
 use web_commons::chart_models::{Options, SampleStyle, SampleStyleType};
-use web_sys::{window, Document, Element};
+use web_sys::{window, Document, Element, HtmlButtonElement};
 
 fn default_chart_options(feature_names: &[String]) -> Options {
     let mut styles = HashMap::<String, SampleStyle>::new();
@@ -88,6 +89,7 @@ fn default_chart_options(feature_names: &[String]) -> Options {
 pub struct HtmlDom {
     pub document: Document,
     pub container: Element,
+    pub control_panel_button: HtmlButtonElement,
     pub chart: Rc<RefCell<Chart>>,
     pub sketch_pad: Rc<RefCell<SketchPad>>,
 }
@@ -103,11 +105,18 @@ impl HtmlDom {
             default_chart_options(feature_names),
         )?;
 
+        let control_panel = document.get_element_by_id("controlPanel").unwrap();
+        let control_panel_button = control_panel
+            .query_selector("button")?
+            .expect("")
+            .dyn_into::<HtmlButtonElement>()?;
+
         let sketch_pad = SketchPad::create("inputContainer")?;
 
         Self {
             document,
             container,
+            control_panel_button,
             chart,
             sketch_pad,
         }

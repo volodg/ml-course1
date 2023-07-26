@@ -30,6 +30,7 @@ pub struct Chart {
     options: Options,
     hovered_sample: Option<Sample>,
     selected_sample: Option<Sample>,
+    dynamic_point: Option<Point>,
     on_click: Option<Rc<RefCell<dyn FnMut(Option<&Sample>)>>>,
 }
 
@@ -79,6 +80,7 @@ impl Chart {
             options,
             hovered_sample: None,
             selected_sample: None,
+            dynamic_point: None,
             on_click: None,
         };
 
@@ -97,6 +99,11 @@ impl Chart {
         self.data_bounds = get_data_bounds(&samples);
         self.default_data_bounds = self.data_bounds.clone();
         self.samples = samples;
+    }
+
+    pub fn show_dynamic_point(&mut self, point: Option<Point>) -> Result<(), JsValue> {
+        self.dynamic_point = point;
+        self.draw()
     }
 
     pub fn samples(&self) -> &[Sample] {
@@ -280,6 +287,17 @@ impl Chart {
 
         if let Some(selected_sample) = self.selected_sample.as_ref() {
             self.emphasize_samples(selected_sample, "yellow")?;
+        }
+
+        if let Some(dynamic_point) = self.dynamic_point.as_ref() {
+            let pixel_location = dynamic_point.remap(&self.data_bounds, &self.pixel_bounds);
+            self.context.draw_point_with_color_and_size(
+                &pixel_location,
+                "rgba(255,255,255,0.7)",
+                10000000.0,
+            )?;
+            self.context
+                .draw_point_with_color(&pixel_location, "black")?;
         }
 
         self.draw_axis()?;
