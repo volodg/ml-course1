@@ -180,7 +180,7 @@ impl SketchPad {
         Ok(())
     }
 
-    fn trigger_update(&self) {
+    pub fn trigger_update(&self) {
         if let Some(on_update) = self.on_update.clone() {
             on_update.borrow_mut()(&self.paths);
         }
