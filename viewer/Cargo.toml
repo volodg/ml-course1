@@ -26,6 +26,7 @@ features = [
     'CssStyleDeclaration',
     'DomTokenList',
     'Document',
+    'HtmlButtonElement',
     'HtmlCanvasElement',
     'HtmlCollection',
     'HtmlScriptElement',

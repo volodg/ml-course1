@@ -1,21 +1,23 @@
 use commons::math::Point;
 use commons::utils::OkExt;
+use itertools::Itertools;
 use std::cell::RefCell;
 use std::rc::Rc;
-use itertools::Itertools;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::geometry::try_convert_touch_event_into_point;
 use web_commons::html::AddListener;
 use web_sys::{
-    window, CanvasRenderingContext2d, Document, Element, HtmlCanvasElement, MouseEvent, TouchEvent,
+    window, CanvasRenderingContext2d, Document, Element, HtmlButtonElement, HtmlCanvasElement,
+    MouseEvent, TouchEvent,
 };
 
 pub struct SketchPad {
     document: Document,
     canvas: HtmlCanvasElement,
     context: CanvasRenderingContext2d,
-    on_update: Option<Rc<RefCell<dyn FnMut()>>>,
+    undo_btn: HtmlButtonElement,
+    on_update: Option<Rc<RefCell<dyn FnMut(&Vec<Vec<Point>>)>>>,
     paths: Vec<Vec<Point>>,
     is_drawing: bool,
 }
@@ -41,7 +43,9 @@ impl SketchPad {
         let line_break = document.create_element("br")?.dyn_into::<Element>()?;
         container.append_child(&line_break)?;
 
-        let undo_btn = document.create_element("button")?.dyn_into::<Element>()?;
+        let undo_btn = document
+            .create_element("button")?
+            .dyn_into::<HtmlButtonElement>()?;
         undo_btn.set_inner_html("UNDO");
         container.append_child(&undo_btn)?;
 
@@ -54,6 +58,7 @@ impl SketchPad {
             document,
             canvas,
             context,
+            undo_btn,
             on_update: None,
             paths: vec![],
             is_drawing: false,
@@ -65,18 +70,9 @@ impl SketchPad {
     }
 
     #[allow(dead_code)]
-    pub fn set_on_update(&mut self, on_update: Rc<RefCell<dyn FnMut()>>) {
+    pub fn set_on_update(&mut self, on_update: Rc<RefCell<dyn FnMut(&Vec<Vec<Point>>)>>) {
         self.on_update = Some(on_update)
     }
-
-    /*
-        #getMouse=(evt)=>{
-       const rect=this.canvas.getBoundingClientRect();
-       return [
-          Math.round(evt.clientX-rect.left),
-          Math.round(evt.clientY-rect.top)
-       ];
-    }*/
 
     fn get_mouse(&self, event: MouseEvent) -> Point {
         let rect = self.canvas.get_bounding_client_rect();
@@ -162,27 +158,21 @@ impl SketchPad {
                 sketch_pad_copy.borrow_mut().handle_touch_end();
             })?;
 
+        let sketch_pad_copy = sketch_pad.clone();
+        sketch_pad.borrow().undo_btn.on_click(move |_event: MouseEvent| {
+            let mut sketch_pad = sketch_pad_copy.borrow_mut();
+            sketch_pad.paths.pop();
+            sketch_pad.draw();
+        })?;
+
         Ok(())
     }
 
-    /*
-    #addEventListeners(){
-       this.undoBtn.onclick=()=>{
-          this.paths.pop();
-          this.#redraw();
-       }
+    fn trigger_update(&self) {
+        if let Some(on_update) = self.on_update.clone() {
+            on_update.borrow_mut()(&self.paths);
+        }
     }
-
-    #redraw(){
-
-    }
-
-    triggerUpdate(){
-       if(this.onUpdate){
-          this.onUpdate(this.paths);
-       }
-    }
-      */
 
     fn draw_path(&self) {
         for path in &self.paths {
@@ -214,13 +204,8 @@ impl SketchPad {
 
         self.draw_path();
 
-        // if (this.paths.length>0) {
-        //     this.undoBtn.disabled=false;
-        //
-        // } else {
-        //     this.undoBtn.disabled=true;
-        // }
-        //
-        // this.triggerUpdate();
+        self.undo_btn.set_disabled(self.paths.is_empty());
+
+        self.trigger_update();
     }
 }
