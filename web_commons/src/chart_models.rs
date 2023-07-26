@@ -1,4 +1,4 @@
-use commons::math::{Bounds, Point};
+use commons::math::{min_max, Bounds, Point};
 use std::collections::HashMap;
 use web_sys::HtmlImageElement;
 
@@ -51,21 +51,12 @@ pub struct Options {
 
 pub fn get_data_bounds(samples: &[Sample]) -> Bounds {
     let zero_min_max: Option<f64> = None;
-    fn min_max(
-        (acc_min, acc_max): (Option<f64>, Option<f64>),
-        el: f64,
-    ) -> (Option<f64>, Option<f64>) {
-        (
-            Some(acc_min.map(|x| x.min(el)).unwrap_or(el)),
-            Some(acc_max.map(|x| x.max(el)).unwrap_or(el)),
-        )
-    }
     let (min_x, max_x, min_y, max_y) = samples.iter().fold(
         (zero_min_max, zero_min_max, zero_min_max, zero_min_max),
         |(min_x, max_x, min_y, max_y), el| {
             let x_minmax = min_max((min_x, max_x), el.point.x);
             let y_minmax = min_max((min_y, max_y), el.point.y);
-            (x_minmax.0, x_minmax.1, y_minmax.0, y_minmax.1)
+            (Some(x_minmax.0), Some(x_minmax.1), Some(y_minmax.0), Some(y_minmax.1))
         },
     );
     Bounds {

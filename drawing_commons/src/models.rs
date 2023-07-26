@@ -1,3 +1,4 @@
+use commons::math::{min_max, Point};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -49,7 +50,9 @@ pub trait Features {
 
     fn point_count(&self) -> usize;
 
-    fn get_width(&self, x_getter: impl Fn(&Self::ElType) -> f64) -> usize;
+    fn get_width(&self, el_getter: impl Fn(&Self::ElType) -> f64) -> usize;
+
+    fn get_feature(&self, x_getter: impl Fn(&Self::ElType) -> f64, y_getter: impl Fn(&Self::ElType) -> f64) -> Point;
 }
 
 impl<T> Features for DrawingPaths<T> {
@@ -63,28 +66,26 @@ impl<T> Features for DrawingPaths<T> {
         self.iter().fold(0, |acc, drawing| acc + drawing.len())
     }
 
-    fn get_width(&self, x_getter: impl Fn(&Self::ElType) -> f64) -> usize {
+    fn get_width(&self, el_getter: impl Fn(&Self::ElType) -> f64) -> usize {
         let zero_min_max: Option<f64> = None;
-        fn min_max(
-            (acc_min, acc_max): (Option<f64>, Option<f64>),
-            el: f64,
-        ) -> (Option<f64>, Option<f64>) {
-            (
-                Some(acc_min.map(|x| x.min(el)).unwrap_or(el)),
-                Some(acc_max.map(|x| x.max(el)).unwrap_or(el)),
-            )
-        }
         let (min_x, max_x) =
             self.iter()
                 .flatten()
                 .fold((zero_min_max, zero_min_max), |(min_x, max_x), el| {
-                    let x_minmax = min_max((min_x, max_x), x_getter(el));
-                    (x_minmax.0, x_minmax.1)
+                    let x_minmax = min_max((min_x, max_x), el_getter(el));
+                    (Some(x_minmax.0), Some(x_minmax.1))
                 });
 
         match (max_x, min_x) {
             (Some(max_x), Some(min_x)) => (max_x.round() as i32 - min_x.round() as i32) as usize,
             (_, _) => 0,
+        }
+    }
+
+    fn get_feature(&self, x_getter: impl Fn(&Self::ElType) -> f64, y_getter: impl Fn(&Self::ElType) -> f64) -> Point {
+        Point {
+            x: self.get_width(x_getter) as f64,
+            y: self.get_width(y_getter) as f64,
         }
     }
 }

@@ -100,6 +100,16 @@ pub fn remap(from_a: f64, from_b: f64, to_a: f64, to_b: f64, v: f64) -> f64 {
     lerp(to_a, to_b, t)
 }
 
+pub fn min_max(
+    (acc_min, acc_max): (Option<f64>, Option<f64>),
+    el: f64,
+) -> (f64, f64) {
+    (
+        acc_min.map(|x| x.min(el)).unwrap_or(el),
+        acc_max.map(|x| x.max(el)).unwrap_or(el),
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use crate::math::Point;
