@@ -89,7 +89,7 @@ pub struct HtmlDom {
     pub document: Document,
     pub container: Element,
     pub chart: Rc<RefCell<Chart>>,
-    pub sketch_pad: SketchPad,
+    pub sketch_pad: Rc<RefCell<SketchPad>>,
 }
 
 impl HtmlDom {
