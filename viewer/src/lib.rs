@@ -16,16 +16,22 @@ use wasm_bindgen::JsValue;
 lazy_static! {
     // TODO const variables don't work as arguments of std::include_str!
     static ref SAMPLES_DATA: Vec<Sample> =
-        serde_json::from_str::<Vec<_>>(std::include_str!("../../data/dataset/samples.json"))
+        serde_json::from_str::<_>(std::include_str!("../../data/dataset/samples.json"))
             .expect("");
     static ref FEATURES_DATA: FeaturesData =
         serde_json::from_str::<_>(std::include_str!("../../data/dataset/features.json"))
             .expect("");
-    static ref TRAINING_DATA: FeaturesData =
+    static ref TRAINING_DATA: Vec<Sample> =
         serde_json::from_str::<_>(std::include_str!("../../data/dataset/training.json"))
             .expect("");
-    static ref TESTING_DATA: FeaturesData =
+    static ref TESTING_DATA: Vec<Sample> =
         serde_json::from_str::<_>(std::include_str!("../../data/dataset/testing.json"))
+            .expect("");
+    static ref TRAINING_FEATURES: FeaturesData =
+        serde_json::from_str::<_>(std::include_str!("../../data/dataset/training_features.json"))
+            .expect("");
+    static ref TESTING_FEATURES: FeaturesData =
+        serde_json::from_str::<_>(std::include_str!("../../data/dataset/testing_features.json"))
             .expect("");
     static ref MIN_MAX_DATA: Vec<Vec<f64>> =
         serde_json::from_str::<_>(std::include_str!("../../data/dataset/minMax.json"))
@@ -36,14 +42,21 @@ lazy_static! {
 fn start() -> Result<(), JsValue> {
     let html = HtmlDom::create(&FEATURES_DATA.feature_names)?;
 
-    html.plot_statistic(&FEATURES_DATA)?;
-
-    for (_, group) in &SAMPLES_DATA.iter().group_by(|x| x.student_id) {
-        let group = group.collect::<Vec<_>>();
-        html.create_row(group[0].student_name.as_str(), group.as_slice())?;
+    fn add_rows(html: &HtmlDom, data: &[Sample]) -> Result<(), JsValue> {
+        for (_, group) in &data.iter().group_by(|x| x.student_id) {
+            let group = group.collect::<Vec<_>>();
+            html.create_row(group[0].student_name.as_str(), group.as_slice())?;
+        }
+        Ok(())
     }
 
-    html.subscribe_drawing_updates(&MIN_MAX_DATA, &FEATURES_DATA);
+    add_rows(&html, &TESTING_DATA)?;
+    add_rows(&html, &TRAINING_DATA)?;
+
+    html.plot_statistic(&TRAINING_FEATURES)?;
+
+    // TODO update - MIN_MAX_DATA?
+    html.subscribe_drawing_updates(&MIN_MAX_DATA, &TRAINING_FEATURES);
     html.toggle_input()?;
 
     Ok(())
@@ -51,7 +64,7 @@ fn start() -> Result<(), JsValue> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{FEATURES_DATA, MIN_MAX_DATA, SAMPLES_DATA, TESTING_DATA, TRAINING_DATA};
+    use crate::{FEATURES_DATA, MIN_MAX_DATA, SAMPLES_DATA, TESTING_DATA, TRAINING_DATA, TESTING_FEATURES, TRAINING_FEATURES};
 
     #[test]
     fn test_resources() {
@@ -69,10 +82,16 @@ mod tests {
         let size = MIN_MAX_DATA.len();
         assert_eq!(size, 2);
 
-        let size = TRAINING_DATA.features.len();
+        let size = TRAINING_DATA.len();
         assert_eq!(size, 2864);
 
-        let size = TESTING_DATA.features.len();
+        let size = TRAINING_FEATURES.features.len();
+        assert_eq!(size, 2864);
+
+        let size = TESTING_DATA.len();
+        assert_eq!(size, 2864);
+
+        let size = TESTING_FEATURES.features.len();
         assert_eq!(size, 2864);
     }
 }

@@ -4,9 +4,7 @@ use drawing_commons::models::{
     get_feature_names, DrawingData, DrawingPaths, Features, FeaturesData, Sample,
     SampleWithFeatures,
 };
-use drawing_commons::{
-    FEATURES, IMG_DIR, JSON_DIR, MIN_MAX_JS, RAW_DIR, SAMPLES, TESTING, TRAINING,
-};
+use drawing_commons::{FEATURES, IMG_DIR, JSON_DIR, MIN_MAX_JS, RAW_DIR, SAMPLES, TESTING, TESTING_FEATURES, TRAINING, TRAINING_FEATURES};
 use std::collections::HashMap;
 use std::io::{stdout, ErrorKind, Write};
 use std::path::PathBuf;
@@ -215,10 +213,18 @@ pub fn build_features() -> Result<(), std::io::Error> {
     let (training, testing) = samples.split_at(training_amount);
 
     let (features, _, _) = build_features_for(training);
-    save_features(&features, TRAINING, None)?;
+    let features_json = serde_json::to_string(&training)
+        .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
+
+    std::fs::write(TRAINING, features_json)?;
+    save_features(&features, TRAINING_FEATURES, None)?;
 
     let (features, _, _) = build_features_for(testing);
-    save_features(&features, TESTING, None)?;
+    let features_json = serde_json::to_string(&testing)
+        .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
+
+    std::fs::write(TESTING, features_json)?;
+    save_features(&features, TESTING_FEATURES, None)?;
 
     Ok(())
 }

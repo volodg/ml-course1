@@ -12,6 +12,8 @@ pub const FEATURES: &str = concatcp!(DATASET_DIR, "/features.json");
 pub const MIN_MAX_JS: &str = concatcp!(DATASET_DIR, "/minMax.json");
 pub const TRAINING: &str = concatcp!(DATASET_DIR, "/training.json");
 pub const TESTING: &str = concatcp!(DATASET_DIR, "/testing.json");
+pub const TRAINING_FEATURES: &str = concatcp!(DATASET_DIR, "/training_features.json");
+pub const TESTING_FEATURES: &str = concatcp!(DATASET_DIR, "/testing_features.json");
 
 pub const FLAGGED_USERS: &[u64; 3] = &[1663882102141, 1663900040545, 1664485938220];
 
