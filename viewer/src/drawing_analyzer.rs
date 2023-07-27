@@ -2,6 +2,7 @@ use crate::html::HtmlDom;
 use commons::math::{normalize_points, Point};
 use drawing_commons::models::{DrawingPaths, Features, FeaturesData, SampleWithFeatures};
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::Rc;
 use wasm_bindgen::{JsCast, JsValue};
 use web_commons::chart_models::Sample;
@@ -60,21 +61,24 @@ impl DrawingAnalyzer for HtmlDom {
                 y: point[0][1],
             };
 
-            let (label, sample) = classify(&point, feature_data);
+            let (label, samples) = classify(&point, feature_data);
             predicted_label_container
                 .set_inner_html(std::format!("Is it a {:?} ?", label).as_str());
-            let sample = Sample {
-                id: 0,
-                label: sample.label,
-                point: Point {
-                    x: sample.point[0] as f64,
-                    y: sample.point[1] as f64,
-                },
-            };
+            let samples = samples
+                .into_iter()
+                .map(|sample| Sample {
+                    id: 0,
+                    label: sample.label,
+                    point: Point {
+                        x: sample.point[0] as f64,
+                        y: sample.point[1] as f64,
+                    },
+                })
+                .collect();
 
             chart
                 .borrow_mut()
-                .show_dynamic_point(Some((point, label, sample)))
+                .show_dynamic_point(Some((point, label, samples)))
                 .expect("");
         }));
 
@@ -82,18 +86,41 @@ impl DrawingAnalyzer for HtmlDom {
     }
 }
 
-fn classify(point: &Point, feature_data: &'static FeaturesData) -> (String, SampleWithFeatures) {
+fn classify(
+    point: &Point,
+    feature_data: &'static FeaturesData,
+) -> (String, Vec<SampleWithFeatures>) {
     let sample_points = feature_data
         .features
         .iter()
         .map(|x| Point {
-            x: x.point[0] as f64,
-            y: x.point[1] as f64,
+            x: x.point[0],
+            y: x.point[1],
         })
         .collect::<Vec<_>>();
 
-    let index = point.get_nearest(&sample_points).unwrap_or(0);
-    let sample = &feature_data.features[index];
+    let indices = point.get_nearest_k(&sample_points, 10);
 
-    (sample.label.to_owned(), sample.clone())
+    let nearest_samples = indices
+        .iter()
+        .map(|i| feature_data.features[*i].clone())
+        .collect::<Vec<_>>();
+
+    let (_, (_, label)) = nearest_samples.iter().map(|x| x.label.clone()).fold(
+        (HashMap::new(), (0, "".to_owned())),
+        |(mut map, (frequency, label)), val| {
+            let new_frequency = *map
+                .entry(val.clone())
+                .and_modify(|frq| *frq += 1)
+                .or_insert(1);
+
+            if new_frequency > frequency {
+                (map, (new_frequency, val))
+            } else {
+                (map, (frequency, label))
+            }
+        },
+    );
+
+    (label, nearest_samples)
 }

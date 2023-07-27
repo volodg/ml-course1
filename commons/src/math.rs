@@ -1,3 +1,6 @@
+use binary_heap_plus::BinaryHeap as BinaryHeapExt;
+use std::cmp::Ordering;
+
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct Point {
     pub x: f64,
@@ -16,26 +19,41 @@ impl Point {
         ((self.x - to.x).powf(2.0) + (self.y - to.y).powf(2.0)).sqrt()
     }
 
-    pub fn get_nearest(&self, pixel_points: &[Point]) -> Option<usize> {
-        let zero: Option<(f64, usize)> = None;
-        pixel_points
-            .iter()
-            .zip(0..)
-            .fold(zero, |acc, (new_point, new_index)| {
-                let new_distance = self.distance(new_point);
-                let result = acc
-                    .map(|(distance, index)| {
-                        if new_distance < distance {
-                            (new_distance, new_index)
-                        } else {
-                            (distance, index)
-                        }
-                    })
-                    .unwrap_or((new_distance, new_index));
+    pub fn get_nearest(&self, pixel_points: &[Point]) -> Vec<usize> {
+        self.get_nearest_k(pixel_points, 1)
+    }
 
-                Some(result)
-            })
-            .map(|x| x.1)
+    pub fn get_nearest_k(&self, pixel_points: &[Point], k: usize) -> Vec<usize> {
+        let heap_size = 0.max(pixel_points.len() - k);
+
+        let mut heap =
+            BinaryHeapExt::with_capacity_by(heap_size, |a: &(usize, f64), b: &(usize, f64)| {
+                b.1.partial_cmp(&a.1).unwrap_or(Ordering::Equal)
+            });
+
+        let mut result = vec![];
+
+        for (pixel, index) in pixel_points.iter().zip(0..) {
+            if heap.len() == heap_size {
+                if heap_size == 0 {
+                    result.push(index)
+                } else {
+                    let distance = self.distance(pixel);
+                    if distance < heap.peek().expect("").1 {
+                        result.push(index)
+                    } else {
+                        heap.push((index, distance));
+                        let min = heap.pop().expect("");
+                        result.push(min.0)
+                    }
+                }
+            } else {
+                let distance = self.distance(pixel);
+                heap.push((index, distance))
+            }
+        }
+
+        result
     }
 
     pub fn remap(&self, from: &Bounds, to: &Bounds) -> Point {
@@ -139,6 +157,7 @@ pub fn normalize_points(min: &Vec<f64>, max: &Vec<f64>, points: Vec<Vec<f64>>) -
 #[cfg(test)]
 mod tests {
     use crate::math::Point;
+    use binary_heap_plus::BinaryHeap as BinaryHeapExt;
 
     #[test]
     fn test_nearest_point() {
@@ -148,16 +167,25 @@ mod tests {
             Point { x: 1.0, y: 1.0 },
         ];
 
-        let point = Point::zero();
-        let nearest = point.get_nearest(&points).expect("");
-        assert_eq!(nearest, Point { x: 1.0, y: 1.0 });
+        let point = Point::default();
+        let nearest = point.get_nearest(&points)[0];
+        assert_eq!(points[nearest], Point { x: 1.0, y: 1.0 });
 
         let point = Point { x: 3.0, y: 3.0 };
-        let nearest = point.get_nearest(&points).expect("");
-        assert_eq!(nearest, Point { x: 3.0, y: 3.0 });
+        let nearest = point.get_nearest(&points)[0];
+        assert_eq!(points[nearest], Point { x: 3.0, y: 3.0 });
 
         let point = Point { x: 2.0, y: 2.0 };
-        let nearest = point.get_nearest(&points).expect("");
-        assert_eq!(nearest, Point { x: 2.0, y: 2.0 })
+        let nearest = point.get_nearest(&points)[0];
+        assert_eq!(points[nearest], Point { x: 2.0, y: 2.0 })
+    }
+
+    #[test]
+    fn test_get_nearest_k() {
+        let mut heap = BinaryHeapExt::with_capacity_by(10, |a: &i32, b: &i32| b.cmp(a));
+        heap.push(1);
+        heap.push(2);
+        heap.push(3);
+        assert_eq!(&1, heap.peek().expect(""))
     }
 }

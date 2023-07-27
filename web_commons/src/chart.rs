@@ -30,7 +30,7 @@ pub struct Chart {
     options: Options,
     hovered_sample: Option<Sample>,
     selected_sample: Option<Sample>,
-    dynamic_point: Option<(Point, String, Sample)>,
+    dynamic_point: Option<(Point, String, Vec<Sample>)>,
     on_click: Option<Rc<RefCell<dyn FnMut(Option<&Sample>)>>>,
 }
 
@@ -103,7 +103,7 @@ impl Chart {
 
     pub fn show_dynamic_point(
         &mut self,
-        point: Option<(Point, String, Sample)>,
+        point: Option<(Point, String, Vec<Sample>)>,
     ) -> Result<(), JsValue> {
         self.dynamic_point = point;
         self.draw()
@@ -159,7 +159,8 @@ impl Chart {
 
                 let nearest_sample = pixel_location
                     .get_nearest(&pixel_points)
-                    .map(|x| chart.samples[x].clone());
+                    .first()
+                    .map(|x| chart.samples[*x].clone());
                 chart.hovered_sample = if let Some(nearest_sample) = nearest_sample {
                     let distance = nearest_sample
                         .point
@@ -292,7 +293,7 @@ impl Chart {
             self.emphasize_samples(selected_sample, "yellow")?;
         }
 
-        if let Some((dynamic_point, label, sample)) = self.dynamic_point.as_ref() {
+        if let Some((dynamic_point, label, samples)) = self.dynamic_point.as_ref() {
             let pixel_location = dynamic_point.remap(&self.data_bounds, &self.pixel_bounds);
             self.context.draw_point_with_color_and_size(
                 &pixel_location,
@@ -301,9 +302,11 @@ impl Chart {
             )?;
 
             self.context.begin_path();
-            self.context.move_to(pixel_location.x, pixel_location.y);
-            let line_to = sample.point.remap(&self.data_bounds, &self.pixel_bounds);
-            self.context.line_to(line_to.x, line_to.y);
+            for sample in samples {
+                self.context.move_to(pixel_location.x, pixel_location.y);
+                let line_to = sample.point.remap(&self.data_bounds, &self.pixel_bounds);
+                self.context.line_to(line_to.x, line_to.y);
+            }
             self.context.stroke();
 
             self.context.draw_image(
