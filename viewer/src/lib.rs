@@ -21,6 +21,9 @@ lazy_static! {
     static ref FEATURES_DATA: FeaturesData =
         serde_json::from_str::<_>(std::include_str!("../../data/dataset/features.json"))
             .expect("");
+    static ref MIN_MAX_DATA: Vec<Vec<f64>> =
+        serde_json::from_str::<_>(std::include_str!("../../data/dataset/minMax.json"))
+            .expect("");
 }
 
 #[wasm_bindgen(start)]
@@ -42,7 +45,7 @@ fn start() -> Result<(), JsValue> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{FEATURES_DATA, SAMPLES_DATA};
+    use crate::{FEATURES_DATA, MIN_MAX_DATA, SAMPLES_DATA};
 
     #[test]
     fn test_resources() {
@@ -55,6 +58,9 @@ mod tests {
         assert_eq!(size, samples_count);
 
         let size = FEATURES_DATA.feature_names.len();
+        assert_eq!(size, 2);
+
+        let size = MIN_MAX_DATA.len();
         assert_eq!(size, 2);
     }
 }

@@ -107,18 +107,19 @@ pub fn min_max((acc_min, acc_max): (Option<f64>, Option<f64>), el: f64) -> (f64,
     )
 }
 
-pub fn normalize_points(points: Vec<Vec<f64>>) -> Vec<Vec<f64>> {
+pub fn normalize_points(points: Vec<Vec<f64>>) -> ((Vec<f64>, Vec<f64>), Vec<Vec<f64>>) {
     let dimensions = points[0].len();
     let mut min = points[0].clone();
     let mut max = points[0].clone();
-    for i in 0..points.len() {
+    for i in 1..points.len() {
         for j in 0..dimensions {
             let value = points[i][j];
             min[j] = min[j].min(value);
             max[j] = max[j].max(value);
         }
     }
-    points
+
+    let points = points
         .into_iter()
         .map(|row| {
             row.into_iter()
@@ -126,7 +127,8 @@ pub fn normalize_points(points: Vec<Vec<f64>>) -> Vec<Vec<f64>> {
                 .map(|(v, i)| inv_lerp(min[i], max[i], v))
                 .collect()
         })
-        .collect()
+        .collect();
+    ((min, max), points)
 }
 
 #[cfg(test)]

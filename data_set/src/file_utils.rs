@@ -4,7 +4,7 @@ use drawing_commons::models::{
     get_feature_names, DrawingData, DrawingPaths, Features, FeaturesData, Sample,
     SampleWithFeatures,
 };
-use drawing_commons::{FEATURES, IMG_DIR, JSON_DIR, RAW_DIR, SAMPLES};
+use drawing_commons::{FEATURES, IMG_DIR, JSON_DIR, MIN_MAX_JS, RAW_DIR, SAMPLES};
 use std::collections::HashMap;
 use std::io::{stdout, ErrorKind, Write};
 use std::path::PathBuf;
@@ -160,7 +160,7 @@ pub fn build_features() -> Result<(), std::io::Error> {
         })
         .unzip();
 
-    let points = normalize_points(points);
+    let ((min, max), points) = normalize_points(points);
 
     let features = labels
         .into_iter()
@@ -177,8 +177,13 @@ pub fn build_features() -> Result<(), std::io::Error> {
         features,
     };
 
-    let json = serde_json::to_string(&features)
+    let features_json = serde_json::to_string(&features)
         .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
 
-    std::fs::write(FEATURES, json)
+    std::fs::write(FEATURES, features_json)?;
+
+    let min_max_json = serde_json::to_string(&vec![min, max])
+        .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
+
+    std::fs::write(MIN_MAX_JS, min_max_json)
 }
