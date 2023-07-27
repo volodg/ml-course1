@@ -135,16 +135,9 @@ pub fn store_drawings_as_png(drawings: &HashMap<u64, Vec<Vec<[i32; 2]>>>) {
     }
 }
 
-pub fn build_features() -> Result<(), std::io::Error> {
-    println!("EXTRACTING FEATURES...");
-
-    let samples = std::fs::read_to_string(SAMPLES).and_then(|content| {
-        serde_json::from_str::<Vec<Sample>>(content.as_str())
-            .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))
-    })?; // .into_iter().filter(|x| x.id != 4662);
-
+fn build_features_for(samples: &Vec<Sample>) -> (FeaturesData, Vec<f64>, Vec<f64>) {
     let (labels, points): (Vec<_>, Vec<_>) = samples
-        .into_iter()
+        .iter()
         .map(|sample| {
             let path = std::format!("{}/{}.json", JSON_DIR, sample.id);
 
@@ -156,7 +149,7 @@ pub fn build_features() -> Result<(), std::io::Error> {
                 .expect("");
 
             let feature = draw_paths.get_feature(|x| x[0] as f64, |x| x[1] as f64);
-            (sample.label, vec![feature.x, feature.y])
+            (sample.label.clone(), vec![feature.x, feature.y])
         })
         .unzip();
 
@@ -172,18 +165,44 @@ pub fn build_features() -> Result<(), std::io::Error> {
         .into_iter()
         .map(|x| x.to_owned())
         .collect();
-    let features = FeaturesData {
+
+    (FeaturesData {
         feature_names,
         features,
-    };
+    }, min, max)
+}
 
+fn save_features(features: &FeaturesData, file_name: &str, min_max: Option<(Vec<f64>, Vec<f64>)>) -> Result<(), std::io::Error> {
     let features_json = serde_json::to_string(&features)
         .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
 
-    std::fs::write(FEATURES, features_json)?;
+    std::fs::write(file_name, features_json)?;
 
-    let min_max_json = serde_json::to_string(&vec![min, max])
-        .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
+    if let Some(min_max) = min_max {
+        let min_max_json = serde_json::to_string(&vec![min_max.0, min_max.1])
+            .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
 
-    std::fs::write(MIN_MAX_JS, min_max_json)
+        std::fs::write(MIN_MAX_JS, min_max_json)?
+    }
+
+    Ok(())
+}
+
+pub fn build_features() -> Result<(), std::io::Error> {
+    println!("EXTRACTING FEATURES...");
+
+    let samples = std::fs::read_to_string(SAMPLES).and_then(|content| {
+        serde_json::from_str::<Vec<Sample>>(content.as_str())
+            .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))
+    })?;
+
+    let training_amount = samples.len() / 2;
+
+    let (features, min, max) = build_features_for(&samples);
+    save_features(&features, FEATURES, Some((min, max)))?;
+
+    println!("EXTRACTING SPLITS...");
+    let (training, testing) = samples.split_at(training_amount);
+
+    Ok(())
 }
