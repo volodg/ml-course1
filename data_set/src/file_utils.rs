@@ -1,4 +1,5 @@
 use crate::draw::generate_image_file;
+use commons::math::normalize_points;
 use drawing_commons::models::{
     get_feature_names, DrawingData, DrawingPaths, Features, FeaturesData, Sample,
     SampleWithFeatures,
@@ -142,7 +143,7 @@ pub fn build_features() -> Result<(), std::io::Error> {
             .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))
     })?;
 
-    let features = samples
+    let (labels, points): (Vec<_>, Vec<_>) = samples
         .into_iter()
         .map(|sample| {
             let path = std::format!("{}/{}.json", JSON_DIR, sample.id);
@@ -155,8 +156,16 @@ pub fn build_features() -> Result<(), std::io::Error> {
                 .expect("");
 
             let feature = draw_paths.get_feature(|x| x[0] as f64, |x| x[1] as f64);
-            SampleWithFeatures::create(sample.label, vec![feature.x as usize, feature.y as usize])
+            (sample.label, vec![feature.x, feature.y])
         })
+        .unzip();
+
+    let points = normalize_points(points);
+
+    let features = labels
+        .into_iter()
+        .zip(points.into_iter())
+        .map(|(label, points)| SampleWithFeatures::create(label, points))
         .collect::<Vec<_>>();
 
     let feature_names = get_feature_names()
