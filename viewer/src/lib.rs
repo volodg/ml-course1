@@ -21,6 +21,12 @@ lazy_static! {
     static ref FEATURES_DATA: FeaturesData =
         serde_json::from_str::<_>(std::include_str!("../../data/dataset/features.json"))
             .expect("");
+    static ref TRAINING_DATA: FeaturesData =
+        serde_json::from_str::<_>(std::include_str!("../../data/dataset/training.json"))
+            .expect("");
+    static ref TESTING_DATA: FeaturesData =
+        serde_json::from_str::<_>(std::include_str!("../../data/dataset/testing.json"))
+            .expect("");
     static ref MIN_MAX_DATA: Vec<Vec<f64>> =
         serde_json::from_str::<_>(std::include_str!("../../data/dataset/minMax.json"))
             .expect("");
@@ -45,7 +51,7 @@ fn start() -> Result<(), JsValue> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{FEATURES_DATA, MIN_MAX_DATA, SAMPLES_DATA};
+    use crate::{FEATURES_DATA, MIN_MAX_DATA, SAMPLES_DATA, TESTING_DATA, TRAINING_DATA};
 
     #[test]
     fn test_resources() {
@@ -62,5 +68,11 @@ mod tests {
 
         let size = MIN_MAX_DATA.len();
         assert_eq!(size, 2);
+
+        let size = TRAINING_DATA.features.len();
+        assert_eq!(size, 2864);
+
+        let size = TESTING_DATA.features.len();
+        assert_eq!(size, 2864);
     }
 }

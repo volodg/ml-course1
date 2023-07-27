@@ -4,7 +4,9 @@ use drawing_commons::models::{
     get_feature_names, DrawingData, DrawingPaths, Features, FeaturesData, Sample,
     SampleWithFeatures,
 };
-use drawing_commons::{FEATURES, IMG_DIR, JSON_DIR, MIN_MAX_JS, RAW_DIR, SAMPLES};
+use drawing_commons::{
+    FEATURES, IMG_DIR, JSON_DIR, MIN_MAX_JS, RAW_DIR, SAMPLES, TESTING, TRAINING,
+};
 use std::collections::HashMap;
 use std::io::{stdout, ErrorKind, Write};
 use std::path::PathBuf;
@@ -135,7 +137,7 @@ pub fn store_drawings_as_png(drawings: &HashMap<u64, Vec<Vec<[i32; 2]>>>) {
     }
 }
 
-fn build_features_for(samples: &Vec<Sample>) -> (FeaturesData, Vec<f64>, Vec<f64>) {
+fn build_features_for(samples: &[Sample]) -> (FeaturesData, Vec<f64>, Vec<f64>) {
     let (labels, points): (Vec<_>, Vec<_>) = samples
         .iter()
         .map(|sample| {
@@ -166,13 +168,21 @@ fn build_features_for(samples: &Vec<Sample>) -> (FeaturesData, Vec<f64>, Vec<f64
         .map(|x| x.to_owned())
         .collect();
 
-    (FeaturesData {
-        feature_names,
-        features,
-    }, min, max)
+    (
+        FeaturesData {
+            feature_names,
+            features,
+        },
+        min,
+        max,
+    )
 }
 
-fn save_features(features: &FeaturesData, file_name: &str, min_max: Option<(Vec<f64>, Vec<f64>)>) -> Result<(), std::io::Error> {
+fn save_features(
+    features: &FeaturesData,
+    file_name: &str,
+    min_max: Option<(Vec<f64>, Vec<f64>)>,
+) -> Result<(), std::io::Error> {
     let features_json = serde_json::to_string(&features)
         .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
 
@@ -203,6 +213,12 @@ pub fn build_features() -> Result<(), std::io::Error> {
 
     println!("EXTRACTING SPLITS...");
     let (training, testing) = samples.split_at(training_amount);
+
+    let (features, _, _) = build_features_for(training);
+    save_features(&features, TRAINING, None)?;
+
+    let (features, _, _) = build_features_for(testing);
+    save_features(&features, TESTING, None)?;
 
     Ok(())
 }
