@@ -4,7 +4,10 @@ use drawing_commons::models::{
     get_feature_names, DrawingData, DrawingPaths, Features, FeaturesData, Sample,
     SampleWithFeatures,
 };
-use drawing_commons::{FEATURES, IMG_DIR, JSON_DIR, MIN_MAX_JS, RAW_DIR, SAMPLES, TESTING, TESTING_FEATURES, TRAINING, TRAINING_FEATURES};
+use drawing_commons::{
+    FEATURES, IMG_DIR, JSON_DIR, MIN_MAX_JS, RAW_DIR, SAMPLES, TESTING, TESTING_FEATURES, TRAINING,
+    TRAINING_FEATURES,
+};
 use std::collections::HashMap;
 use std::io::{stdout, ErrorKind, Write};
 use std::path::PathBuf;
@@ -67,6 +70,7 @@ fn get_samples(inputs: &Vec<SortedDrawingData>) -> Vec<Sample> {
         .zip(1..)
         .map(|((label, student_name, student_id), id)| Sample {
             id,
+            truth: None,
             label,
             student_name,
             student_id,

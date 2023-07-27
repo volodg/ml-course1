@@ -5,6 +5,7 @@ use std::collections::HashMap;
 #[derive(Deserialize, Serialize)]
 pub struct Sample {
     pub id: usize,
+    pub truth: Option<String>,
     pub label: String,
     pub student_name: String,
     pub student_id: u64,
@@ -107,14 +108,13 @@ pub fn get_feature_names() -> [String; 2] {
 
 #[derive(Clone, Deserialize, Serialize)]
 pub struct SampleWithFeatures {
-    pub truth: Option<String>,
     pub label: String,
     pub point: Vec<f64>,
 }
 
 impl SampleWithFeatures {
     pub fn create(label: String, point: Vec<f64>) -> Self {
-        Self { truth: None, label, point }
+        Self { label, point }
     }
 }
 

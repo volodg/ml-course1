@@ -10,6 +10,7 @@ use drawing_commons::models::FeaturesData;
 use drawing_commons::models::Sample;
 use itertools::Itertools;
 use lazy_static::lazy_static;
+use std::sync::RwLock;
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
 
@@ -24,9 +25,9 @@ lazy_static! {
     static ref TRAINING_DATA: Vec<Sample> =
         serde_json::from_str::<_>(std::include_str!("../../data/dataset/training.json"))
             .expect("");
-    static ref TESTING_DATA: Vec<Sample> =
-        serde_json::from_str::<_>(std::include_str!("../../data/dataset/testing.json"))
-            .expect("");
+    static ref TESTING_DATA: RwLock<Vec<Sample>> =
+        RwLock::new(serde_json::from_str::<_>(std::include_str!("../../data/dataset/testing.json"))
+            .expect(""));
     static ref TRAINING_FEATURES: FeaturesData =
         serde_json::from_str::<_>(std::include_str!("../../data/dataset/training_features.json"))
             .expect("");
@@ -50,8 +51,16 @@ fn start() -> Result<(), JsValue> {
         Ok(())
     }
 
-    add_rows(&html, &TESTING_DATA)?;
+    {
+        let testing_data = &mut TESTING_DATA.write().expect("");
+        for sample in testing_data.iter_mut() {
+            sample.truth = Some(sample.label.clone());
+            sample.label = "?".to_owned();
+        }
+    }
+
     add_rows(&html, &TRAINING_DATA)?;
+    add_rows(&html, &TESTING_DATA.read().expect(""))?;
 
     html.plot_statistic(&TRAINING_FEATURES)?;
 
@@ -64,7 +73,10 @@ fn start() -> Result<(), JsValue> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{FEATURES_DATA, MIN_MAX_DATA, SAMPLES_DATA, TESTING_DATA, TRAINING_DATA, TESTING_FEATURES, TRAINING_FEATURES};
+    use crate::{
+        FEATURES_DATA, MIN_MAX_DATA, SAMPLES_DATA, TESTING_DATA, TESTING_FEATURES, TRAINING_DATA,
+        TRAINING_FEATURES,
+    };
 
     #[test]
     fn test_resources() {
@@ -88,7 +100,7 @@ mod tests {
         let size = TRAINING_FEATURES.features.len();
         assert_eq!(size, 2864);
 
-        let size = TESTING_DATA.len();
+        let size = TESTING_DATA.read().expect("").len();
         assert_eq!(size, 2864);
 
         let size = TESTING_FEATURES.features.len();
