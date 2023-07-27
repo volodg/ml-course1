@@ -108,15 +108,12 @@ pub fn get_feature_names() -> [String; 2] {
 #[derive(Clone, Deserialize, Serialize)]
 pub struct SampleWithFeatures {
     pub label: String,
-    pub point: [usize; 2],
+    pub point: Vec<usize>,
 }
 
 impl SampleWithFeatures {
-    pub fn create(sample: Sample, point: [usize; 2]) -> Self {
-        Self {
-            label: sample.label,
-            point,
-        }
+    pub fn create(label: String, point: Vec<usize>) -> Self {
+        Self { label, point }
     }
 }
 

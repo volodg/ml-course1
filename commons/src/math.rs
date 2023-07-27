@@ -107,6 +107,24 @@ pub fn min_max((acc_min, acc_max): (Option<f64>, Option<f64>), el: f64) -> (f64,
     )
 }
 
+pub fn normalize_points(points: &mut Vec<Vec<f64>>) {
+    let dimensions = points[0].len();
+    let mut min = points[0].clone();
+    let mut max = points[0].clone();
+    for i in 0..points.len() {
+        for j in 0..dimensions {
+            let value = points[i][j];
+            min[j] = min[j].min(value);
+            max[j] = max[j].max(value);
+        }
+    }
+    for i in 0..points.len() {
+        for j in 0..dimensions {
+            points[i][j] = inv_lerp(min[j], max[j], points[i][j]);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::math::Point;

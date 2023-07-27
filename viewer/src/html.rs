@@ -112,7 +112,9 @@ impl HtmlDom {
             .expect("")
             .dyn_into::<HtmlButtonElement>()?;
 
-        let predicted_label_container = document.get_element_by_id("predictedLabelContainer").unwrap();
+        let predicted_label_container = document
+            .get_element_by_id("predictedLabelContainer")
+            .unwrap();
 
         let sketch_pad = SketchPad::create("inputContainer")?;
 

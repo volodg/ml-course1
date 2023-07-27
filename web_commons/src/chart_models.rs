@@ -71,8 +71,8 @@ pub fn get_data_bounds(samples: &[Sample]) -> Bounds {
 
     Bounds {
         left: min_x.expect(""),
-        right: max_x.expect(""),// min_x.expect("") + max_delta,
-        top: max_y.expect(""),// min_y.expect("") + max_delta,
+        right: max_x.expect(""), // min_x.expect("") + max_delta,
+        top: max_y.expect(""),   // min_y.expect("") + max_delta,
         bottom: min_y.expect(""),
     }
 }

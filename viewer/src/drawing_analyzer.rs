@@ -4,10 +4,10 @@ use drawing_commons::models::{DrawingPaths, Features, FeaturesData, SampleWithFe
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::{JsCast, JsValue};
+use web_commons::chart_models::Sample;
 use web_commons::html::AddListener;
 use web_commons::html::Visibility;
 use web_sys::{window, HtmlElement, MouseEvent};
-use web_commons::chart_models::Sample;
 
 pub trait DrawingAnalyzer {
     fn toggle_input(&self) -> Result<(), JsValue>;
@@ -47,7 +47,8 @@ impl DrawingAnalyzer for HtmlDom {
             let point = drawing.get_feature(|x| x.x, |x| x.y);
 
             let (label, sample) = classify(&point, feature_data);
-            predicted_label_container.set_inner_html(std::format!("Is it a {:?} ?", label).as_str());
+            predicted_label_container
+                .set_inner_html(std::format!("Is it a {:?} ?", label).as_str());
             let sample = Sample {
                 id: 0,
                 label: sample.label,

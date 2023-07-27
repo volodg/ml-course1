@@ -155,7 +155,7 @@ pub fn build_features() -> Result<(), std::io::Error> {
                 .expect("");
 
             let feature = draw_paths.get_feature(|x| x[0] as f64, |x| x[1] as f64);
-            SampleWithFeatures::create(sample, [feature.x as usize, feature.y as usize])
+            SampleWithFeatures::create(sample.label, vec![feature.x as usize, feature.y as usize])
         })
         .collect::<Vec<_>>();
 

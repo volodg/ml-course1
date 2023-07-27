@@ -101,7 +101,10 @@ impl Chart {
         self.samples = samples;
     }
 
-    pub fn show_dynamic_point(&mut self, point: Option<(Point, String, Sample)>) -> Result<(), JsValue> {
+    pub fn show_dynamic_point(
+        &mut self,
+        point: Option<(Point, String, Sample)>,
+    ) -> Result<(), JsValue> {
         self.dynamic_point = point;
         self.draw()
     }
@@ -304,8 +307,16 @@ impl Chart {
             self.context.stroke();
 
             self.context.draw_image(
-                &self.options.styles.get(label).expect("").image.clone().expect(""),
-                &pixel_location)?;
+                &self
+                    .options
+                    .styles
+                    .get(label)
+                    .expect("")
+                    .image
+                    .clone()
+                    .expect(""),
+                &pixel_location,
+            )?;
         }
 
         self.draw_axis()?;
