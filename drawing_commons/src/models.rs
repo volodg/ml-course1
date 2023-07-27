@@ -88,21 +88,21 @@ impl<T> Features for DrawingPaths<T> {
 
     fn get_feature(
         &self,
-        _x_getter: impl Fn(&Self::ElType) -> f64,
-        _y_getter: impl Fn(&Self::ElType) -> f64,
+        x_getter: impl Fn(&Self::ElType) -> f64,
+        y_getter: impl Fn(&Self::ElType) -> f64,
     ) -> Point {
         Point {
-            // x: self.get_width(x_getter) as f64,
-            // y: self.get_width(y_getter) as f64,
-            x: self.path_count() as f64,
-            y: self.point_count() as f64,
+            x: self.get_width(x_getter) as f64,
+            y: self.get_width(y_getter) as f64,
+            // x: self.path_count() as f64,
+            // y: self.point_count() as f64,
         }
     }
 }
 
 pub fn get_feature_names() -> [String; 2] {
-    ["Path Count".to_owned(), "Point Count".to_owned()]
-    // ["Width".to_owned(), "Height".to_owned()]
+    // ["Path Count".to_owned(), "Point Count".to_owned()]
+    ["Width".to_owned(), "Height".to_owned()]
 }
 
 #[derive(Clone, Deserialize, Serialize)]

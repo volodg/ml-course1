@@ -1,5 +1,5 @@
 use crate::html::HtmlDom;
-use commons::math::Point;
+use commons::math::{normalize_points, Point};
 use drawing_commons::models::{DrawingPaths, Features, FeaturesData, SampleWithFeatures};
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -11,7 +11,11 @@ use web_sys::{window, HtmlElement, MouseEvent};
 
 pub trait DrawingAnalyzer {
     fn toggle_input(&self) -> Result<(), JsValue>;
-    fn subscribe_drawing_updates(&self, feature_data: &'static FeaturesData);
+    fn subscribe_drawing_updates(
+        &self,
+        min_max: &'static Vec<Vec<f64>>,
+        feature_data: &'static FeaturesData,
+    );
 }
 
 impl DrawingAnalyzer for HtmlDom {
@@ -38,13 +42,23 @@ impl DrawingAnalyzer for HtmlDom {
             })
     }
 
-    fn subscribe_drawing_updates(&self, feature_data: &'static FeaturesData) {
+    fn subscribe_drawing_updates(
+        &self,
+        min_max: &'static Vec<Vec<f64>>,
+        feature_data: &'static FeaturesData,
+    ) {
         let mut sketch_pad = self.sketch_pad.borrow_mut();
         let chart = self.chart.clone();
         let predicted_label_container = self.predicted_label_container.clone();
 
         let on_update_callback = Rc::new(RefCell::new(move |drawing: &DrawingPaths<Point>| {
             let point = drawing.get_feature(|x| x.x, |x| x.y);
+
+            let point = normalize_points(&min_max[0], &min_max[1], vec![vec![point.x, point.y]]);
+            let point = Point {
+                x: point[0][0],
+                y: point[0][1],
+            };
 
             let (label, sample) = classify(&point, feature_data);
             predicted_label_container

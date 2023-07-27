@@ -37,7 +37,7 @@ fn start() -> Result<(), JsValue> {
         html.create_row(group[0].student_name.as_str(), group.as_slice())?;
     }
 
-    html.subscribe_drawing_updates(&FEATURES_DATA);
+    html.subscribe_drawing_updates(&MIN_MAX_DATA, &FEATURES_DATA);
     html.toggle_input()?;
 
     Ok(())

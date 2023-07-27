@@ -1,5 +1,5 @@
 use crate::draw::generate_image_file;
-use commons::math::normalize_points;
+use commons::math::normalize_points_to_min_max;
 use drawing_commons::models::{
     get_feature_names, DrawingData, DrawingPaths, Features, FeaturesData, Sample,
     SampleWithFeatures,
@@ -141,7 +141,7 @@ pub fn build_features() -> Result<(), std::io::Error> {
     let samples = std::fs::read_to_string(SAMPLES).and_then(|content| {
         serde_json::from_str::<Vec<Sample>>(content.as_str())
             .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))
-    })?;
+    })?; // .into_iter().filter(|x| x.id != 4662);
 
     let (labels, points): (Vec<_>, Vec<_>) = samples
         .into_iter()
@@ -160,7 +160,7 @@ pub fn build_features() -> Result<(), std::io::Error> {
         })
         .unzip();
 
-    let ((min, max), points) = normalize_points(points);
+    let ((min, max), points) = normalize_points_to_min_max(points);
 
     let features = labels
         .into_iter()
