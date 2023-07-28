@@ -139,7 +139,7 @@ pub fn store_drawings_as_png(drawings: &HashMap<u64, Vec<Vec<[i32; 2]>>>) {
     }
 }
 
-fn build_features_for(samples: &[Sample]) -> (FeaturesData, Vec<f64>, Vec<f64>) {
+fn build_features_for(samples: &[Sample], min_max: Option<(Vec<f64>, Vec<f64>)>) -> (FeaturesData, Vec<f64>, Vec<f64>) {
     let (labels, points): (Vec<_>, Vec<_>) = samples
         .iter()
         .map(|sample| {
@@ -158,6 +158,8 @@ fn build_features_for(samples: &[Sample]) -> (FeaturesData, Vec<f64>, Vec<f64>) 
         .unzip();
 
     let ((min, max), points) = normalize_points_to_min_max(points);
+    let min = min_max.clone().map(|x| x.0).unwrap_or(min);
+    let max = min_max.map(|x| x.1).unwrap_or(max);
 
     let features = labels
         .into_iter()
@@ -210,23 +212,24 @@ pub fn build_features() -> Result<(), std::io::Error> {
 
     let training_amount = samples.len() / 2;
 
-    let (features, _, _) = build_features_for(&samples);
+    let (features, _, _) = build_features_for(&samples, None);
     save_features(&features, FEATURES, None)?;
 
     println!("EXTRACTING SPLITS...");
     let (training, testing) = samples.split_at(training_amount);
 
-    {
-        let (features, min, max) = build_features_for(training);
+    let min_max = {
+        let (features, min, max) = build_features_for(training, None);
         let features_json = serde_json::to_string(&training)
             .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
 
         std::fs::write(TRAINING, features_json)?;
-        save_features(&features, TRAINING_FEATURES, Some((min, max)))?;
-    }
+        save_features(&features, TRAINING_FEATURES, Some((min.clone(), max.clone())))?;
+        (min, max)
+    };
 
     {
-        let (features, _, _) = build_features_for(testing);
+        let (features, _, _) = build_features_for(testing, Some(min_max));
         let features_json = serde_json::to_string(&testing)
             .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
 

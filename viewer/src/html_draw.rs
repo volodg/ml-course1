@@ -77,8 +77,8 @@ impl Draw for HtmlDom {
                 id,
                 label: feature.label.clone(),
                 point: Point {
-                    x: feature.point[0] as f64,
-                    y: feature.point[1] as f64,
+                    x: feature.point[0],
+                    y: feature.point[1],
                 },
             })
             .collect::<Vec<_>>();

@@ -443,7 +443,7 @@ impl Chart {
             // Draw x[-1] scale
             let data_max = Point {
                 x: self.pixel_bounds.right,
-                y: self.pixel_bounds.bottom,
+                y: self.pixel_bounds.top,
             }
             .remap(&self.pixel_bounds, &self.data_bounds);
             self.context.draw_text_with_params(
