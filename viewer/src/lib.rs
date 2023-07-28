@@ -14,6 +14,7 @@ use lazy_static::lazy_static;
 use std::sync::RwLock;
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
+use web_sys::window;
 
 lazy_static! {
     // TODO const variables don't work as arguments of std::include_str!
@@ -72,6 +73,15 @@ fn start() -> Result<(), JsValue> {
     }
 
     add_rows(&html, &TRAINING_FEATURES.features)?;
+
+    let subtitle = window()
+        .expect("")
+        .document()
+        .expect("")
+        .create_element("h2")?;
+    subtitle.set_inner_html("TESTING");
+    html.container.append_child(&subtitle)?;
+
     add_rows(&html, &TESTING_FEATURES.read().expect("").features)?;
 
     html.plot_statistic(&TRAINING_FEATURES)?;
