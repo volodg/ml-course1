@@ -1,10 +1,12 @@
 use crate::html::HtmlDom;
+use crate::sketch_pad::SketchPad;
 use commons::math::{normalize_points, Point};
 use drawing_commons::models::{DrawingPaths, Features, FeaturesData, SampleWithFeatures};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 use wasm_bindgen::{JsCast, JsValue};
+use web_commons::chart::Chart;
 use web_commons::chart_models::Sample;
 use web_commons::html::AddListener;
 use web_commons::html::Visibility;
@@ -24,22 +26,11 @@ impl DrawingAnalyzer for HtmlDom {
         let chart = self.chart.clone();
         let sketch_pad = self.sketch_pad.clone();
 
+        handle_toggle_input(&chart, &sketch_pad)?;
+
         self.control_panel_button
             .on_click(move |_event: MouseEvent| {
-                let document = window().expect("").document().expect("");
-                let container = document
-                    .get_element_by_id("inputContainer")
-                    .unwrap()
-                    .dyn_into::<HtmlElement>()
-                    .expect("");
-
-                let is_displayed = container.is_displayed();
-                container.set_display(!is_displayed).expect("");
-                if is_displayed {
-                    chart.borrow_mut().show_dynamic_point(None).expect("");
-                } else {
-                    sketch_pad.borrow().trigger_update();
-                }
+                handle_toggle_input(&chart, &sketch_pad).expect("");
             })
     }
 
@@ -84,6 +75,28 @@ impl DrawingAnalyzer for HtmlDom {
 
         sketch_pad.set_on_update(on_update_callback)
     }
+}
+
+fn handle_toggle_input(
+    chart: &Rc<RefCell<Chart>>,
+    sketch_pad: &Rc<RefCell<SketchPad>>,
+) -> Result<(), JsValue> {
+    let document = window().expect("").document().expect("");
+    let container = document
+        .get_element_by_id("inputContainer")
+        .unwrap()
+        .dyn_into::<HtmlElement>()
+        .expect("");
+
+    let is_displayed = container.is_displayed();
+    container.set_display(!is_displayed).expect("");
+    if is_displayed {
+        chart.borrow_mut().show_dynamic_point(None)?;
+    } else {
+        sketch_pad.borrow().trigger_update();
+    }
+
+    Ok(())
 }
 
 fn classify(

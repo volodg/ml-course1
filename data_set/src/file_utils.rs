@@ -139,7 +139,10 @@ pub fn store_drawings_as_png(drawings: &HashMap<u64, Vec<Vec<[i32; 2]>>>) {
     }
 }
 
-fn build_features_for(samples: &[Sample], min_max: Option<(Vec<f64>, Vec<f64>)>) -> (FeaturesData, Vec<f64>, Vec<f64>) {
+fn build_features_for(
+    samples: &[Sample],
+    min_max: Option<(Vec<f64>, Vec<f64>)>,
+) -> (FeaturesData, Vec<f64>, Vec<f64>) {
     let (labels, points): (Vec<_>, Vec<_>) = samples
         .iter()
         .map(|sample| {
@@ -224,7 +227,11 @@ pub fn build_features() -> Result<(), std::io::Error> {
             .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
 
         std::fs::write(TRAINING, features_json)?;
-        save_features(&features, TRAINING_FEATURES, Some((min.clone(), max.clone())))?;
+        save_features(
+            &features,
+            TRAINING_FEATURES,
+            Some((min.clone(), max.clone())),
+        )?;
         (min, max)
     };
 
