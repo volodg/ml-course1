@@ -1,6 +1,6 @@
 use crate::html::HtmlDom;
 use commons::math::Point;
-use drawing_commons::models::{FeaturesData, Sample};
+use drawing_commons::models::{FeaturesData, Sample, SampleWithFeatures};
 use drawing_commons::{FLAGGED_USERS, IMG_DIR};
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -14,12 +14,12 @@ use web_sys::{
 };
 
 pub trait Draw {
-    fn create_row(&self, student_name: &str, samples: &[&Sample]) -> Result<(), JsValue>;
+    fn create_row(&self, student_name: &str, samples: &[&Sample], features: &[SampleWithFeatures]) -> Result<(), JsValue>;
     fn plot_statistic(&self, feature_data: &FeaturesData) -> Result<(), JsValue>;
 }
 
 impl Draw for HtmlDom {
-    fn create_row(&self, student_name: &str, samples: &[&Sample]) -> Result<(), JsValue> {
+    fn create_row(&self, student_name: &str, samples: &[&Sample], features: &[SampleWithFeatures]) -> Result<(), JsValue> {
         let row = self.document.create_element("div")?;
         row.class_list().add_1("row")?;
         _ = self.container.append_child(&row)?;
@@ -29,7 +29,7 @@ impl Draw for HtmlDom {
         row_label.class_list().add_1("rowLabel")?;
         _ = row.append_child(&row_label)?;
 
-        for sample in samples {
+        for (sample, feature) in samples.iter().zip(features) {
             let img = self
                 .document
                 .create_element("img")?
@@ -38,10 +38,17 @@ impl Draw for HtmlDom {
             let sample_container = self.document.create_element("div")?;
             sample_container.set_id(std::format!("sample_{}", sample.id).as_str());
 
-            let sample_id = sample.id;
             let chart = self.chart.clone();
+            let feature = web_commons::chart_models::Sample {
+                id: sample.id,
+                label: feature.label.clone(),
+                point: Point {
+                    x: feature.point[0],
+                    y: feature.point[1],
+                },
+            };
             sample_container.on_click(move |_event: MouseEvent| {
-                handle_click(&chart, Some(sample_id), false).expect("");
+                handle_click(&chart, Some(&feature), false).expect("");
             })?;
 
             _ = sample_container.class_list().add_1("sampleContainer")?;
@@ -87,7 +94,7 @@ impl Draw for HtmlDom {
 
         let on_click_chart = self.chart.clone();
         let on_click_callback = Rc::new(RefCell::new(move |sample: Option<&Sample>| {
-            handle_click(&on_click_chart, sample.map(|x| x.id), true).expect("")
+            handle_click(&on_click_chart, sample, true).expect("")
         }));
 
         chart.set_on_click(on_click_callback);
@@ -98,7 +105,7 @@ impl Draw for HtmlDom {
 
 fn handle_click(
     chart: &Rc<RefCell<Chart>>,
-    sample_id: Option<usize>,
+    sample: Option<&web_commons::chart_models::Sample>,
     scroll: bool,
 ) -> Result<(), JsValue> {
     let document = window().expect("").document().expect("");
@@ -114,10 +121,10 @@ fn handle_click(
         Ok(())
     };
 
-    let sample = match sample_id {
-        Some(sample_id) => {
+    let sample = match sample {
+        Some(sample) => {
             let element = document
-                .get_element_by_id(std::format!("sample_{}", sample_id).as_str())
+                .get_element_by_id(std::format!("sample_{}", sample.id).as_str())
                 .unwrap();
 
             if element.class_list().contains(emphasize_class_name) {
@@ -135,12 +142,7 @@ fn handle_click(
                     element.scroll_into_view_with_scroll_into_view_options(&options);
                 }
 
-                chart
-                    .borrow()
-                    .samples()
-                    .iter()
-                    .find(|x| x.id == sample_id)
-                    .map(|x| x.clone())
+                Some(sample)
             }
         }
         None => {
@@ -149,7 +151,7 @@ fn handle_click(
         }
     };
 
-    chart.borrow_mut().select_sample(sample.as_ref())?;
+    chart.borrow_mut().select_sample(sample)?;
 
     Ok(())
 }
