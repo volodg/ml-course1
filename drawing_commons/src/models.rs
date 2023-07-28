@@ -2,7 +2,7 @@ use commons::math::{min_max, Point};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct Sample {
     pub id: usize,
     pub label: String,
@@ -107,14 +107,18 @@ pub fn get_feature_names() -> [String; 2] {
 
 #[derive(Clone, Deserialize, Serialize)]
 pub struct SampleWithFeatures {
+    pub sample: Sample,
     pub truth: Option<String>,
-    pub label: String,
     pub point: Vec<f64>,
 }
 
 impl SampleWithFeatures {
-    pub fn create(label: String, point: Vec<f64>) -> Self {
-        Self { truth: None, label, point }
+    pub fn create(sample: Sample, point: Vec<f64>) -> Self {
+        Self {
+            sample,
+            truth: None,
+            point,
+        }
     }
 }
 

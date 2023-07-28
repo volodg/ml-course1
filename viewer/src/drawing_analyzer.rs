@@ -57,12 +57,12 @@ impl DrawingAnalyzer for HtmlDom {
                 .set_inner_html(std::format!("Is it a {:?} ?", label).as_str());
             let samples = samples
                 .into_iter()
-                .map(|sample| Sample {
-                    id: 0,
-                    label: sample.label,
+                .map(|feature| Sample {
+                    id: feature.sample.id,
+                    label: feature.sample.label,
                     point: Point {
-                        x: sample.point[0] as f64,
-                        y: sample.point[1] as f64,
+                        x: feature.point[0] as f64,
+                        y: feature.point[1] as f64,
                     },
                 })
                 .collect();
@@ -119,7 +119,7 @@ fn classify(
         .map(|i| feature_data.features[*i].clone())
         .collect::<Vec<_>>();
 
-    let (_, (_, label)) = nearest_samples.iter().map(|x| x.label.clone()).fold(
+    let (_, (_, label)) = nearest_samples.iter().map(|x| x.sample.label.clone()).fold(
         (HashMap::new(), (0, "".to_owned())),
         |(mut map, (frequency, label)), val| {
             let new_frequency = *map

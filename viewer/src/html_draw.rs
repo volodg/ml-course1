@@ -17,8 +17,7 @@ pub trait Draw {
     fn create_row(
         &self,
         student_name: &str,
-        samples: &[&Sample],
-        features: &[SampleWithFeatures],
+        features: &[&SampleWithFeatures],
     ) -> Result<(), JsValue>;
     fn plot_statistic(&self, feature_data: &FeaturesData) -> Result<(), JsValue>;
 }
@@ -27,8 +26,7 @@ impl Draw for HtmlDom {
     fn create_row(
         &self,
         student_name: &str,
-        samples: &[&Sample],
-        features: &[SampleWithFeatures],
+        features: &[&SampleWithFeatures],
     ) -> Result<(), JsValue> {
         let row = self.document.create_element("div")?;
         row.class_list().add_1("row")?;
@@ -39,39 +37,38 @@ impl Draw for HtmlDom {
         row_label.class_list().add_1("rowLabel")?;
         _ = row.append_child(&row_label)?;
 
-        for (sample, feature) in samples.iter().zip(features) {
+        for feature in features {
             let img = self
                 .document
                 .create_element("img")?
                 .dyn_into::<HtmlImageElement>()?;
 
             let sample_container = self.document.create_element("div")?;
-            sample_container.set_id(std::format!("sample_{}", sample.id).as_str());
+            sample_container.set_id(std::format!("sample_{}", feature.sample.id).as_str());
 
             let chart = self.chart.clone();
-            let feature = web_commons::chart_models::Sample {
-                id: sample.id,
-                label: feature.label.clone(),
+            let sample = web_commons::chart_models::Sample {
+                id: feature.sample.id,
+                label: feature.sample.label.clone(),
                 point: Point {
                     x: feature.point[0],
                     y: feature.point[1],
                 },
             };
-            let on_click_feature = feature.clone();
             sample_container.on_click(move |_event: MouseEvent| {
-                handle_click(&chart, Some(&on_click_feature), false).expect("");
+                handle_click(&chart, Some(&sample), false).expect("");
             })?;
 
             _ = sample_container.class_list().add_1("sampleContainer")?;
 
             let sample_label = self.document.create_element("div")?;
-            sample_label.set_inner_html(feature.label.as_str());
+            sample_label.set_inner_html(feature.sample.label.as_str());
             _ = sample_container.append_child(&sample_label)?;
 
-            let path = std::format!("{}/{}.png", IMG_DIR, sample.id);
+            let path = std::format!("{}/{}.png", IMG_DIR, feature.sample.id);
             img.set_src(path.as_str());
             img.class_list().add_1("thumb")?;
-            if FLAGGED_USERS.contains(&sample.student_id) {
+            if FLAGGED_USERS.contains(&feature.sample.student_id) {
                 img.class_list().add_1("blur")?;
             }
             sample_container.append_child(&img)?;
@@ -93,7 +90,7 @@ impl Draw for HtmlDom {
             .zip(1..)
             .map(|(feature, id)| Sample {
                 id,
-                label: feature.label.clone(),
+                label: feature.sample.label.clone(),
                 point: Point {
                     x: feature.point[0],
                     y: feature.point[1],

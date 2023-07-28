@@ -43,32 +43,24 @@ lazy_static! {
 fn start() -> Result<(), JsValue> {
     let html = HtmlDom::create(&FEATURES_DATA.feature_names)?;
 
-    fn add_rows(
-        html: &HtmlDom,
-        data: &[Sample],
-        features: &Vec<SampleWithFeatures>,
-    ) -> Result<(), JsValue> {
-        for (_, group) in &data.iter().group_by(|x| x.student_id) {
+    fn add_rows(html: &HtmlDom, features: &[SampleWithFeatures]) -> Result<(), JsValue> {
+        for (_, group) in &features.iter().group_by(|x| x.sample.student_id) {
             let group = group.collect::<Vec<_>>();
-            html.create_row(group[0].student_name.as_str(), group.as_slice(), features)?;
+            html.create_row(group[0].sample.student_name.as_str(), group.as_slice())?;
         }
         Ok(())
     }
 
     {
         let testing_data = &mut TESTING_FEATURES.write().expect("").features;
-        for sample in testing_data.iter_mut() {
-            sample.truth = Some(sample.label.clone());
-            sample.label = "?".to_owned();
+        for feature in testing_data.iter_mut() {
+            feature.truth = Some(feature.sample.label.clone());
+            feature.sample.label = "?".to_owned();
         }
     }
 
-    add_rows(&html, &TRAINING_DATA, &TRAINING_FEATURES.features)?;
-    add_rows(
-        &html,
-        &TESTING_DATA,
-        &TESTING_FEATURES.read().expect("").features,
-    )?;
+    add_rows(&html, &TRAINING_FEATURES.features)?;
+    add_rows(&html, &TESTING_FEATURES.read().expect("").features)?;
 
     html.plot_statistic(&TRAINING_FEATURES)?;
 

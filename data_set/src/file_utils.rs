@@ -1,5 +1,5 @@
 use crate::draw::generate_image_file;
-use commons::math::normalize_points_to_min_max;
+use commons::math::{normalize_points, normalize_points_to_min_max};
 use drawing_commons::models::{
     get_feature_names, DrawingData, DrawingPaths, Features, FeaturesData, Sample,
     SampleWithFeatures,
@@ -70,7 +70,6 @@ fn get_samples(inputs: &Vec<SortedDrawingData>) -> Vec<Sample> {
         .zip(1..)
         .map(|((label, student_name, student_id), id)| Sample {
             id,
-            truth: None,
             label,
             student_name,
             student_id,
@@ -143,7 +142,7 @@ fn build_features_for(
     samples: &[Sample],
     min_max: Option<(Vec<f64>, Vec<f64>)>,
 ) -> (FeaturesData, Vec<f64>, Vec<f64>) {
-    let (labels, points): (Vec<_>, Vec<_>) = samples
+    let points = samples
         .iter()
         .map(|sample| {
             let path = std::format!("{}/{}.json", JSON_DIR, sample.id);
@@ -156,18 +155,22 @@ fn build_features_for(
                 .expect("");
 
             let feature = draw_paths.get_feature(|x| x[0] as f64, |x| x[1] as f64);
-            (sample.label.clone(), vec![feature.x, feature.y])
+            vec![feature.x, feature.y]
         })
-        .unzip();
+        .collect::<Vec<_>>();
 
-    let ((min, max), points) = normalize_points_to_min_max(points);
-    let min = min_max.clone().map(|x| x.0).unwrap_or(min);
-    let max = min_max.map(|x| x.1).unwrap_or(max);
+    let ((min, max), points) = match min_max {
+        Some((min, max)) => {
+            let points = normalize_points(&min, &max, points);
+            ((min, max), points)
+        }
+        None => normalize_points_to_min_max(points),
+    };
 
-    let features = labels
-        .into_iter()
+    let features = samples
+        .iter()
         .zip(points.into_iter())
-        .map(|(label, points)| SampleWithFeatures::create(label, points))
+        .map(|(sample, points)| SampleWithFeatures::create(sample.clone(), points))
         .collect::<Vec<_>>();
 
     let feature_names = get_feature_names()
