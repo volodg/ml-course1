@@ -1,6 +1,6 @@
 use crate::html::HtmlDom;
 use commons::math::Point;
-use drawing_commons::models::{FeaturesData, Sample, SampleWithFeatures};
+use drawing_commons::models::{FeaturesData, SampleWithFeatures};
 use drawing_commons::{FLAGGED_USERS, IMG_DIR};
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -9,8 +9,8 @@ use wasm_bindgen::JsValue;
 use web_commons::chart::Chart;
 use web_commons::html::AddListener;
 use web_sys::{
-    window, Element, HtmlImageElement, MouseEvent, ScrollBehavior, ScrollIntoViewOptions,
-    ScrollLogicalPosition,
+    window, Element, HtmlElement, HtmlImageElement, MouseEvent, ScrollBehavior,
+    ScrollIntoViewOptions, ScrollLogicalPosition,
 };
 
 pub trait Draw {
@@ -43,7 +43,10 @@ impl Draw for HtmlDom {
                 .create_element("img")?
                 .dyn_into::<HtmlImageElement>()?;
 
-            let sample_container = self.document.create_element("div")?;
+            let sample_container = self
+                .document
+                .create_element("div")?
+                .dyn_into::<HtmlElement>()?;
             sample_container.set_id(std::format!("sample_{}", feature.sample.id).as_str());
 
             let chart = self.chart.clone();
@@ -60,6 +63,11 @@ impl Draw for HtmlDom {
             })?;
 
             _ = sample_container.class_list().add_1("sampleContainer")?;
+            if feature.correct.unwrap_or(false) {
+                sample_container
+                    .style()
+                    .set_property("background-color", "lightgreen")?;
+            }
 
             let sample_label = self.document.create_element("div")?;
             sample_label.set_inner_html(feature.sample.label.as_str());

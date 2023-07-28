@@ -99,7 +99,7 @@ fn handle_toggle_input(
     Ok(())
 }
 
-fn classify(
+pub fn classify(
     point: &Point,
     feature_data: &'static FeaturesData,
 ) -> (String, Vec<SampleWithFeatures>) {

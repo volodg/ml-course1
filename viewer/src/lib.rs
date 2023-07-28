@@ -3,9 +3,10 @@ mod html;
 mod html_draw;
 mod sketch_pad;
 
-use crate::drawing_analyzer::DrawingAnalyzer;
+use crate::drawing_analyzer::{classify, DrawingAnalyzer};
 use crate::html::HtmlDom;
 use crate::html_draw::Draw;
+use commons::math::Point;
 use drawing_commons::models::Sample;
 use drawing_commons::models::{FeaturesData, SampleWithFeatures};
 use itertools::Itertools;
@@ -54,8 +55,19 @@ fn start() -> Result<(), JsValue> {
     {
         let testing_data = &mut TESTING_FEATURES.write().expect("").features;
         for feature in testing_data.iter_mut() {
-            feature.truth = Some(feature.sample.label.clone());
-            feature.sample.label = "?".to_owned();
+            let truth = feature.sample.label.clone();
+            let (label, _) = classify(
+                &Point {
+                    x: feature.point[0],
+                    y: feature.point[1],
+                },
+                &TRAINING_FEATURES,
+            );
+            let correct = truth == label;
+
+            feature.truth = Some(truth);
+            feature.sample.label = label;
+            feature.correct = Some(correct)
         }
     }
 

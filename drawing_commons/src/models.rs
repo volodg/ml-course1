@@ -109,6 +109,7 @@ pub fn get_feature_names() -> [String; 2] {
 pub struct SampleWithFeatures {
     pub sample: Sample,
     pub truth: Option<String>,
+    pub correct: Option<bool>,
     pub point: Vec<f64>,
 }
 
@@ -117,6 +118,7 @@ impl SampleWithFeatures {
         Self {
             sample,
             truth: None,
+            correct: None,
             point,
         }
     }
