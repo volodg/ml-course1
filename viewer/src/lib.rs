@@ -6,8 +6,8 @@ mod sketch_pad;
 use crate::drawing_analyzer::DrawingAnalyzer;
 use crate::html::HtmlDom;
 use crate::html_draw::Draw;
-use drawing_commons::models::{FeaturesData, SampleWithFeatures};
 use drawing_commons::models::Sample;
+use drawing_commons::models::{FeaturesData, SampleWithFeatures};
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use std::sync::RwLock;
@@ -43,7 +43,11 @@ lazy_static! {
 fn start() -> Result<(), JsValue> {
     let html = HtmlDom::create(&FEATURES_DATA.feature_names)?;
 
-    fn add_rows(html: &HtmlDom, data: &[Sample], features: &Vec<SampleWithFeatures>) -> Result<(), JsValue> {
+    fn add_rows(
+        html: &HtmlDom,
+        data: &[Sample],
+        features: &Vec<SampleWithFeatures>,
+    ) -> Result<(), JsValue> {
         for (_, group) in &data.iter().group_by(|x| x.student_id) {
             let group = group.collect::<Vec<_>>();
             html.create_row(group[0].student_name.as_str(), group.as_slice(), features)?;
@@ -60,7 +64,11 @@ fn start() -> Result<(), JsValue> {
     }
 
     add_rows(&html, &TRAINING_DATA, &TRAINING_FEATURES.features)?;
-    add_rows(&html, &TESTING_DATA.read().expect(""), &TESTING_FEATURES.features)?;
+    add_rows(
+        &html,
+        &TESTING_DATA.read().expect(""),
+        &TESTING_FEATURES.features,
+    )?;
 
     html.plot_statistic(&TRAINING_FEATURES)?;
 

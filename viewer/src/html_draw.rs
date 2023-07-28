@@ -14,12 +14,22 @@ use web_sys::{
 };
 
 pub trait Draw {
-    fn create_row(&self, student_name: &str, samples: &[&Sample], features: &[SampleWithFeatures]) -> Result<(), JsValue>;
+    fn create_row(
+        &self,
+        student_name: &str,
+        samples: &[&Sample],
+        features: &[SampleWithFeatures],
+    ) -> Result<(), JsValue>;
     fn plot_statistic(&self, feature_data: &FeaturesData) -> Result<(), JsValue>;
 }
 
 impl Draw for HtmlDom {
-    fn create_row(&self, student_name: &str, samples: &[&Sample], features: &[SampleWithFeatures]) -> Result<(), JsValue> {
+    fn create_row(
+        &self,
+        student_name: &str,
+        samples: &[&Sample],
+        features: &[SampleWithFeatures],
+    ) -> Result<(), JsValue> {
         let row = self.document.create_element("div")?;
         row.class_list().add_1("row")?;
         _ = self.container.append_child(&row)?;
