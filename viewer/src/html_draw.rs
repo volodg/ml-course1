@@ -57,14 +57,15 @@ impl Draw for HtmlDom {
                     y: feature.point[1],
                 },
             };
+            let on_click_feature = feature.clone();
             sample_container.on_click(move |_event: MouseEvent| {
-                handle_click(&chart, Some(&feature), false).expect("");
+                handle_click(&chart, Some(&on_click_feature), false).expect("");
             })?;
 
             _ = sample_container.class_list().add_1("sampleContainer")?;
 
             let sample_label = self.document.create_element("div")?;
-            sample_label.set_inner_html(sample.label.as_str());
+            sample_label.set_inner_html(feature.label.as_str());
             _ = sample_container.append_child(&sample_label)?;
 
             let path = std::format!("{}/{}.png", IMG_DIR, sample.id);

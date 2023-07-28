@@ -76,6 +76,14 @@ fn default_chart_options(feature_names: &[String]) -> Options {
             image: None,
         },
     );
+    styles.insert(
+        "?".to_owned(),
+        SampleStyle {
+            color: "red".to_owned(),
+            text: "❓".to_owned(),
+            image: None,
+        },
+    );
 
     Options {
         size: 500,
