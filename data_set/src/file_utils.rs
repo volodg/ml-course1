@@ -210,25 +210,29 @@ pub fn build_features() -> Result<(), std::io::Error> {
 
     let training_amount = samples.len() / 2;
 
-    let (features, min, max) = build_features_for(&samples);
-    save_features(&features, FEATURES, Some((min, max)))?;
+    let (features, _, _) = build_features_for(&samples);
+    save_features(&features, FEATURES, None)?;
 
     println!("EXTRACTING SPLITS...");
     let (training, testing) = samples.split_at(training_amount);
 
-    let (features, _, _) = build_features_for(training);
-    let features_json = serde_json::to_string(&training)
-        .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
+    {
+        let (features, min, max) = build_features_for(training);
+        let features_json = serde_json::to_string(&training)
+            .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
 
-    std::fs::write(TRAINING, features_json)?;
-    save_features(&features, TRAINING_FEATURES, None)?;
+        std::fs::write(TRAINING, features_json)?;
+        save_features(&features, TRAINING_FEATURES, Some((min, max)))?;
+    }
 
-    let (features, _, _) = build_features_for(testing);
-    let features_json = serde_json::to_string(&testing)
-        .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
+    {
+        let (features, _, _) = build_features_for(testing);
+        let features_json = serde_json::to_string(&testing)
+            .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
 
-    std::fs::write(TESTING, features_json)?;
-    save_features(&features, TESTING_FEATURES, None)?;
+        std::fs::write(TESTING, features_json)?;
+        save_features(&features, TESTING_FEATURES, None)?;
+    }
 
     Ok(())
 }
