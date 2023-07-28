@@ -112,7 +112,7 @@ pub fn classify(
         })
         .collect::<Vec<_>>();
 
-    let indices = point.get_nearest_k(&sample_points, 10);
+    let indices = point.get_nearest_k(&sample_points, 50);
 
     let nearest_samples = indices
         .iter()

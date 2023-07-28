@@ -97,6 +97,7 @@ fn default_chart_options(feature_names: &[String]) -> Options {
 pub struct HtmlDom {
     pub document: Document,
     pub container: Element,
+    pub statistics: Element,
     pub predicted_label_container: Element,
     pub control_panel_button: HtmlButtonElement,
     pub chart: Rc<RefCell<Chart>>,
@@ -120,6 +121,10 @@ impl HtmlDom {
             .expect("")
             .dyn_into::<HtmlButtonElement>()?;
 
+        let statistics = document
+            .get_element_by_id("statistics")
+            .unwrap();
+
         let predicted_label_container = document
             .get_element_by_id("predictedLabelContainer")
             .unwrap();
@@ -129,6 +134,7 @@ impl HtmlDom {
         Self {
             document,
             container,
+            statistics,
             predicted_label_container,
             control_panel_button,
             chart,

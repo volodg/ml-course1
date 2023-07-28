@@ -54,6 +54,9 @@ fn start() -> Result<(), JsValue> {
     }
 
     {
+        let mut correct_count = 0;
+        let mut total_count = 0;
+
         let testing_data = &mut TESTING_FEATURES.write().expect("").features;
         for feature in testing_data.iter_mut() {
             let truth = feature.sample.label.clone();
@@ -62,14 +65,24 @@ fn start() -> Result<(), JsValue> {
                     x: feature.point[0],
                     y: feature.point[1],
                 },
-                &TRAINING_FEATURES,
+                &TRAINING_FEATURES
             );
             let correct = truth == label;
+            if correct {
+                correct_count += 1;
+            }
+            total_count += 1;
 
             feature.truth = Some(truth);
             feature.sample.label = label;
             feature.correct = Some(correct)
         }
+
+        html.statistics.set_inner_html(
+            std::format!("<b>ACCURACY</b><br>{correct_count}/{total_count} ({:.2}%)",
+                         correct_count as f64 / total_count as f64 * 100.0
+            ).as_str()
+        );
     }
 
     add_rows(&html, &TRAINING_FEATURES.features)?;

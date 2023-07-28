@@ -48,7 +48,7 @@ button:disabled:hover{
     filter: blur(5px);
 }
 .emphasize {
-    background-color: yellow;
+    background-color: yellow !important;
 }
 #container {
     width: calc(100% - 500px);
@@ -79,4 +79,8 @@ button:disabled:hover{
     color: white;
     font-size: 30px;
     position: relative;
+}
+#statistics {
+    font-size: 20px;
+    padding: 20px;
 }
