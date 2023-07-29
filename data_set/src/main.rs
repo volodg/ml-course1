@@ -4,11 +4,12 @@ mod draw;
 mod file_utils;
 mod analytics;
 
+use crate::analytics::knn::knn;
 use crate::file_utils::build_features;
 
 fn main() -> Result<(), std::io::Error> {
-    build_features()
-    // run_evaluations()
+    knn();
+    Ok(())
 }
 
 #[cfg(test)]
