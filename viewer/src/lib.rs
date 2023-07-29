@@ -7,7 +7,6 @@ use crate::drawing_analyzer::DrawingAnalyzer;
 use crate::html::HtmlDom;
 use crate::html_draw::Draw;
 use commons::math::Point;
-use drawing_commons::knn_classifier::classify;
 use drawing_commons::models::SampleWithFeatures;
 use itertools::Itertools;
 use wasm_bindgen::prelude::wasm_bindgen;
@@ -34,14 +33,11 @@ fn start() -> Result<(), JsValue> {
         let testing_data = &mut TESTING_FEATURES.write().expect("").features;
         for feature in testing_data.iter_mut() {
             let truth = feature.sample.label.clone();
-            let (label, _) = classify(
+            let (label, _) = html.classifier.borrow().predict(
                 &Point {
                     x: feature.point[0],
                     y: feature.point[1],
-                },
-                &TRAINING_FEATURES.features,
-                50,
-            );
+                });
             let correct = truth == label;
             if correct {
                 correct_count += 1;
@@ -77,7 +73,7 @@ fn start() -> Result<(), JsValue> {
     html.plot_statistic(&TRAINING_FEATURES)?;
 
     // TODO update - MIN_MAX_DATA?
-    html.subscribe_drawing_updates(&MIN_MAX_DATA, &TRAINING_FEATURES);
+    html.subscribe_drawing_updates(&MIN_MAX_DATA);
     html.toggle_input()?;
 
     Ok(())

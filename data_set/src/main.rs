@@ -8,8 +8,8 @@ use crate::file_utils::{
     store_samples,
 };
 use commons::math::Point;
+use drawing_commons::classifiers::knn::KNN;
 use drawing_commons::data::{TESTING_FEATURES, TRAINING_FEATURES};
-use drawing_commons::knn_classifier::KNN;
 
 #[allow(dead_code)]
 fn build_data_set() -> Result<(), std::io::Error> {
@@ -36,10 +36,12 @@ fn run_evaluations() -> Result<(), std::io::Error> {
     let mut total_count = 0;
 
     for sample in training_samples {
-        let label = knn.predict(&Point {
-            x: sample.point[0],
-            y: sample.point[1],
-        });
+        let label = knn
+            .predict(&Point {
+                x: sample.point[0],
+                y: sample.point[1],
+            })
+            .0;
         if label == sample.sample.label {
             correct_count += 1;
         }

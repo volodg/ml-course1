@@ -8,6 +8,8 @@ use wasm_bindgen::JsValue;
 use web_commons::chart::Chart;
 use web_commons::chart_models::{Options, SampleStyle, SampleStyleType};
 use web_sys::{window, Document, Element, HtmlButtonElement};
+use drawing_commons::classifiers::knn::KNN;
+use drawing_commons::data::TRAINING_FEATURES;
 
 fn default_chart_options(feature_names: &[String]) -> Options {
     let mut styles = HashMap::<String, SampleStyle>::new();
@@ -102,6 +104,7 @@ pub struct HtmlDom {
     pub control_panel_button: HtmlButtonElement,
     pub chart: Rc<RefCell<Chart>>,
     pub sketch_pad: Rc<RefCell<SketchPad>>,
+    pub classifier: Rc<RefCell<KNN>>,
 }
 
 impl HtmlDom {
@@ -129,6 +132,9 @@ impl HtmlDom {
 
         let sketch_pad = SketchPad::create("inputContainer")?;
 
+        let testing_data = &TRAINING_FEATURES.features;
+        let classifier = Rc::new(RefCell::new(KNN::new(testing_data, 50)));
+
         Self {
             document,
             container,
@@ -137,6 +143,7 @@ impl HtmlDom {
             control_panel_button,
             chart,
             sketch_pad,
+            classifier,
         }
         .ok()
     }

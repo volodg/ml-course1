@@ -1,8 +1,7 @@
 use crate::html::HtmlDom;
 use crate::sketch_pad::SketchPad;
 use commons::math::{normalize_points, Point};
-use drawing_commons::knn_classifier::classify;
-use drawing_commons::models::{DrawingPaths, Features, FeaturesData};
+use drawing_commons::models::{DrawingPaths, Features};
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::{JsCast, JsValue};
@@ -16,8 +15,7 @@ pub trait DrawingAnalyzer {
     fn toggle_input(&self) -> Result<(), JsValue>;
     fn subscribe_drawing_updates(
         &self,
-        min_max: &'static Vec<Vec<f64>>,
-        feature_data: &'static FeaturesData,
+        min_max: &'static Vec<Vec<f64>>
     );
 }
 
@@ -36,12 +34,12 @@ impl DrawingAnalyzer for HtmlDom {
 
     fn subscribe_drawing_updates(
         &self,
-        min_max: &'static Vec<Vec<f64>>,
-        feature_data: &'static FeaturesData,
+        min_max: &'static Vec<Vec<f64>>
     ) {
         let mut sketch_pad = self.sketch_pad.borrow_mut();
         let chart = self.chart.clone();
         let predicted_label_container = self.predicted_label_container.clone();
+        let classifier = self.classifier.clone();
 
         let on_update_callback = Rc::new(RefCell::new(move |drawing: &DrawingPaths<Point>| {
             let point = drawing.get_feature(|x| x.x, |x| x.y);
@@ -52,7 +50,7 @@ impl DrawingAnalyzer for HtmlDom {
                 y: point[0][1],
             };
 
-            let (label, samples) = classify(&point, &feature_data.features, 50);
+            let (label, samples) = classifier.borrow().predict(&point);
             predicted_label_container
                 .set_inner_html(std::format!("Is it a {:?} ?", label).as_str());
             let samples = samples

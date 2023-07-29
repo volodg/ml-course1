@@ -1,6 +1,6 @@
-pub mod knn_classifier;
 pub mod models;
 pub mod data;
+pub mod classifiers;
 
 use const_format::concatcp;
 
