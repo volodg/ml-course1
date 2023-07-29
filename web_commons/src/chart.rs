@@ -49,6 +49,7 @@ impl Chart {
             .get_context("2d")?
             .unwrap()
             .dyn_into::<CanvasRenderingContext2d>()?;
+        context.set_image_smoothing_enabled(false);
 
         container.append_child(&canvas)?;
 
