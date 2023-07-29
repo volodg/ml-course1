@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 
-use drawing_commons::models::FeaturesData;
-use drawing_commons::models::Sample;
+use crate::models::FeaturesData;
+use crate::models::Sample;
 use std::sync::RwLock;
 
 lazy_static! {
@@ -33,7 +33,7 @@ lazy_static! {
 mod tests {
     use crate::data::{
         FEATURES_DATA, MIN_MAX_DATA, SAMPLES_DATA, TESTING_DATA, TESTING_FEATURES, TRAINING_DATA,
-        TRAINING_FEATURES,
+        TRAINING_FEATURES
     };
 
     #[test]

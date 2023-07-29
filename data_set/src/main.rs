@@ -1,15 +1,14 @@
 extern crate core;
 
-mod data;
 mod draw;
 mod file_utils;
 
-use crate::data::{TESTING_FEATURES, TRAINING_FEATURES};
 use crate::file_utils::{
     get_drawings_by_id, read_drawing_data, store_drawings_as_json, store_drawings_as_png,
     store_samples,
 };
 use commons::math::Point;
+use drawing_commons::data::{TESTING_FEATURES, TRAINING_FEATURES};
 use drawing_commons::knn_classifier::KNN;
 
 #[allow(dead_code)]

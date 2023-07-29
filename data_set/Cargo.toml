@@ -8,7 +8,6 @@ edition = "2021"
 [dependencies]
 commons = { path = "../commons" }
 drawing_commons = { path = "../drawing_commons" }
-lazy_static = "1.4.0"
 raqote = "0.8.2"
 serde = { version = "1.0.164", features = ["derive"] }
 serde_json = "1.0.97"

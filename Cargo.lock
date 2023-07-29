@@ -174,7 +174,6 @@ version = "0.1.0"
 dependencies = [
  "commons",
  "drawing_commons",
- "lazy_static",
  "raqote",
  "serde",
  "serde_json",
@@ -247,6 +246,7 @@ version = "0.1.0"
 dependencies = [
  "commons",
  "const_format",
+ "lazy_static",
  "serde",
  "serde_json",
  "web-sys",
@@ -816,7 +816,6 @@ dependencies = [
  "getrandom",
  "itertools",
  "js-sys",
- "lazy_static",
  "serde",
  "serde_json",
  "wasm-bindgen",
