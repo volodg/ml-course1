@@ -1,6 +1,7 @@
 pub mod models;
 pub mod data;
 pub mod classifiers;
+pub mod ui;
 
 use const_format::concatcp;
 

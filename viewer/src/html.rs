@@ -10,82 +10,32 @@ use web_commons::chart_models::{Options, SampleStyle, SampleStyleType};
 use web_sys::{window, Document, Element, HtmlButtonElement};
 use drawing_commons::classifiers::knn::KNN;
 use drawing_commons::data::TRAINING_FEATURES;
+use drawing_commons::ui::COLOR_PER_LABEL;
 
 fn default_chart_options(feature_names: &[String]) -> Options {
     let mut styles = HashMap::<String, SampleStyle>::new();
 
-    styles.insert(
-        "car".to_owned(),
-        SampleStyle {
-            color: "gray".to_owned(),
-            text: "🚗".to_owned(),
-            image: None,
-        },
-    );
-    styles.insert(
-        "fish".to_owned(),
-        SampleStyle {
-            color: "red".to_owned(),
-            text: "🐟".to_owned(),
-            image: None,
-        },
-    );
-    styles.insert(
-        "house".to_owned(),
-        SampleStyle {
-            color: "yellow".to_owned(),
-            text: "🏠".to_owned(),
-            image: None,
-        },
-    );
-    styles.insert(
-        "tree".to_owned(),
-        SampleStyle {
-            color: "green".to_owned(),
-            text: "🌳".to_owned(),
-            image: None,
-        },
-    );
-    styles.insert(
-        "bicycle".to_owned(),
-        SampleStyle {
-            color: "cyan".to_owned(),
-            text: "🚲".to_owned(),
-            image: None,
-        },
-    );
-    styles.insert(
-        "guitar".to_owned(),
-        SampleStyle {
-            color: "blue".to_owned(),
-            text: "🎸".to_owned(),
-            image: None,
-        },
-    );
-    styles.insert(
-        "pencil".to_owned(),
-        SampleStyle {
-            color: "magenta".to_owned(),
-            text: "✏️".to_owned(),
-            image: None,
-        },
-    );
-    styles.insert(
-        "clock".to_owned(),
-        SampleStyle {
-            color: "lightgray".to_owned(),
-            text: "⏰".to_owned(),
-            image: None,
-        },
-    );
-    styles.insert(
-        "?".to_owned(),
-        SampleStyle {
-            color: "red".to_owned(),
-            text: "❓".to_owned(),
-            image: None,
-        },
-    );
+    let mut insert_label = |label: &str, text: &str| {
+        let color = COLOR_PER_LABEL.get(label).expect("");
+        styles.insert(
+            label.to_owned(),
+            SampleStyle {
+                color: (*color).to_owned(),
+                text: text.to_owned(),
+                image: None,
+            },
+        )
+    };
+
+    insert_label("car", "🚗");
+    insert_label("fish", "🐟");
+    insert_label("house", "🏠");
+    insert_label("tree", "🌳");
+    insert_label("bicycle", "🚲");
+    insert_label("guitar", "🎸");
+    insert_label("pencil", "✏️");
+    insert_label("clock", "⏰");
+    insert_label("?", "❓");
 
     Options {
         size: 500,
