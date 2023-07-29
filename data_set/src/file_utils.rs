@@ -1,14 +1,17 @@
 use crate::draw::generate_image_file;
 use commons::math::{normalize_points, normalize_points_to_min_max};
+use csv::WriterBuilder;
 use drawing_commons::models::{
     get_feature_names, DrawingData, DrawingPaths, Features, FeaturesData, Sample,
     SampleWithFeatures,
 };
-use drawing_commons::{FEATURES, IMG_DIR, JSON_DIR, MIN_MAX_JS, RAW_DIR, SAMPLES, TESTING, TESTING_CSV, TESTING_FEATURES, TRAINING, TRAINING_CSV, TRAINING_FEATURES};
+use drawing_commons::{
+    FEATURES, IMG_DIR, JSON_DIR, MIN_MAX_JS, RAW_DIR, SAMPLES, TESTING, TESTING_CSV,
+    TESTING_FEATURES, TRAINING, TRAINING_CSV, TRAINING_FEATURES,
+};
 use std::collections::HashMap;
 use std::io::{stdout, ErrorKind, Write};
 use std::path::PathBuf;
-use csv::WriterBuilder;
 use termion::clear;
 use termion::cursor::Goto;
 use termion::raw::IntoRawMode;
@@ -226,10 +229,18 @@ fn store_as_csv(features: &FeaturesData, csv_file_name: &str) -> Result<(), std:
 
     // Width Height Label
     let feature_names = &features.feature_names;
-    writer.write_record(&[feature_names[0].as_str(), feature_names[1].as_str(), "Label"])?;
+    writer.write_record(&[
+        feature_names[0].as_str(),
+        feature_names[1].as_str(),
+        "Label",
+    ])?;
 
     for x in &features.features {
-        writer.write_record(&[&x.point[0].to_string(), &x.point[1].to_string(), &x.sample.label])?;
+        writer.write_record(&[
+            &x.point[0].to_string(),
+            &x.point[1].to_string(),
+            &x.sample.label,
+        ])?;
     }
 
     writer.flush()?;

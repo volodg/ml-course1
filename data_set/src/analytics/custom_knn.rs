@@ -1,10 +1,10 @@
-use std::io::ErrorKind;
-use image::{ImageBuffer, Rgb};
+use crate::file_utils::print_progress;
 use commons::math::Point;
 use drawing_commons::classifiers::knn::KNN;
 use drawing_commons::data::{TESTING_FEATURES, TRAINING_FEATURES};
 use drawing_commons::ui::COLOR_PER_LABEL;
-use crate::file_utils::print_progress;
+use image::{ImageBuffer, Rgb};
+use std::io::ErrorKind;
 
 #[allow(dead_code)]
 pub fn run_knn_evaluations() -> Result<(), std::io::Error> {

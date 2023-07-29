@@ -1,11 +1,10 @@
 extern crate core;
 
+mod analytics;
 mod draw;
 mod file_utils;
-mod analytics;
 
 use crate::analytics::knn::knn;
-use crate::file_utils::build_features;
 
 fn main() -> Result<(), std::io::Error> {
     knn();

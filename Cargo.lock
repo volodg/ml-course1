@@ -295,6 +295,7 @@ dependencies = [
  "drawing_commons",
  "image",
  "imageproc",
+ "lazy_static",
  "raqote",
  "serde",
  "serde_json",
