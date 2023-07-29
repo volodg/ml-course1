@@ -7,10 +7,13 @@ use crate::file_utils::{
     get_drawings_by_id, read_drawing_data, store_drawings_as_json, store_drawings_as_png,
     store_samples,
 };
-use ::draw::{render, Canvas, Color, Drawing, Shape, Style, SvgRenderer};
+use ::draw::render::bitmap::PNGRenderer;
+use ::draw::render::Renderer;
+use ::draw::{render, Canvas, Color, Drawing, Shape, Style, SvgRenderer, RGB};
 use commons::math::Point;
 use drawing_commons::classifiers::knn::KNN;
 use drawing_commons::data::{TESTING_FEATURES, TRAINING_FEATURES};
+use drawing_commons::ui::COLOR_PER_LABEL;
 
 #[allow(dead_code)]
 fn build_data_set() -> Result<(), std::io::Error> {
@@ -68,31 +71,25 @@ fn run_evaluations() -> Result<(), std::io::Error> {
                 y: 1.0 - y as f64 / canvas.height as f64,
             };
             let label = knn.predict(&point).0;
+            let (r, g, b) = COLOR_PER_LABEL.get(label.as_str()).expect("").1;
+
+            let rect = Drawing::new()
+                .with_shape(Shape::Rectangle {
+                    width: 1,
+                    height: 1,
+                })
+                .with_xy(x as f32, y as f32)
+                .with_style(Style::stroked(1, RGB::new(r, g, b)));
+
+            canvas.display_list.add(rect);
         }
     }
 
-    // create a new drawing
-    let rect = Drawing::new()
-        // give it a shape
-        .with_shape(Shape::Rectangle {
-            width: 50,
-            height: 50,
-        })
-        // move it around
-        .with_xy(25.0, 25.0)
-        // give it a cool style
-        .with_style(Style::stroked(5, Color::black()));
-
-    // add it to the canvas
-    canvas.display_list.add(rect);
-
-    // save the canvas as an svg
     render::save(
         &canvas,
-        "tests/svg/basic_end_to_end.svg",
+        "./data/dataset/decision_boundary.svg",
         SvgRenderer::new(),
-    )
-    .expect("Failed to save");
+    )?;
 
     Ok(())
 }

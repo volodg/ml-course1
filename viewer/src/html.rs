@@ -1,5 +1,8 @@
 use crate::sketch_pad::SketchPad;
 use commons::utils::OkExt;
+use drawing_commons::classifiers::knn::KNN;
+use drawing_commons::data::TRAINING_FEATURES;
+use drawing_commons::ui::COLOR_PER_LABEL;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -8,9 +11,6 @@ use wasm_bindgen::JsValue;
 use web_commons::chart::Chart;
 use web_commons::chart_models::{Options, SampleStyle, SampleStyleType};
 use web_sys::{window, Document, Element, HtmlButtonElement};
-use drawing_commons::classifiers::knn::KNN;
-use drawing_commons::data::TRAINING_FEATURES;
-use drawing_commons::ui::COLOR_PER_LABEL;
 
 fn default_chart_options(feature_names: &[String]) -> Options {
     let mut styles = HashMap::<String, SampleStyle>::new();
@@ -20,7 +20,7 @@ fn default_chart_options(feature_names: &[String]) -> Options {
         styles.insert(
             label.to_owned(),
             SampleStyle {
-                color: (*color).to_owned(),
+                color: (*color).0.to_owned(),
                 text: text.to_owned(),
                 image: None,
             },

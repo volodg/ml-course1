@@ -13,10 +13,7 @@ use web_sys::{window, HtmlElement, MouseEvent};
 
 pub trait DrawingAnalyzer {
     fn toggle_input(&self) -> Result<(), JsValue>;
-    fn subscribe_drawing_updates(
-        &self,
-        min_max: &'static Vec<Vec<f64>>
-    );
+    fn subscribe_drawing_updates(&self, min_max: &'static Vec<Vec<f64>>);
 }
 
 impl DrawingAnalyzer for HtmlDom {
@@ -32,10 +29,7 @@ impl DrawingAnalyzer for HtmlDom {
             })
     }
 
-    fn subscribe_drawing_updates(
-        &self,
-        min_max: &'static Vec<Vec<f64>>
-    ) {
+    fn subscribe_drawing_updates(&self, min_max: &'static Vec<Vec<f64>>) {
         let mut sketch_pad = self.sketch_pad.borrow_mut();
         let chart = self.chart.clone();
         let predicted_label_container = self.predicted_label_container.clone();

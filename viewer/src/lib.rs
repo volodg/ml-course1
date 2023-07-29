@@ -7,12 +7,12 @@ use crate::drawing_analyzer::DrawingAnalyzer;
 use crate::html::HtmlDom;
 use crate::html_draw::Draw;
 use commons::math::Point;
+use drawing_commons::data::{FEATURES_DATA, MIN_MAX_DATA, TESTING_FEATURES, TRAINING_FEATURES};
 use drawing_commons::models::SampleWithFeatures;
 use itertools::Itertools;
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
 use web_sys::window;
-use drawing_commons::data::{FEATURES_DATA, MIN_MAX_DATA, TESTING_FEATURES, TRAINING_FEATURES};
 
 #[wasm_bindgen(start)]
 fn start() -> Result<(), JsValue> {
@@ -33,11 +33,10 @@ fn start() -> Result<(), JsValue> {
         let testing_data = &mut TESTING_FEATURES.write().expect("").features;
         for feature in testing_data.iter_mut() {
             let truth = feature.sample.label.clone();
-            let (label, _) = html.classifier.borrow().predict(
-                &Point {
-                    x: feature.point[0],
-                    y: feature.point[1],
-                });
+            let (label, _) = html.classifier.borrow().predict(&Point {
+                x: feature.point[0],
+                y: feature.point[1],
+            });
             let correct = truth == label;
             if correct {
                 correct_count += 1;

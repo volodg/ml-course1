@@ -33,7 +33,7 @@ lazy_static! {
 mod tests {
     use crate::data::{
         FEATURES_DATA, MIN_MAX_DATA, SAMPLES_DATA, TESTING_DATA, TESTING_FEATURES, TRAINING_DATA,
-        TRAINING_FEATURES
+        TRAINING_FEATURES,
     };
 
     #[test]

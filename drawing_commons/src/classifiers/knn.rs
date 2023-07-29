@@ -16,7 +16,8 @@ impl KNN {
     }
 
     pub fn predict(&self, point: &Point) -> (String, Vec<SampleWithFeatures>) {
-        let sample_points = self.features
+        let sample_points = self
+            .features
             .iter()
             .map(|x| Point {
                 x: x.point[0],
