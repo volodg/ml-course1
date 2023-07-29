@@ -284,8 +284,8 @@ impl Chart {
         // Draw background
         if let Some(background) = &self.options.background {
             let top_left = Point { x: 0.0, y: 1.0 }.remap(&self.data_bounds, &self.pixel_bounds);
-            let size = self.canvas.width() as f64
-                - self.margin * 2.0 / (self.data_trans.scale * self.data_trans.scale);
+            let size = (self.canvas.width() as f64
+                - self.margin * 2.0) / (self.data_trans.scale * self.data_trans.scale);
             self.context
                 .draw_image_with_size(background, &top_left, size)?
         }
