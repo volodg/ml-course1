@@ -9,7 +9,23 @@ fn read_lines(filename: &str) -> Vec<String> {
         .collect()  // gather them together into a vector
 }
 
+#[derive(Debug, serde::Deserialize)]
+#[serde(rename_all = "PascalCase")]
+struct SampleRecord {
+    width: f64,
+    height: f64,
+    label: String,
+}
+
 pub fn knn() {
-    let lines = read_lines(TRAINING_CSV);
-    println!("{:?}", lines);
+    let mut rdr = csv::Reader::from_path(TRAINING_CSV).expect("REASON");
+    let samples: Vec<SampleRecord> = rdr.deserialize().into_iter().flat_map(|x| x).collect();
+
+    println!("{:?}", samples);
+    // for result in rdr.deserialize() {
+    //     // Notice that we need to provide a type hint for automatic
+    //     // deserialization.
+    //     let record: Record = result?;
+    //     println!("{:?}", record);
+    // }
 }
