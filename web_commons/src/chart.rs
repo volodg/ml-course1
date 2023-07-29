@@ -291,16 +291,19 @@ impl Chart {
                 .draw_image_with_size(background, &top_left, size)?
         }
 
-        self.context.set_global_alpha(self.transparency);
-        self.draw_samples(&self.samples)?;
-        self.context.set_global_alpha(1.0);
+        let disable_samples = true;
+        if !disable_samples {
+            self.context.set_global_alpha(self.transparency);
+            self.draw_samples(&self.samples)?;
+            self.context.set_global_alpha(1.0);
 
-        if let Some(hovered_sample) = self.hovered_sample.as_ref() {
-            self.emphasize_samples(hovered_sample, "white")?;
-        }
+            if let Some(hovered_sample) = self.hovered_sample.as_ref() {
+                self.emphasize_samples(hovered_sample, "white")?;
+            }
 
-        if let Some(selected_sample) = self.selected_sample.as_ref() {
-            self.emphasize_samples(selected_sample, "yellow")?;
+            if let Some(selected_sample) = self.selected_sample.as_ref() {
+                self.emphasize_samples(selected_sample, "yellow")?;
+            }
         }
 
         if let Some((dynamic_point, label, samples)) = self.dynamic_point.as_ref() {
@@ -311,15 +314,17 @@ impl Chart {
                 10000000.0,
             )?;
 
-            self.context.set_stroke_style(&JsValue::from_str("gray"));
+            if !disable_samples {
+                self.context.set_stroke_style(&JsValue::from_str("gray"));
 
-            self.context.begin_path();
-            for sample in samples {
-                self.context.move_to(pixel_location.x, pixel_location.y);
-                let line_to = sample.point.remap(&self.data_bounds, &self.pixel_bounds);
-                self.context.line_to(line_to.x, line_to.y);
+                self.context.begin_path();
+                for sample in samples {
+                    self.context.move_to(pixel_location.x, pixel_location.y);
+                    let line_to = sample.point.remap(&self.data_bounds, &self.pixel_bounds);
+                    self.context.line_to(line_to.x, line_to.y);
+                }
+                self.context.stroke();
             }
-            self.context.stroke();
 
             self.context.draw_image_at_center(
                 &self
