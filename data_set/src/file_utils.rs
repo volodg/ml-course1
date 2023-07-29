@@ -138,6 +138,7 @@ pub fn store_drawings_as_png(drawings: &HashMap<u64, Vec<Vec<[i32; 2]>>>) {
     }
 }
 
+#[allow(dead_code)]
 fn build_features_for(
     samples: &[Sample],
     min_max: Option<(Vec<f64>, Vec<f64>)>,
@@ -188,6 +189,7 @@ fn build_features_for(
     )
 }
 
+#[allow(dead_code)]
 fn save_features(
     features: &FeaturesData,
     file_name: &str,
@@ -208,6 +210,7 @@ fn save_features(
     Ok(())
 }
 
+#[allow(dead_code)]
 pub fn build_features() -> Result<(), std::io::Error> {
     println!("EXTRACTING FEATURES...");
 

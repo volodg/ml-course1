@@ -3,10 +3,11 @@ mod html;
 mod html_draw;
 mod sketch_pad;
 
-use crate::drawing_analyzer::{classify, DrawingAnalyzer};
+use crate::drawing_analyzer::DrawingAnalyzer;
 use crate::html::HtmlDom;
 use crate::html_draw::Draw;
 use commons::math::Point;
+use drawing_commons::knn_classifier::classify;
 use drawing_commons::models::Sample;
 use drawing_commons::models::{FeaturesData, SampleWithFeatures};
 use itertools::Itertools;
@@ -65,7 +66,8 @@ fn start() -> Result<(), JsValue> {
                     x: feature.point[0],
                     y: feature.point[1],
                 },
-                &TRAINING_FEATURES
+                &TRAINING_FEATURES.features,
+                50,
             );
             let correct = truth == label;
             if correct {
@@ -79,9 +81,11 @@ fn start() -> Result<(), JsValue> {
         }
 
         html.statistics.set_inner_html(
-            std::format!("<b>ACCURACY</b><br>{correct_count}/{total_count} ({:.2}%)",
-                         correct_count as f64 / total_count as f64 * 100.0
-            ).as_str()
+            std::format!(
+                "<b>ACCURACY</b><br>{correct_count}/{total_count} ({:.2}%)",
+                correct_count as f64 / total_count as f64 * 100.0
+            )
+            .as_str(),
         );
     }
 
@@ -123,8 +127,8 @@ mod tests {
         let size = FEATURES_DATA.features.len();
         assert_eq!(size, samples_count);
 
-        let size = FEATURES_DATA.feature_names.len();
-        assert_eq!(size, 2);
+        let size = TESTING_DATA.len();
+        assert_eq!(size, 2864);
 
         let size = MIN_MAX_DATA.len();
         assert_eq!(size, 2);

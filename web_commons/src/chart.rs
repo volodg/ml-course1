@@ -301,8 +301,7 @@ impl Chart {
                 10000000.0,
             )?;
 
-            self.context
-                .set_stroke_style(&JsValue::from_str("gray"));
+            self.context.set_stroke_style(&JsValue::from_str("gray"));
 
             self.context.begin_path();
             for sample in samples {

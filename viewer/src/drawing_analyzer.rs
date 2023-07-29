@@ -1,9 +1,9 @@
 use crate::html::HtmlDom;
 use crate::sketch_pad::SketchPad;
 use commons::math::{normalize_points, Point};
-use drawing_commons::models::{DrawingPaths, Features, FeaturesData, SampleWithFeatures};
+use drawing_commons::knn_classifier::classify;
+use drawing_commons::models::{DrawingPaths, Features, FeaturesData};
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::rc::Rc;
 use wasm_bindgen::{JsCast, JsValue};
 use web_commons::chart::Chart;
@@ -52,7 +52,7 @@ impl DrawingAnalyzer for HtmlDom {
                 y: point[0][1],
             };
 
-            let (label, samples) = classify(&point, feature_data);
+            let (label, samples) = classify(&point, &feature_data.features, 50);
             predicted_label_container
                 .set_inner_html(std::format!("Is it a {:?} ?", label).as_str());
             let samples = samples
@@ -97,43 +97,4 @@ fn handle_toggle_input(
     }
 
     Ok(())
-}
-
-pub fn classify(
-    point: &Point,
-    feature_data: &'static FeaturesData,
-) -> (String, Vec<SampleWithFeatures>) {
-    let sample_points = feature_data
-        .features
-        .iter()
-        .map(|x| Point {
-            x: x.point[0],
-            y: x.point[1],
-        })
-        .collect::<Vec<_>>();
-
-    let indices = point.get_nearest_k(&sample_points, 50);
-
-    let nearest_samples = indices
-        .iter()
-        .map(|i| feature_data.features[*i].clone())
-        .collect::<Vec<_>>();
-
-    let (_, (_, label)) = nearest_samples.iter().map(|x| x.sample.label.clone()).fold(
-        (HashMap::new(), (0, "".to_owned())),
-        |(mut map, (frequency, label)), val| {
-            let new_frequency = *map
-                .entry(val.clone())
-                .and_modify(|frq| *frq += 1)
-                .or_insert(1);
-
-            if new_frequency > frequency {
-                (map, (new_frequency, val))
-            } else {
-                (map, (frequency, label))
-            }
-        },
-    );
-
-    (label, nearest_samples)
 }

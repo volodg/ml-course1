@@ -121,9 +121,7 @@ impl HtmlDom {
             .expect("")
             .dyn_into::<HtmlButtonElement>()?;
 
-        let statistics = document
-            .get_element_by_id("statistics")
-            .unwrap();
+        let statistics = document.get_element_by_id("statistics").unwrap();
 
         let predicted_label_container = document
             .get_element_by_id("predictedLabelContainer")
