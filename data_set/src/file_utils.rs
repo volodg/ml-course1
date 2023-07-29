@@ -137,6 +137,19 @@ pub fn store_drawings_as_png(drawings: &HashMap<u64, Vec<Vec<[i32; 2]>>>) {
 }
 
 #[allow(dead_code)]
+fn build_data_set() -> Result<(), std::io::Error> {
+    let drawing_data = read_drawing_data()?;
+
+    store_samples(&drawing_data)?;
+
+    let drawings = get_drawings_by_id(&drawing_data);
+    store_drawings_as_json(&drawings)?;
+    store_drawings_as_png(&drawings);
+
+    Ok(())
+}
+
+#[allow(dead_code)]
 fn build_features_for(
     samples: &[Sample],
     min_max: Option<(Vec<f64>, Vec<f64>)>,

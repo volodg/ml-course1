@@ -291,7 +291,7 @@ impl Chart {
                 .draw_image_with_size(background, &top_left, size)?
         }
 
-        let disable_samples = false;
+        let disable_samples = true;
         if !disable_samples {
             self.context.set_global_alpha(self.transparency);
             self.draw_samples(&self.samples)?;
