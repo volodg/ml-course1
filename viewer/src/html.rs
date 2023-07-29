@@ -1,3 +1,4 @@
+use crate::images::create_background_image;
 use crate::sketch_pad::SketchPad;
 use commons::utils::OkExt;
 use drawing_commons::classifiers::knn::KNN;
@@ -12,7 +13,7 @@ use web_commons::chart::Chart;
 use web_commons::chart_models::{Options, SampleStyle, SampleStyleType};
 use web_sys::{window, Document, Element, HtmlButtonElement};
 
-fn default_chart_options(feature_names: &[String]) -> Options {
+fn default_chart_options(feature_names: &[String]) -> Result<Options, JsValue> {
     let mut styles = HashMap::<String, SampleStyle>::new();
 
     let mut insert_label = |label: &str, text: &str| {
@@ -37,13 +38,17 @@ fn default_chart_options(feature_names: &[String]) -> Options {
     insert_label("clock", "⏰");
     insert_label("?", "❓");
 
+    let background = create_background_image()?;
+
     Options {
         size: 500,
         axis_labels: [feature_names[0].clone(), feature_names[1].clone()],
         styles,
         icon: SampleStyleType::Image,
         transparency: Some(0.7),
+        background: Some(background),
     }
+    .ok()
 }
 
 pub struct HtmlDom {
@@ -65,7 +70,7 @@ impl HtmlDom {
         let chart_container = document.get_element_by_id("chartContainer").unwrap();
         let chart = Chart::create(
             chart_container.clone(),
-            default_chart_options(feature_names),
+            default_chart_options(feature_names)?,
         )?;
 
         let control_panel = document.get_element_by_id("controlPanel").unwrap();

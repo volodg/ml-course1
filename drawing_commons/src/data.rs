@@ -27,6 +27,7 @@ lazy_static! {
     pub static ref MIN_MAX_DATA: Vec<Vec<f64>> =
         serde_json::from_str::<_>(std::include_str!("../../data/dataset/minMax.json"))
             .expect("");
+    pub static ref IMAGE_SRC: &'static str = "../../data/dataset/decision_boundary.png";
 }
 
 #[cfg(test)]

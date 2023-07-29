@@ -67,7 +67,17 @@ pub trait ContextExt {
         size: u32,
     ) -> Result<(), JsValue>;
 
-    fn draw_image(&self, image: &HtmlImageElement, location: &Point) -> Result<(), JsValue>;
+    fn draw_image_at_center(
+        &self,
+        image: &HtmlImageElement,
+        location: &Point,
+    ) -> Result<(), JsValue>;
+    fn draw_image_with_size(
+        &self,
+        image: &HtmlImageElement,
+        location: &Point,
+        size: f64,
+    ) -> Result<(), JsValue>;
 }
 
 impl ContextExt for CanvasRenderingContext2d {
@@ -212,7 +222,11 @@ impl ContextExt for CanvasRenderingContext2d {
         Ok(())
     }
 
-    fn draw_image(&self, image: &HtmlImageElement, location: &Point) -> Result<(), JsValue> {
+    fn draw_image_at_center(
+        &self,
+        image: &HtmlImageElement,
+        location: &Point,
+    ) -> Result<(), JsValue> {
         self.begin_path();
         self.draw_image_with_html_image_element_and_dw_and_dh(
             image,
@@ -220,6 +234,21 @@ impl ContextExt for CanvasRenderingContext2d {
             location.y - image.height() as f64 / 2.0,
             image.width() as f64,
             image.height() as f64,
+        )?;
+        self.fill();
+
+        Ok(())
+    }
+
+    fn draw_image_with_size(
+        &self,
+        image: &HtmlImageElement,
+        location: &Point,
+        size: f64,
+    ) -> Result<(), JsValue> {
+        self.begin_path();
+        self.draw_image_with_html_image_element_and_dw_and_dh(
+            image, location.x, location.y, size, size,
         )?;
         self.fill();
 

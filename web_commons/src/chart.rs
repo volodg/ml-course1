@@ -281,6 +281,15 @@ impl Chart {
             self.canvas.height().into(),
         );
 
+        // Draw background
+        if let Some(background) = &self.options.background {
+            let top_left = Point { x: 0.0, y: 1.0 }.remap(&self.data_bounds, &self.pixel_bounds);
+            let size = self.canvas.width() as f64
+                - self.margin * 2.0 / (self.data_trans.scale * self.data_trans.scale);
+            self.context
+                .draw_image_with_size(background, &top_left, size)?
+        }
+
         self.context.set_global_alpha(self.transparency);
         self.draw_samples(&self.samples)?;
         self.context.set_global_alpha(1.0);
@@ -311,7 +320,7 @@ impl Chart {
             }
             self.context.stroke();
 
-            self.context.draw_image(
+            self.context.draw_image_at_center(
                 &self
                     .options
                     .styles
@@ -526,7 +535,7 @@ impl Chart {
                     .draw_point_with_color(&pixel_location, &style.color)?,
                 SampleStyleType::Image => self
                     .context
-                    .draw_image(&style.image.as_ref().expect(""), &pixel_location)?,
+                    .draw_image_at_center(&style.image.as_ref().expect(""), &pixel_location)?,
             }
         }
 

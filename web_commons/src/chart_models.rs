@@ -47,6 +47,7 @@ pub struct Options {
     pub styles: HashMap<String, SampleStyle>,
     pub icon: SampleStyleType,
     pub transparency: Option<f64>,
+    pub background: Option<HtmlImageElement>,
 }
 
 pub fn get_data_bounds(samples: &[Sample]) -> Bounds {

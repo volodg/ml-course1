@@ -33,6 +33,7 @@ fn default_chart_options() -> Options {
         styles,
         icon: SampleStyleType::Image,
         transparency: Some(0.8),
+        background: None,
     }
 }
 

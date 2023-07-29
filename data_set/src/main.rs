@@ -3,8 +3,6 @@ extern crate core;
 mod draw;
 mod file_utils;
 
-use std::io::ErrorKind;
-use image::{ImageBuffer, Rgb};
 use crate::file_utils::{
     get_drawings_by_id, read_drawing_data, store_drawings_as_json, store_drawings_as_png,
     store_samples,
@@ -13,6 +11,8 @@ use commons::math::Point;
 use drawing_commons::classifiers::knn::KNN;
 use drawing_commons::data::{TESTING_FEATURES, TRAINING_FEATURES};
 use drawing_commons::ui::COLOR_PER_LABEL;
+use image::{ImageBuffer, Rgb};
+use std::io::ErrorKind;
 
 #[allow(dead_code)]
 fn build_data_set() -> Result<(), std::io::Error> {
@@ -75,7 +75,8 @@ fn run_evaluations() -> Result<(), std::io::Error> {
         }
     }
 
-    image.save("./data/dataset/decision_boundary.png")
+    image
+        .save("./data/dataset/decision_boundary.png")
         .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
 
     Ok(())
