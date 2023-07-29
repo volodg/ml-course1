@@ -4,13 +4,11 @@ use drawing_commons::models::{
     get_feature_names, DrawingData, DrawingPaths, Features, FeaturesData, Sample,
     SampleWithFeatures,
 };
-use drawing_commons::{
-    FEATURES, IMG_DIR, JSON_DIR, MIN_MAX_JS, RAW_DIR, SAMPLES, TESTING, TESTING_FEATURES, TRAINING,
-    TRAINING_FEATURES,
-};
+use drawing_commons::{FEATURES, IMG_DIR, JSON_DIR, MIN_MAX_JS, RAW_DIR, SAMPLES, TESTING, TESTING_CSV, TESTING_FEATURES, TRAINING, TRAINING_CSV, TRAINING_FEATURES};
 use std::collections::HashMap;
 use std::io::{stdout, ErrorKind, Write};
 use std::path::PathBuf;
+use csv::WriterBuilder;
 use termion::clear;
 use termion::cursor::Goto;
 use termion::raw::IntoRawMode;
@@ -210,6 +208,22 @@ fn save_features(
     Ok(())
 }
 
+fn store_as_csv(features: &FeaturesData, csv_file_name: &str) -> Result<(), std::io::Error> {
+    let mut writer = WriterBuilder::new().from_path(csv_file_name)?;
+
+    // Width Height Label
+    let feature_names = &features.feature_names;
+    writer.write_record(&[feature_names[0].as_str(), feature_names[1].as_str(), "Label"])?;
+
+    for x in &features.features {
+        writer.write_record(&[&x.point[0].to_string(), &x.point[1].to_string(), &x.sample.label])?;
+    }
+
+    writer.flush()?;
+
+    Ok(())
+}
+
 #[allow(dead_code)]
 pub fn build_features() -> Result<(), std::io::Error> {
     println!("EXTRACTING FEATURES...");
@@ -238,6 +252,9 @@ pub fn build_features() -> Result<(), std::io::Error> {
             TRAINING_FEATURES,
             Some((min.clone(), max.clone())),
         )?;
+
+        store_as_csv(&features, TRAINING_CSV)?;
+
         (min, max)
     };
 
@@ -248,6 +265,8 @@ pub fn build_features() -> Result<(), std::io::Error> {
 
         std::fs::write(TESTING, features_json)?;
         save_features(&features, TESTING_FEATURES, None)?;
+
+        store_as_csv(&features, TESTING_CSV)?;
     }
 
     Ok(())

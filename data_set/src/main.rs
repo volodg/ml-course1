@@ -3,10 +3,7 @@ extern crate core;
 mod draw;
 mod file_utils;
 
-use crate::file_utils::{
-    get_drawings_by_id, print_progress, read_drawing_data, store_drawings_as_json,
-    store_drawings_as_png, store_samples,
-};
+use crate::file_utils::{build_features, get_drawings_by_id, print_progress, read_drawing_data, store_drawings_as_json, store_drawings_as_png, store_samples};
 use commons::math::Point;
 use drawing_commons::classifiers::knn::KNN;
 use drawing_commons::data::{TESTING_FEATURES, TRAINING_FEATURES};
@@ -88,7 +85,8 @@ fn run_evaluations() -> Result<(), std::io::Error> {
 }
 
 fn main() -> Result<(), std::io::Error> {
-    run_evaluations()
+    build_features()
+    // run_evaluations()
 }
 
 #[cfg(test)]

@@ -14,7 +14,9 @@ pub const SAMPLES: &str = concatcp!(DATASET_DIR, "/samples.json");
 pub const FEATURES: &str = concatcp!(DATASET_DIR, "/features.json");
 pub const MIN_MAX_JS: &str = concatcp!(DATASET_DIR, "/minMax.json");
 pub const TRAINING: &str = concatcp!(DATASET_DIR, "/training.json");
+pub const TRAINING_CSV: &str = concatcp!(DATASET_DIR, "/training.csv");
 pub const TESTING: &str = concatcp!(DATASET_DIR, "/testing.json");
+pub const TESTING_CSV: &str = concatcp!(DATASET_DIR, "/testing.csv");
 pub const TRAINING_FEATURES: &str = concatcp!(DATASET_DIR, "/training_features.json");
 pub const TESTING_FEATURES: &str = concatcp!(DATASET_DIR, "/testing_features.json");
 
