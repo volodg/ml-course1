@@ -4,8 +4,8 @@ mod draw;
 mod file_utils;
 
 use crate::file_utils::{
-    get_drawings_by_id, read_drawing_data, store_drawings_as_json, store_drawings_as_png,
-    store_samples,
+    get_drawings_by_id, print_progress, read_drawing_data, store_drawings_as_json,
+    store_drawings_as_png, store_samples,
 };
 use commons::math::Point;
 use drawing_commons::classifiers::knn::KNN;
@@ -60,7 +60,9 @@ fn run_evaluations() -> Result<(), std::io::Error> {
 
     println!("GENERATING DECISION BOUNDARY");
 
-    let mut image = ImageBuffer::new(100, 100);
+    let mut image = ImageBuffer::new(5000, 5000);
+    let total = (image.width() * image.height()) as usize;
+    let mut current = 0 as usize;
 
     for x in 0..image.width() {
         for y in 0..image.height() {
@@ -72,6 +74,9 @@ fn run_evaluations() -> Result<(), std::io::Error> {
             let (r, g, b) = COLOR_PER_LABEL.get(label.as_str()).expect("").1;
 
             image.put_pixel(x, y, Rgb([r, g, b]));
+
+            current += 1;
+            print_progress("Generating image", current.into(), total.into())
         }
     }
 
