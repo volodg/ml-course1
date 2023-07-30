@@ -5,7 +5,7 @@ use drawing_commons::models::{
     get_feature_names, DrawingData, DrawingPaths, Features, FeaturesData, Sample,
     SampleWithFeatures,
 };
-use drawing_commons::{
+use drawing_commons::utils::{
     FEATURES, FLAGGED_SAMPLES, IMG_DIR, JSON_DIR, MIN_MAX_JS, RAW_DIR, SAMPLES, TESTING,
     TESTING_CSV, TESTING_FEATURES, TRAINING, TRAINING_CSV, TRAINING_FEATURES,
 };

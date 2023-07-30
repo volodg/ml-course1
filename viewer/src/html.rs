@@ -1,3 +1,4 @@
+use crate::confusion::Confusion;
 use crate::images::create_background_image;
 use commons::utils::OkExt;
 use drawing_commons::classifiers::knn::KNN;
@@ -59,6 +60,7 @@ pub struct HtmlDom {
     pub toggle_input_button: HtmlButtonElement,
     pub toggle_output_button: HtmlButtonElement,
     pub chart: Rc<RefCell<Chart>>,
+    pub confusion: Rc<RefCell<Confusion>>,
     pub sketch_pad: Rc<RefCell<SketchPad>>,
     pub classifier: Rc<RefCell<KNN>>,
 }
@@ -73,6 +75,9 @@ impl HtmlDom {
             chart_container.clone(),
             default_chart_options(feature_names)?,
         )?;
+
+        let confusion_container = document.get_element_by_id("confusionContainer").unwrap();
+        let confusion = Confusion::create(confusion_container)?;
 
         let toggle_input_button = document
             .get_element_by_id("toggleInput")
@@ -103,6 +108,7 @@ impl HtmlDom {
             toggle_input_button,
             toggle_output_button,
             chart,
+            confusion,
             sketch_pad,
             classifier,
         }

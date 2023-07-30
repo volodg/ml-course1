@@ -1,3 +1,4 @@
+mod confusion;
 mod data_cleaner;
 mod drawing_analyzer;
 mod html;
@@ -10,11 +11,13 @@ use crate::html_draw::Draw;
 use commons::math::Point;
 use drawing_commons::data::{FEATURES_DATA, MIN_MAX_DATA, TESTING_FEATURES, TRAINING_FEATURES};
 use drawing_commons::models::SampleWithFeatures;
+use drawing_commons::utils::CLASSES;
 use itertools::Itertools;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
+use web_commons::chart_models::Sample;
 use web_sys::window;
 
 #[wasm_bindgen(start)]
@@ -78,17 +81,39 @@ fn start() -> Result<(), JsValue> {
         .expect("")
         .create_element("h2")?;
     subtitle.set_inner_html("TESTING");
-    html.borrow().container.append_child(&subtitle)?;
+
+    let html_ref = html.borrow();
+
+    html_ref.container.append_child(&subtitle)?;
 
     add_rows(&html, &TESTING_FEATURES.read().expect("").features, true)?;
 
-    html.borrow()
-        .plot_statistic(&html, &TESTING_FEATURES.read().expect(""))?;
+    {
+        let chart_samples = &TESTING_FEATURES
+            .read()
+            .expect("")
+            .features
+            .iter()
+            .map(|feature| Sample {
+                id: feature.sample.id,
+                label: feature.sample.label.clone(),
+                point: Point {
+                    x: feature.point[0],
+                    y: feature.point[1],
+                },
+            })
+            .collect::<Vec<_>>();
 
-    html.borrow()
-        .subscribe_drawing_updates(&html, &MIN_MAX_DATA);
-    html.borrow().toggle_input()?;
-    html.borrow().toggle_output()?;
+        html_ref.plot_statistic(&html, &chart_samples)?;
+        html_ref
+            .confusion
+            .borrow_mut()
+            .set_samples(&chart_samples, &CLASSES);
+    }
+
+    html_ref.subscribe_drawing_updates(&html, &MIN_MAX_DATA);
+    html_ref.toggle_input()?;
+    html_ref.toggle_output()?;
 
     Ok(())
 }

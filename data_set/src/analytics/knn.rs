@@ -1,5 +1,5 @@
 use drawing_commons::array::MostFrequentElement;
-use drawing_commons::{TESTING_CSV, TRAINING_CSV};
+use drawing_commons::utils::{TESTING_CSV, TRAINING_CSV};
 use lazy_static::lazy_static;
 use linfa_nn::{distance::*, LinearSearch, NearestNeighbour};
 use ndarray::{Array1, Array2};

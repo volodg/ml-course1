@@ -1,8 +1,8 @@
 use crate::data_cleaner::toggle_flagged_sample;
 use crate::html::HtmlDom;
 use commons::math::Point;
-use drawing_commons::models::{FeaturesData, SampleWithFeatures};
-use drawing_commons::{FLAGGED_USERS, IMG_DIR};
+use drawing_commons::models::SampleWithFeatures;
+use drawing_commons::utils::{FLAGGED_USERS, IMG_DIR};
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
@@ -26,7 +26,7 @@ pub trait Draw {
     fn plot_statistic(
         &self,
         html: &Rc<RefCell<HtmlDom>>,
-        feature_data: &FeaturesData,
+        samples: &[Sample],
     ) -> Result<(), JsValue>;
     fn show_classified_point(&self, point: Option<Point>) -> Result<(), JsValue>;
 }
@@ -105,24 +105,11 @@ impl Draw for HtmlDom {
     fn plot_statistic(
         &self,
         html: &Rc<RefCell<HtmlDom>>,
-        feature_data: &FeaturesData,
+        samples: &[Sample],
     ) -> Result<(), JsValue> {
         let mut chart = self.chart.borrow_mut();
 
-        let samples = feature_data
-            .features
-            .iter()
-            .map(|feature| Sample {
-                id: feature.sample.id,
-                label: feature.sample.label.clone(),
-                point: Point {
-                    x: feature.point[0],
-                    y: feature.point[1],
-                },
-            })
-            .collect::<Vec<_>>();
-
-        chart.set_samples(samples);
+        chart.set_samples(samples.to_vec());
 
         let html = html.clone();
         let on_click_callback = Rc::new(RefCell::new(move |sample: Option<&Sample>| {
