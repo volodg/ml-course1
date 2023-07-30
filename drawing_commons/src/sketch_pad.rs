@@ -127,8 +127,9 @@ impl SketchPad {
         sketch_pad
             .borrow()
             .canvas
-            .add_listener("mousedown", move |event: MouseEvent| {
+            .add_listener("pointerdown", move |event: MouseEvent| {
                 let mut sketch_pad = sketch_pad_copy.borrow_mut();
+                event.prevent_default();
                 let mouse = sketch_pad.get_mouse(event);
                 sketch_pad.handle_touch_start(mouse);
             })?;
@@ -137,8 +138,9 @@ impl SketchPad {
         sketch_pad
             .borrow()
             .canvas
-            .add_listener("mousemove", move |event: MouseEvent| {
+            .add_listener("pointermove", move |event: MouseEvent| {
                 let mut sketch_pad = sketch_pad_copy.borrow_mut();
+                event.prevent_default();
                 let mouse = sketch_pad.get_mouse(event);
                 sketch_pad.handle_touch_move(mouse);
             })?;
@@ -147,30 +149,8 @@ impl SketchPad {
         sketch_pad
             .borrow()
             .document
-            .add_listener("mouseup", move |_event: MouseEvent| {
+            .add_listener("pointerup", move |_event: MouseEvent| {
                 sketch_pad_copy.borrow_mut().handle_touch_end();
-            })?;
-
-        let sketch_pad_copy = sketch_pad.clone();
-        sketch_pad
-            .borrow()
-            .canvas
-            .add_listener("touchstart", move |event: TouchEvent| {
-                let point = try_convert_touch_event_into_point(event).ok();
-                if let Some(point) = point {
-                    sketch_pad_copy.borrow_mut().handle_touch_start(point);
-                }
-            })?;
-
-        let sketch_pad_copy = sketch_pad.clone();
-        sketch_pad
-            .borrow()
-            .canvas
-            .add_listener("touchmove", move |event: TouchEvent| {
-                let point = try_convert_touch_event_into_point(event).ok();
-                if let Some(point) = point {
-                    sketch_pad_copy.borrow_mut().handle_touch_start(point);
-                }
             })?;
 
         let sketch_pad_copy = sketch_pad.clone();
