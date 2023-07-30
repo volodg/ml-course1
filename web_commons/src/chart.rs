@@ -3,7 +3,6 @@ use crate::chart_models::{
 };
 use crate::graphics::{ContextExt, DrawTextParams};
 use crate::html::AddListener;
-use crate::log;
 use crate::subscribers::HtmlElementExt;
 use commons::math::{lerp, Bounds, Point};
 use commons::utils::OkExt;
@@ -233,11 +232,11 @@ impl Chart {
                 let mut chart = chart_copy.borrow_mut();
                 let dir = sign(event.delta_y());
                 let step = 0.02;
-                chart.data_trans.scale += dir * step;
-                chart.data_trans.scale = step.max(chart.data_trans.scale.min(2.0));
-                let new_offset = chart.data_trans.offset.clone();
-                let new_scale = chart.data_trans.scale;
-                chart.update_data_bounds(new_offset, new_scale);
+                let scale = 1.0 + dir * step;
+                let new_scale = chart.data_trans.scale * scale;
+                chart.data_trans.scale = new_scale;
+                let offset = chart.data_trans.offset.clone();
+                chart.update_data_bounds(offset, new_scale);
                 chart.draw().expect("");
                 chart.draw_overlay().expect("");
                 event.prevent_default();

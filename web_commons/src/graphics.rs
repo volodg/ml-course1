@@ -192,7 +192,7 @@ impl ContextExt for CanvasRenderingContext2d {
                     std::format!(
                         "\
                 brightness(2) \
-                contrast(0.3) \
+                contrast(0.6) \
                 sepia(1) \
                 brightness(0.7) \
                 hue-rotate({}deg) \
