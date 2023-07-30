@@ -9,6 +9,8 @@ edition = "2021"
 commons = { path = "../commons" }
 csv = "1.1"
 drawing_commons = { path = "../drawing_commons" }
+linfa-nn = "0.6.1"
+ndarray = "0.15.6"
 image = "0.24.1"
 imageproc = "0.23.0"
 lazy_static = "1.4.0"

@@ -1,6 +1,6 @@
 use crate::models::SampleWithFeatures;
 use commons::math::Point;
-use std::collections::HashMap;
+use crate::array::MostFrequentElement;
 
 pub struct KNN {
     features: Vec<SampleWithFeatures>,
@@ -32,21 +32,10 @@ impl KNN {
             .map(|i| self.features[*i].clone())
             .collect::<Vec<_>>();
 
-        let (_, (_, label)) = nearest_samples.iter().map(|x| x.sample.label.clone()).fold(
-            (HashMap::new(), (0, "".to_owned())),
-            |(mut map, (frequency, label)), val| {
-                let new_frequency = *map
-                    .entry(val.clone())
-                    .and_modify(|frq| *frq += 1)
-                    .or_insert(1);
-
-                if new_frequency > frequency {
-                    (map, (new_frequency, val))
-                } else {
-                    (map, (frequency, label))
-                }
-            },
-        );
+        let label = nearest_samples.iter().map(|x| &x.sample.label)
+            .most_frequent_element()
+            .expect("")
+            .clone();
 
         (label, nearest_samples)
     }
