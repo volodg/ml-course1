@@ -45,11 +45,19 @@ impl Confusion {
         let cells_row_count = self.classes.len() + 1;
         let cell_size = self.size / (cells_row_count + 1);
 
-        let table = self.document.create_element("table").expect("").dyn_into::<HtmlElement>()?;
+        let table = self
+            .document
+            .create_element("table")
+            .expect("")
+            .dyn_into::<HtmlElement>()?;
         table.style().set_property("borderCollapse", "collapse")?;
         table.style().set_property("textAlign", "center")?;
-        table.style().set_property("marginLeft", std::format!("{cell_size}px").as_str())?;
-        table.style().set_property("marginTop", std::format!("{cell_size}px").as_str())?;
+        table
+            .style()
+            .set_property("marginLeft", std::format!("{cell_size}px").as_str())?;
+        table
+            .style()
+            .set_property("marginTop", std::format!("{cell_size}px").as_str())?;
 
         self.container.append_child(&table)?;
 
@@ -73,14 +81,10 @@ impl Confusion {
             result.push(row)
         }
 
-        for sample in &self.samples {
-
-        }
+        for sample in &self.samples {}
 
         result
     }
 
-    fn fill_table(&self, _matrix: Vec<Vec<usize>>) {
-
-    }
+    fn fill_table(&self, _matrix: Vec<Vec<usize>>) {}
 }

@@ -4,11 +4,13 @@ mod drawing_analyzer;
 mod html;
 mod html_draw;
 mod images;
+mod models;
 
 use crate::drawing_analyzer::DrawingAnalyzer;
 use crate::html::HtmlDom;
 use crate::html_draw::Draw;
-use commons::math::Point;
+use crate::models::feature_to_chart_sample;
+use drawing_commons::classifiers::knn::KNN;
 use drawing_commons::data::{FEATURES_DATA, MIN_MAX_DATA, TESTING_FEATURES, TRAINING_FEATURES};
 use drawing_commons::models::SampleWithFeatures;
 use drawing_commons::utils::CLASSES;
@@ -26,14 +28,14 @@ fn start() -> Result<(), JsValue> {
 
     fn add_rows(
         html: &Rc<RefCell<HtmlDom>>,
-        features: &[SampleWithFeatures],
+        samples: &[Sample],
         testing: bool,
     ) -> Result<(), JsValue> {
-        for (_, group) in &features.iter().group_by(|x| x.sample.student_id) {
+        for (_, group) in &samples.iter().group_by(|x| x.group_id) {
             let group = group.collect::<Vec<_>>();
             html.borrow().create_row(
                 html,
-                group[0].sample.student_name.as_str(),
+                group[0].group_name.as_str(),
                 group.as_slice(),
                 testing,
             )?;
@@ -41,27 +43,22 @@ fn start() -> Result<(), JsValue> {
         Ok(())
     }
 
+    let testing_chart_samples =
+        features_to_chart_samples(&TESTING_FEATURES.features, Some(&html.classifier.borrow()));
+
     {
-        let mut correct_count = 0;
-        let mut total_count = 0;
-
-        let testing_data = &mut TESTING_FEATURES.write().expect("").features;
-        for feature in testing_data.iter_mut() {
-            let truth = feature.sample.label.clone();
-            let (label, _) = html.classifier.borrow().predict(&Point {
-                x: feature.point[0],
-                y: feature.point[1],
-            });
-            let correct = truth == label;
-            if correct {
-                correct_count += 1;
-            }
-            total_count += 1;
-
-            feature.truth = Some(truth);
-            feature.sample.label = label;
-            feature.correct = Some(correct)
-        }
+        let correct_count =
+            testing_chart_samples.iter().fold(
+                0,
+                |acc, el| {
+                    if el.correct() {
+                        acc + 1
+                    } else {
+                        acc
+                    }
+                },
+            );
+        let total_count = testing_chart_samples.len();
 
         html.statistics.set_inner_html(
             std::format!(
@@ -73,7 +70,8 @@ fn start() -> Result<(), JsValue> {
     }
 
     let html = Rc::new(RefCell::new(html));
-    add_rows(&html, &TRAINING_FEATURES.features, false)?;
+    let training_samples = features_to_chart_samples(&TRAINING_FEATURES.features, None);
+    add_rows(&html, &training_samples, false)?;
 
     let subtitle = window()
         .expect("")
@@ -86,29 +84,14 @@ fn start() -> Result<(), JsValue> {
 
     html_ref.container.append_child(&subtitle)?;
 
-    add_rows(&html, &TESTING_FEATURES.read().expect("").features, true)?;
+    add_rows(&html, &testing_chart_samples, true)?;
 
     {
-        let chart_samples = &TESTING_FEATURES
-            .read()
-            .expect("")
-            .features
-            .iter()
-            .map(|feature| Sample {
-                id: feature.sample.id,
-                label: feature.sample.label.clone(),
-                point: Point {
-                    x: feature.point[0],
-                    y: feature.point[1],
-                },
-            })
-            .collect::<Vec<_>>();
-
-        html_ref.plot_statistic(&html, &chart_samples)?;
+        html_ref.plot_statistic(&html, &testing_chart_samples)?;
         html_ref
             .confusion
             .borrow_mut()
-            .set_samples(&chart_samples, &CLASSES);
+            .set_samples(&testing_chart_samples, &CLASSES);
 
         html_ref.confusion.borrow().draw()?;
     }
@@ -118,6 +101,32 @@ fn start() -> Result<(), JsValue> {
     html_ref.toggle_output()?;
 
     Ok(())
+}
+
+fn features_to_chart_samples(
+    features: &[SampleWithFeatures],
+    classifier: Option<&KNN>,
+) -> Vec<Sample> {
+    features
+        .iter()
+        .map(|feature| {
+            let mut sample = feature_to_chart_sample(feature.clone());
+
+            let (truth, label) = match classifier {
+                Some(classifier) => {
+                    let truth = feature.sample.label.clone();
+                    let (label, _) = classifier.predict(&sample.point);
+                    (Some(truth), label)
+                }
+                None => (None, feature.sample.label.clone()),
+            };
+
+            sample.truth = truth;
+            sample.label = label;
+
+            sample
+        })
+        .collect::<Vec<_>>()
 }
 
 #[cfg(test)]

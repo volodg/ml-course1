@@ -2,7 +2,6 @@ use lazy_static::lazy_static;
 
 use crate::models::FeaturesData;
 use crate::models::Sample;
-use std::sync::RwLock;
 
 lazy_static! {
     // TODO const variables don't work as arguments of std::include_str!
@@ -21,9 +20,9 @@ lazy_static! {
     pub static ref TRAINING_FEATURES: FeaturesData =
         serde_json::from_str::<_>(std::include_str!("../../data/dataset/training_features.json"))
             .expect("");
-    pub static ref TESTING_FEATURES: RwLock<FeaturesData> =
-        RwLock::new(serde_json::from_str::<_>(std::include_str!("../../data/dataset/testing_features.json"))
-            .expect(""));
+    pub static ref TESTING_FEATURES: FeaturesData =
+        serde_json::from_str::<_>(std::include_str!("../../data/dataset/testing_features.json"))
+            .expect("");
     pub static ref MIN_MAX_DATA: Vec<Vec<f64>> =
         serde_json::from_str::<_>(std::include_str!("../../data/dataset/minMax.json"))
             .expect("");

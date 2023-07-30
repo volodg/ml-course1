@@ -1,7 +1,7 @@
 use crate::data_cleaner::toggle_flagged_sample;
 use crate::html::HtmlDom;
+use crate::models::feature_to_chart_sample;
 use commons::math::Point;
-use drawing_commons::models::SampleWithFeatures;
 use drawing_commons::utils::{FLAGGED_USERS, IMG_DIR};
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -20,7 +20,7 @@ pub trait Draw {
         &self,
         html: &Rc<RefCell<HtmlDom>>,
         student_name: &str,
-        features: &[&SampleWithFeatures],
+        samples: &[&Sample],
         testing: bool,
     ) -> Result<(), JsValue>;
     fn plot_statistic(
@@ -35,8 +35,8 @@ impl Draw for HtmlDom {
     fn create_row(
         &self,
         html: &Rc<RefCell<HtmlDom>>,
-        student_name: &str,
-        features: &[&SampleWithFeatures],
+        group_name: &str,
+        samples: &[&Sample],
         testing: bool,
     ) -> Result<(), JsValue> {
         let row = self.document.create_element("div")?;
@@ -44,11 +44,11 @@ impl Draw for HtmlDom {
         _ = self.container.append_child(&row)?;
 
         let row_label = self.document.create_element("div")?;
-        row_label.set_inner_html(student_name);
+        row_label.set_inner_html(group_name);
         row_label.class_list().add_1("rowLabel")?;
         _ = row.append_child(&row_label)?;
 
-        for feature in features {
+        for sample in samples {
             let img = self
                 .document
                 .create_element("img")?
@@ -58,40 +58,33 @@ impl Draw for HtmlDom {
                 .document
                 .create_element("div")?
                 .dyn_into::<HtmlElement>()?;
-            sample_container.set_id(std::format!("sample_{}", feature.sample.id).as_str());
+            sample_container.set_id(std::format!("sample_{}", sample.id).as_str());
 
-            let sample = Sample {
-                id: feature.sample.id,
-                label: feature.sample.label.clone(),
-                point: Point {
-                    x: feature.point[0],
-                    y: feature.point[1],
-                },
-            };
             let html = html.clone();
+            let sample_copy = (*sample).clone();
             sample_container.on_click(move |event: MouseEvent| {
                 if event.shift_key() {
-                    toggle_flagged_sample(&sample)
+                    toggle_flagged_sample(&sample_copy)
                 } else {
-                    handle_click(&html, Some(&sample), false, testing)
+                    handle_click(&html, Some(&sample_copy), false, testing)
                 }
             })?;
 
             _ = sample_container.class_list().add_1("sampleContainer")?;
-            if feature.correct.unwrap_or(false) {
+            if sample.correct() {
                 sample_container
                     .style()
                     .set_property("background-color", "#006")?;
             }
 
             let sample_label = self.document.create_element("div")?;
-            sample_label.set_inner_html(feature.sample.label.as_str());
+            sample_label.set_inner_html(sample.label.as_str());
             _ = sample_container.append_child(&sample_label)?;
 
-            let path = std::format!("{}/{}.png", IMG_DIR, feature.sample.id);
+            let path = std::format!("{}/{}.png", IMG_DIR, sample.id);
             img.set_src(path.as_str());
             img.class_list().add_1("thumb")?;
-            if FLAGGED_USERS.contains(&feature.sample.student_id) {
+            if FLAGGED_USERS.contains(&sample.group_id) {
                 img.class_list().add_1("blur")?;
             }
             sample_container.append_child(&img)?;
@@ -130,17 +123,7 @@ impl Draw for HtmlDom {
                 let (label, samples) = classifier.borrow().predict(&point);
                 predicted_label_container
                     .set_inner_html(std::format!("Is it a {:?} ?", label).as_str());
-                let samples = samples
-                    .into_iter()
-                    .map(|feature| Sample {
-                        id: feature.sample.id,
-                        label: feature.sample.label,
-                        point: Point {
-                            x: feature.point[0],
-                            y: feature.point[1],
-                        },
-                    })
-                    .collect();
+                let samples = samples.into_iter().map(feature_to_chart_sample).collect();
 
                 Some((point, label, samples))
             }

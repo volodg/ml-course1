@@ -52,6 +52,9 @@ mod tests {
     fn it_toggle_flagged_sample() {
         let sample = Sample {
             id: usize::MAX,
+            group_id: 0,
+            group_name: "Name".to_owned(),
+            truth: None,
             label: "".to_owned(),
             point: Point::default(),
         };

@@ -21,13 +21,36 @@ pub struct DragInto {
 #[derive(Clone, PartialEq)]
 pub struct Sample {
     pub id: usize,
+    pub group_id: u64,
+    pub group_name: String,
+    pub truth: Option<String>,
     pub label: String,
     pub point: Point,
 }
 
 impl Sample {
-    pub fn create(id: usize, label: String, point: Point) -> Self {
-        Self { id, label, point }
+    pub fn create(
+        id: usize,
+        group_id: u64,
+        group_name: String,
+        label: String,
+        point: Point,
+    ) -> Self {
+        Self {
+            id,
+            group_id,
+            group_name,
+            truth: None,
+            label,
+            point,
+        }
+    }
+
+    pub fn correct(&self) -> bool {
+        self.truth
+            .as_ref()
+            .map(|x| x.eq(&self.label))
+            .unwrap_or(true)
     }
 }
 
@@ -118,11 +141,17 @@ mod tests {
         let samples = [
             Sample {
                 id: 0,
+                group_id: 0,
+                group_name: 0.to_string(),
+                truth: None,
                 label: "label1".to_owned(),
                 point: Point { x: 1.0, y: 10.0 },
             },
             Sample {
                 id: 1,
+                group_id: 0,
+                group_name: 0.to_string(),
+                truth: None,
                 label: "label2".to_owned(),
                 point: Point { x: 11.0, y: 2.0 },
             },

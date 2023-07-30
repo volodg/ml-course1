@@ -108,19 +108,12 @@ pub fn get_feature_names() -> [String; 2] {
 #[derive(Clone, Deserialize, Serialize)]
 pub struct SampleWithFeatures {
     pub sample: Sample,
-    pub truth: Option<String>,
-    pub correct: Option<bool>,
     pub point: Vec<f64>,
 }
 
 impl SampleWithFeatures {
     pub fn create(sample: Sample, point: Vec<f64>) -> Self {
-        Self {
-            sample,
-            truth: None,
-            correct: None,
-            point,
-        }
+        Self { sample, point }
     }
 }
 
