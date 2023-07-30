@@ -63,7 +63,7 @@ impl Confusion {
 
         let matrix = self.prepare_matrix(cells_row_count);
 
-        self.fill_table(matrix);
+        self.fill_table(table, cells_row_count, cell_size, matrix)?;
 
         Ok(())
     }
@@ -98,5 +98,24 @@ impl Confusion {
         result
     }
 
-    fn fill_table(&self, _matrix: Vec<Vec<usize>>) {}
+    fn fill_table(&self, table: HtmlElement, cells_row_count: usize, cell_size: usize, matrix: Vec<Vec<usize>>) -> Result<(), JsValue> {
+
+        for i in 0..cells_row_count {
+            let row = self.document.create_element("tr")?;
+            table.append_child(&row)?;
+
+            for j in 0..cells_row_count {
+                let cell = self.document.create_element("td")?.dyn_into::<HtmlElement>()?;
+                cell.style().set_property("width", std::format!("{cell_size}px").as_str())?;
+                cell.style().set_property("height", std::format!("{cell_size}px").as_str())?;
+                cell.style().set_property("padding", "0")?;
+
+                cell.set_text_content(Some(matrix[i][j].to_string().as_str()));
+
+                row.append_child(&cell)?;
+            }
+        }
+
+        Ok(())
+    }
 }
