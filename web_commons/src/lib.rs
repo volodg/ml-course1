@@ -3,6 +3,7 @@ pub mod chart_models;
 pub mod geometry;
 mod graphics;
 pub mod html;
+pub mod subscribers;
 
 use wasm_bindgen::prelude::wasm_bindgen;
 

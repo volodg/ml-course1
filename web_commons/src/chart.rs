@@ -3,19 +3,20 @@ use crate::chart_models::{
 };
 use crate::graphics::{ContextExt, DrawTextParams};
 use crate::html::AddListener;
+use crate::log;
+use crate::subscribers::HtmlElementExt;
 use commons::math::{lerp, Bounds, Point};
 use commons::utils::OkExt;
 use js_sys::Array;
 use js_sys::Math::sign;
 use std::cell::RefCell;
 use std::f64::consts::FRAC_PI_2;
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{
     window, CanvasRenderingContext2d, Element, HtmlCanvasElement, MouseEvent, WheelEvent,
 };
-use crate::log;
 
 pub struct Chart {
     samples: Vec<Sample>,
@@ -33,6 +34,7 @@ pub struct Chart {
     selected_sample: Option<Sample>,
     dynamic_point: Option<(Point, String, Vec<Sample>)>,
     on_click: Option<Rc<RefCell<dyn FnMut(Option<&Sample>)>>>,
+    weak_self: Option<Weak<RefCell<Chart>>>,
 }
 
 impl Chart {
@@ -84,10 +86,12 @@ impl Chart {
             selected_sample: None,
             dynamic_point: None,
             on_click: None,
+            weak_self: None,
         };
 
         let result = Rc::new(RefCell::new(result));
 
+        result.borrow_mut().weak_self = Some(Rc::downgrade(&result));
         Self::subscribe(&result)?;
 
         result.ok()
@@ -289,23 +293,26 @@ impl Chart {
             let size = (self.canvas.width() as f64 - self.margin * 2.0)
                 / (self.data_trans.scale * self.data_trans.scale);
             self.context
-                .draw_image_with_size(background, &top_left, size)?
+                .draw_image_with_size(background, &top_left, size)?;
+
+            let weak_self = self.weak_self.clone().expect("");
+            background.on_load(move || {
+                let chart = weak_self.upgrade().expect("");
+                chart.borrow().draw().expect("");
+            });
         }
 
-        // let disable_samples = false;
-        // if !disable_samples {
-            self.context.set_global_alpha(self.transparency);
-            self.draw_samples(&self.samples)?;
-            self.context.set_global_alpha(1.0);
+        self.context.set_global_alpha(self.transparency);
+        self.draw_samples(&self.samples)?;
+        self.context.set_global_alpha(1.0);
 
-            if let Some(hovered_sample) = self.hovered_sample.as_ref() {
-                self.emphasize_samples(hovered_sample, "white")?;
-            }
+        if let Some(hovered_sample) = self.hovered_sample.as_ref() {
+            self.emphasize_samples(hovered_sample, "white")?;
+        }
 
-            if let Some(selected_sample) = self.selected_sample.as_ref() {
-                self.emphasize_samples(selected_sample, "yellow")?;
-            }
-        // }
+        if let Some(selected_sample) = self.selected_sample.as_ref() {
+            self.emphasize_samples(selected_sample, "yellow")?;
+        }
 
         if let Some((dynamic_point, label, samples)) = self.dynamic_point.as_ref() {
             let pixel_location = dynamic_point.remap(&self.data_bounds, &self.pixel_bounds);
@@ -316,16 +323,16 @@ impl Chart {
             )?;
 
             // if !disable_samples {
-                self.context.set_stroke_style(&JsValue::from_str("black"));
+            self.context.set_stroke_style(&JsValue::from_str("black"));
             log(std::format!("draw spider: {}", samples.len()).as_str());
 
-                self.context.begin_path();
-                for sample in samples {
-                    self.context.move_to(pixel_location.x, pixel_location.y);
-                    let line_to = sample.point.remap(&self.data_bounds, &self.pixel_bounds);
-                    self.context.line_to(line_to.x, line_to.y);
-                }
-                self.context.stroke();
+            self.context.begin_path();
+            for sample in samples {
+                self.context.move_to(pixel_location.x, pixel_location.y);
+                let line_to = sample.point.remap(&self.data_bounds, &self.pixel_bounds);
+                self.context.line_to(line_to.x, line_to.y);
+            }
+            self.context.stroke();
             // }
 
             self.context.draw_image_at_center(

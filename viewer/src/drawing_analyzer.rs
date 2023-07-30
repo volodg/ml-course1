@@ -1,4 +1,5 @@
 use crate::html::HtmlDom;
+use crate::html_draw::Draw;
 use commons::math::{normalize_points, Point};
 use drawing_commons::models::{DrawingPaths, Features};
 use drawing_commons::sketch_pad::SketchPad;
@@ -9,11 +10,14 @@ use web_commons::chart::Chart;
 use web_commons::html::AddListener;
 use web_commons::html::Visibility;
 use web_sys::{window, HtmlElement, MouseEvent};
-use crate::html_draw::Draw;
 
 pub trait DrawingAnalyzer {
     fn toggle_input(&self) -> Result<(), JsValue>;
-    fn subscribe_drawing_updates(&self, html: &Rc<RefCell<HtmlDom>>, min_max: &'static Vec<Vec<f64>>);
+    fn subscribe_drawing_updates(
+        &self,
+        html: &Rc<RefCell<HtmlDom>>,
+        min_max: &'static Vec<Vec<f64>>,
+    );
 }
 
 impl DrawingAnalyzer for HtmlDom {
@@ -29,7 +33,11 @@ impl DrawingAnalyzer for HtmlDom {
             })
     }
 
-    fn subscribe_drawing_updates(&self, html: &Rc<RefCell<HtmlDom>>, min_max: &'static Vec<Vec<f64>>) {
+    fn subscribe_drawing_updates(
+        &self,
+        html: &Rc<RefCell<HtmlDom>>,
+        min_max: &'static Vec<Vec<f64>>,
+    ) {
         let mut sketch_pad = self.sketch_pad.borrow_mut();
 
         let html = html.clone();
@@ -42,10 +50,7 @@ impl DrawingAnalyzer for HtmlDom {
                 y: point[0][1],
             };
 
-            html
-                .borrow()
-                .show_classified_point(Some(point))
-                .expect("");
+            html.borrow().show_classified_point(Some(point)).expect("");
         }));
 
         sketch_pad.set_on_update(on_update_callback)

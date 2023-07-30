@@ -3,8 +3,6 @@ mod html;
 mod html_draw;
 mod images;
 
-use std::cell::RefCell;
-use std::rc::Rc;
 use crate::drawing_analyzer::DrawingAnalyzer;
 use crate::html::HtmlDom;
 use crate::html_draw::Draw;
@@ -12,6 +10,8 @@ use commons::math::Point;
 use drawing_commons::data::{FEATURES_DATA, MIN_MAX_DATA, TESTING_FEATURES, TRAINING_FEATURES};
 use drawing_commons::models::SampleWithFeatures;
 use itertools::Itertools;
+use std::cell::RefCell;
+use std::rc::Rc;
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
 use web_sys::window;
@@ -20,10 +20,19 @@ use web_sys::window;
 fn start() -> Result<(), JsValue> {
     let html = HtmlDom::create(&FEATURES_DATA.feature_names)?;
 
-    fn add_rows(html: &Rc<RefCell<HtmlDom>>, features: &[SampleWithFeatures], testing: bool) -> Result<(), JsValue> {
+    fn add_rows(
+        html: &Rc<RefCell<HtmlDom>>,
+        features: &[SampleWithFeatures],
+        testing: bool,
+    ) -> Result<(), JsValue> {
         for (_, group) in &features.iter().group_by(|x| x.sample.student_id) {
             let group = group.collect::<Vec<_>>();
-            html.borrow().create_row(html, group[0].sample.student_name.as_str(), group.as_slice(), testing)?;
+            html.borrow().create_row(
+                html,
+                group[0].sample.student_name.as_str(),
+                group.as_slice(),
+                testing,
+            )?;
         }
         Ok(())
     }
@@ -72,9 +81,11 @@ fn start() -> Result<(), JsValue> {
 
     add_rows(&html, &TESTING_FEATURES.read().expect("").features, true)?;
 
-    html.borrow().plot_statistic(&html, &TESTING_FEATURES.read().expect(""))?;
+    html.borrow()
+        .plot_statistic(&html, &TESTING_FEATURES.read().expect(""))?;
 
-    html.borrow().subscribe_drawing_updates(&html, &MIN_MAX_DATA);
+    html.borrow()
+        .subscribe_drawing_updates(&html, &MIN_MAX_DATA);
     html.borrow().toggle_input()?;
 
     Ok(())

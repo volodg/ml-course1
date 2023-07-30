@@ -7,12 +7,12 @@ use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::chart::Chart;
+use web_commons::chart_models::Sample;
 use web_commons::html::AddListener;
 use web_sys::{
     window, Element, HtmlElement, HtmlImageElement, MouseEvent, ScrollBehavior,
     ScrollIntoViewOptions, ScrollLogicalPosition,
 };
-use web_commons::chart_models::Sample;
 
 pub trait Draw {
     fn create_row(
@@ -22,7 +22,11 @@ pub trait Draw {
         features: &[&SampleWithFeatures],
         testing: bool,
     ) -> Result<(), JsValue>;
-    fn plot_statistic(&self, html: &Rc<RefCell<HtmlDom>>, feature_data: &FeaturesData) -> Result<(), JsValue>;
+    fn plot_statistic(
+        &self,
+        html: &Rc<RefCell<HtmlDom>>,
+        feature_data: &FeaturesData,
+    ) -> Result<(), JsValue>;
     fn show_classified_point(&self, point: Option<Point>) -> Result<(), JsValue>;
 }
 
@@ -94,7 +98,11 @@ impl Draw for HtmlDom {
         Ok(())
     }
 
-    fn plot_statistic(&self, html: &Rc<RefCell<HtmlDom>>, feature_data: &FeaturesData) -> Result<(), JsValue> {
+    fn plot_statistic(
+        &self,
+        html: &Rc<RefCell<HtmlDom>>,
+        feature_data: &FeaturesData,
+    ) -> Result<(), JsValue> {
         let mut chart = self.chart.borrow_mut();
 
         let samples = feature_data
@@ -147,7 +155,7 @@ impl Draw for HtmlDom {
 
                 Some((point, label, samples))
             }
-            None => None
+            None => None,
         };
 
         self.chart.borrow_mut().show_dynamic_point(selection)
