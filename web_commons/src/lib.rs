@@ -1,5 +1,6 @@
 pub mod chart;
 pub mod chart_models;
+pub mod document;
 pub mod geometry;
 mod graphics;
 pub mod html;

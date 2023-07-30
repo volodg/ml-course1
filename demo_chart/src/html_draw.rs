@@ -6,10 +6,11 @@ use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::chart_models::Sample;
+use web_commons::document::DocumentExt;
 use web_commons::html::AddListener;
 use web_sys::{
-    window, Element, HtmlTableRowElement, HtmlTableSectionElement, ScrollBehavior,
-    ScrollIntoViewOptions, ScrollLogicalPosition,
+    window, HtmlTableRowElement, HtmlTableSectionElement, ScrollBehavior, ScrollIntoViewOptions,
+    ScrollLogicalPosition,
 };
 
 impl DrawWithState for HtmlDom {
@@ -77,17 +78,10 @@ trait HtmlDomExt {
 impl HtmlDomExt for HtmlDom {
     fn handle_click(&self, sample: Option<&Sample>, scroll: bool) -> Result<(), JsValue> {
         let document = window().expect("").document().expect("");
-        let selected = document.query_selector_all(".emphasize")?;
 
         let emphasize_class_name = "emphasize";
-
-        let de_emphasize = || -> Result<(), JsValue> {
-            for i in 0..selected.length() {
-                let element = selected.item(i).expect("").dyn_into::<Element>()?;
-                element.class_list().remove_1(emphasize_class_name)?;
-            }
-            Ok(())
-        };
+        let de_emphasize =
+            || -> Result<(), JsValue> { document.remove_all_classes(emphasize_class_name) };
 
         match sample {
             None => de_emphasize()?,
