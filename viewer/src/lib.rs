@@ -20,10 +20,10 @@ use web_sys::window;
 fn start() -> Result<(), JsValue> {
     let html = HtmlDom::create(&FEATURES_DATA.feature_names)?;
 
-    fn add_rows(html: &HtmlDom, features: &[SampleWithFeatures]) -> Result<(), JsValue> {
+    fn add_rows(html: &Rc<RefCell<HtmlDom>>, features: &[SampleWithFeatures], testing: bool) -> Result<(), JsValue> {
         for (_, group) in &features.iter().group_by(|x| x.sample.student_id) {
             let group = group.collect::<Vec<_>>();
-            html.create_row(group[0].sample.student_name.as_str(), group.as_slice())?;
+            html.borrow().create_row(html, group[0].sample.student_name.as_str(), group.as_slice(), testing)?;
         }
         Ok(())
     }
@@ -59,7 +59,8 @@ fn start() -> Result<(), JsValue> {
         );
     }
 
-    add_rows(&html, &TRAINING_FEATURES.features)?;
+    let html = Rc::new(RefCell::new(html));
+    add_rows(&html, &TRAINING_FEATURES.features, false)?;
 
     let subtitle = window()
         .expect("")
@@ -67,13 +68,12 @@ fn start() -> Result<(), JsValue> {
         .expect("")
         .create_element("h2")?;
     subtitle.set_inner_html("TESTING");
-    html.container.append_child(&subtitle)?;
+    html.borrow().container.append_child(&subtitle)?;
 
-    add_rows(&html, &TESTING_FEATURES.read().expect("").features)?;
+    add_rows(&html, &TESTING_FEATURES.read().expect("").features, true)?;
 
-    html.plot_statistic(&TRAINING_FEATURES)?;
+    html.borrow().plot_statistic(&html, &TRAINING_FEATURES)?;
 
-    let html = Rc::new(RefCell::new(html));
     html.borrow().subscribe_drawing_updates(&html, &MIN_MAX_DATA);
     html.borrow().toggle_input()?;
 

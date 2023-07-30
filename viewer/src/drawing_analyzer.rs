@@ -44,7 +44,7 @@ impl DrawingAnalyzer for HtmlDom {
 
             html
                 .borrow()
-                .show_classified_point(point)
+                .show_classified_point(Some(point))
                 .expect("");
         }));
 

@@ -17,18 +17,22 @@ use web_commons::chart_models::Sample;
 pub trait Draw {
     fn create_row(
         &self,
+        html: &Rc<RefCell<HtmlDom>>,
         student_name: &str,
         features: &[&SampleWithFeatures],
+        testing: bool,
     ) -> Result<(), JsValue>;
-    fn plot_statistic(&self, feature_data: &FeaturesData) -> Result<(), JsValue>;
-    fn show_classified_point(&self, point: Point) -> Result<(), JsValue>;
+    fn plot_statistic(&self, html: &Rc<RefCell<HtmlDom>>, feature_data: &FeaturesData) -> Result<(), JsValue>;
+    fn show_classified_point(&self, point: Option<Point>) -> Result<(), JsValue>;
 }
 
 impl Draw for HtmlDom {
     fn create_row(
         &self,
+        html: &Rc<RefCell<HtmlDom>>,
         student_name: &str,
         features: &[&SampleWithFeatures],
+        testing: bool,
     ) -> Result<(), JsValue> {
         let row = self.document.create_element("div")?;
         row.class_list().add_1("row")?;
@@ -52,7 +56,7 @@ impl Draw for HtmlDom {
             sample_container.set_id(std::format!("sample_{}", feature.sample.id).as_str());
 
             let chart = self.chart.clone();
-            let sample = web_commons::chart_models::Sample {
+            let sample = Sample {
                 id: feature.sample.id,
                 label: feature.sample.label.clone(),
                 point: Point {
@@ -60,8 +64,9 @@ impl Draw for HtmlDom {
                     y: feature.point[1],
                 },
             };
+            let html = html.clone();
             sample_container.on_click(move |_event: MouseEvent| {
-                handle_click(&chart, Some(&sample), false).expect("");
+                handle_click(&html, &chart, Some(&sample), false, testing).expect("");
             })?;
 
             _ = sample_container.class_list().add_1("sampleContainer")?;
@@ -89,7 +94,7 @@ impl Draw for HtmlDom {
         Ok(())
     }
 
-    fn plot_statistic(&self, feature_data: &FeaturesData) -> Result<(), JsValue> {
+    fn plot_statistic(&self, html: &Rc<RefCell<HtmlDom>>, feature_data: &FeaturesData) -> Result<(), JsValue> {
         let mut chart = self.chart.borrow_mut();
 
         let samples = feature_data
@@ -109,8 +114,9 @@ impl Draw for HtmlDom {
         chart.set_samples(samples);
 
         let on_click_chart = self.chart.clone();
+        let html = html.clone();
         let on_click_callback = Rc::new(RefCell::new(move |sample: Option<&Sample>| {
-            handle_click(&on_click_chart, sample, true).expect("")
+            handle_click(&html, &on_click_chart, sample, true, false).expect("")
         }));
 
         chart.set_on_click(on_click_callback);
@@ -118,33 +124,42 @@ impl Draw for HtmlDom {
         chart.draw()
     }
 
-    fn show_classified_point(&self, point: Point) -> Result<(), JsValue> {
-        let predicted_label_container = self.predicted_label_container.clone();
-        let classifier = self.classifier.clone();
+    fn show_classified_point(&self, point: Option<Point>) -> Result<(), JsValue> {
+        let selection = match point {
+            Some(point) => {
+                let predicted_label_container = self.predicted_label_container.clone();
+                let classifier = self.classifier.clone();
 
-        let (label, samples) = classifier.borrow().predict(&point);
-        predicted_label_container
-            .set_inner_html(std::format!("Is it a {:?} ?", label).as_str());
-        let samples = samples
-            .into_iter()
-            .map(|feature| Sample {
-                id: feature.sample.id,
-                label: feature.sample.label,
-                point: Point {
-                    x: feature.point[0],
-                    y: feature.point[1],
-                },
-            })
-            .collect();
+                let (label, samples) = classifier.borrow().predict(&point);
+                predicted_label_container
+                    .set_inner_html(std::format!("Is it a {:?} ?", label).as_str());
+                let samples = samples
+                    .into_iter()
+                    .map(|feature| Sample {
+                        id: feature.sample.id,
+                        label: feature.sample.label,
+                        point: Point {
+                            x: feature.point[0],
+                            y: feature.point[1],
+                        },
+                    })
+                    .collect();
 
-        self.chart.borrow_mut().show_dynamic_point(Some((point, label, samples)))
+                Some((point, label, samples))
+            }
+            None => None
+        };
+
+        self.chart.borrow_mut().show_dynamic_point(selection)
     }
 }
 
 fn handle_click(
+    html: &Rc<RefCell<HtmlDom>>,
     chart: &Rc<RefCell<Chart>>,
-    sample: Option<&web_commons::chart_models::Sample>,
+    sample: Option<&Sample>,
     scroll: bool,
+    testing: bool,
 ) -> Result<(), JsValue> {
     let document = window().expect("").document().expect("");
     let selected = document.query_selector_all(".emphasize")?;
@@ -159,7 +174,7 @@ fn handle_click(
         Ok(())
     };
 
-    let sample = match sample {
+    let (sample, point): (_, Option<Point>) = match sample {
         Some(sample) => {
             let element = document
                 .get_element_by_id(std::format!("sample_{}", sample.id).as_str())
@@ -167,7 +182,7 @@ fn handle_click(
 
             if element.class_list().contains(emphasize_class_name) {
                 element.class_list().remove_1(emphasize_class_name)?;
-                None
+                (None, None)
             } else {
                 de_emphasize()?;
 
@@ -180,16 +195,21 @@ fn handle_click(
                     element.scroll_into_view_with_scroll_into_view_options(&options);
                 }
 
-                Some(sample)
+                if testing {
+                    (None, Some(sample.point.clone()))
+                } else {
+                    (Some(sample), None)
+                }
             }
         }
         None => {
             de_emphasize()?;
-            None
+            (None, None)
         }
     };
 
     chart.borrow_mut().select_sample(sample)?;
+    html.borrow().show_classified_point(point)?;
 
     Ok(())
 }
