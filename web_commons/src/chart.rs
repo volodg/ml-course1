@@ -39,7 +39,7 @@ pub struct Chart {
 }
 
 impl Chart {
-    pub fn create(container: Element, mut options: Options) -> Result<Rc<RefCell<Self>>, JsValue> {
+    pub fn create(container: Element, options: Options) -> Result<Rc<RefCell<Self>>, JsValue> {
         let document = window().unwrap().document().unwrap();
         let canvas = document
             .create_element("canvas")?
@@ -86,10 +86,6 @@ impl Chart {
         let margin = options.size as f64 * 0.11;
         let transparency = options.transparency.unwrap_or(1.0);
         let pixel_bounds = Self::get_pixels_bounds(&canvas, margin);
-
-        if options.icon == SampleStyleType::Image {
-            CanvasRenderingContext2d::generate_images(&mut options.styles)?;
-        }
 
         let result = Self {
             samples: vec![],

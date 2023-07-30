@@ -109,6 +109,8 @@ fn start() -> Result<(), JsValue> {
             .confusion
             .borrow_mut()
             .set_samples(&chart_samples, &CLASSES);
+
+        html_ref.confusion.borrow().draw();
     }
 
     html_ref.subscribe_drawing_updates(&html, &MIN_MAX_DATA);

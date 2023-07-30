@@ -39,17 +39,14 @@ fn default_chart_options(feature_names: &[String]) -> Result<Options, JsValue> {
     insert_label("clock", "⏰");
     insert_label("?", "❓");
 
-    let background = create_background_image()?;
-
-    Options {
-        size: 500,
-        axis_labels: [feature_names[0].clone(), feature_names[1].clone()],
+    Options::create(
+        500,
+        [feature_names[0].clone(), feature_names[1].clone()],
         styles,
-        icon: SampleStyleType::Image,
-        transparency: Some(0.7),
-        background: Some(background),
-    }
-    .ok()
+        SampleStyleType::Image,
+        Some(0.7),
+        Some(create_background_image()?),
+    )
 }
 
 pub struct HtmlDom {
@@ -70,14 +67,13 @@ impl HtmlDom {
         let document = window().unwrap().document().unwrap();
         let container = document.get_element_by_id("container").unwrap();
 
+        let options = default_chart_options(feature_names)?;
+
         let chart_container = document.get_element_by_id("chartContainer").unwrap();
-        let chart = Chart::create(
-            chart_container.clone(),
-            default_chart_options(feature_names)?,
-        )?;
+        let chart = Chart::create(chart_container.clone(), options.clone())?;
 
         let confusion_container = document.get_element_by_id("confusionContainer").unwrap();
-        let confusion = Confusion::create(confusion_container)?;
+        let confusion = Confusion::create(confusion_container, options)?;
 
         let toggle_input_button = document
             .get_element_by_id("toggleInput")

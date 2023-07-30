@@ -1,6 +1,9 @@
+use crate::graphics::ContextExt;
 use commons::math::{min_max, Bounds, Point};
+use commons::utils::OkExt;
 use std::collections::HashMap;
-use web_sys::HtmlImageElement;
+use wasm_bindgen::JsValue;
+use web_sys::{CanvasRenderingContext2d, HtmlImageElement};
 
 pub struct DataTransformation {
     pub offset: Point,
@@ -28,19 +31,21 @@ impl Sample {
     }
 }
 
+#[derive(Clone)]
 pub struct SampleStyle {
     pub color: String,
     pub text: String,
     pub image: Option<HtmlImageElement>,
 }
 
-#[derive(PartialEq)]
+#[derive(Clone, PartialEq)]
 pub enum SampleStyleType {
     Image,
     Text,
     Dot,
 }
 
+#[derive(Clone)]
 pub struct Options {
     pub size: u32,
     pub axis_labels: [String; 2],
@@ -48,6 +53,32 @@ pub struct Options {
     pub icon: SampleStyleType,
     pub transparency: Option<f64>,
     pub background: Option<HtmlImageElement>,
+}
+
+impl Options {
+    pub fn create(
+        size: u32,
+        axis_labels: [String; 2],
+        styles: HashMap<String, SampleStyle>,
+        icon: SampleStyleType,
+        transparency: Option<f64>,
+        background: Option<HtmlImageElement>,
+    ) -> Result<Self, JsValue> {
+        let mut result = Self {
+            size,
+            axis_labels,
+            styles,
+            icon,
+            transparency,
+            background,
+        };
+
+        if result.icon == SampleStyleType::Image {
+            CanvasRenderingContext2d::generate_images(&mut result.styles)?;
+        }
+
+        result.ok()
+    }
 }
 
 pub fn get_data_bounds(samples: &[Sample]) -> Bounds {
