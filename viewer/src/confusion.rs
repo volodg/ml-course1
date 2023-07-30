@@ -118,7 +118,7 @@ impl Confusion {
         Ok(())
     }
 
-    fn prepare_matrix(&self, cells_row_count: usize) -> Vec<Vec<usize>> {
+    fn prepare_matrix(&self, cells_row_count: usize) -> Vec<Vec<i64>> {
         let mut result = Vec::with_capacity(cells_row_count);
 
         for _ in 0..cells_row_count {
@@ -152,6 +152,10 @@ impl Confusion {
             }
         }
 
+        for i in 1..cells_row_count {
+            result[0][i] -= result[i][0];
+        }
+
         result
     }
 
@@ -160,7 +164,7 @@ impl Confusion {
         table: HtmlElement,
         cells_row_count: usize,
         cell_size: f64,
-        matrix: Vec<Vec<usize>>,
+        matrix: Vec<Vec<i64>>,
     ) -> Result<(), JsValue> {
         for i in 0..cells_row_count {
             let row = self.document.create_element("tr")?;
