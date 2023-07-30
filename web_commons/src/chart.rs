@@ -2,7 +2,7 @@ use crate::chart_models::{
     get_data_bounds, DataTransformation, DragInto, Options, Sample, SampleStyleType,
 };
 use crate::graphics::{ContextExt, DrawTextParams};
-use crate::html::AddListener;
+use crate::subscribers::AddListener;
 use crate::subscribers::HtmlElementExt;
 use commons::math::{lerp, Bounds, Point};
 use commons::utils::OkExt;
@@ -160,6 +160,7 @@ impl Chart {
                 chart.drag_info.dragging = true;
                 chart.drag_info.end = Point::default();
                 chart.drag_info.offset = Point::default();
+                Ok(())
             })?;
         let chart_copy = chart.clone();
         chart
@@ -206,9 +207,9 @@ impl Chart {
 
                 if chart.drag_info.dragging {
                     chart.draw().expect("");
-                    chart.draw_overlay().expect("")
+                    chart.draw_overlay()
                 } else {
-                    chart.draw_overlay().expect("")
+                    chart.draw_overlay()
                 }
             })?;
 
@@ -223,6 +224,7 @@ impl Chart {
                         chart.data_trans.offset.clone() + chart.drag_info.offset.clone();
                     chart.drag_info.dragging = false;
                 }
+                Ok(())
             })?;
         let chart_copy = chart.clone();
         chart
@@ -237,9 +239,10 @@ impl Chart {
                 chart.data_trans.scale = new_scale;
                 let offset = chart.data_trans.offset.clone();
                 chart.update_data_bounds(offset, new_scale);
-                chart.draw().expect("");
-                chart.draw_overlay().expect("");
+                chart.draw()?;
+                chart.draw_overlay()?;
                 event.prevent_default();
+                Ok(())
             })?;
         let chart_copy = chart.clone();
         chart
@@ -247,7 +250,7 @@ impl Chart {
             .overlay_canvas
             .on_click(move |_event: MouseEvent| {
                 if chart_copy.borrow().drag_info.offset != Point::default() {
-                    return;
+                    return Ok(());
                 }
 
                 let hovered_sample = chart_copy.borrow().hovered_sample.clone();
@@ -267,8 +270,8 @@ impl Chart {
                     on_click.borrow_mut()(selected_sample.as_ref())
                 }
 
-                chart_copy.borrow().draw().expect("");
-                chart_copy.borrow().draw_overlay().expect("");
+                chart_copy.borrow().draw()?;
+                chart_copy.borrow().draw_overlay()
             })
     }
 

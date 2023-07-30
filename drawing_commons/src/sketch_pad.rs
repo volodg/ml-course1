@@ -6,8 +6,8 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_commons::html::AddListener;
 use web_commons::html::Visibility;
+use web_commons::subscribers::AddListener;
 use web_sys::{
     window, CanvasRenderingContext2d, Document, Element, HtmlButtonElement, HtmlCanvasElement,
     HtmlElement, MouseEvent, TouchEvent,
@@ -131,6 +131,7 @@ impl SketchPad {
                 event.prevent_default();
                 let mouse = sketch_pad.get_mouse(event);
                 sketch_pad.handle_touch_start(mouse);
+                Ok(())
             })?;
 
         let sketch_pad_copy = sketch_pad.clone();
@@ -142,6 +143,7 @@ impl SketchPad {
                 event.prevent_default();
                 let mouse = sketch_pad.get_mouse(event);
                 sketch_pad.handle_touch_move(mouse);
+                Ok(())
             })?;
 
         let sketch_pad_copy = sketch_pad.clone();
@@ -150,6 +152,7 @@ impl SketchPad {
             .document
             .add_listener("pointerup", move |_event: MouseEvent| {
                 sketch_pad_copy.borrow_mut().handle_touch_end();
+                Ok(())
             })?;
 
         let sketch_pad_copy = sketch_pad.clone();
@@ -158,6 +161,7 @@ impl SketchPad {
             .canvas
             .add_listener("touchend", move |_event: TouchEvent| {
                 sketch_pad_copy.borrow_mut().handle_touch_end();
+                Ok(())
             })?;
 
         let sketch_pad_copy = sketch_pad.clone();
@@ -168,6 +172,7 @@ impl SketchPad {
                 let mut sketch_pad = sketch_pad_copy.borrow_mut();
                 sketch_pad.paths.pop();
                 sketch_pad.draw();
+                Ok(())
             })?;
 
         Ok(())

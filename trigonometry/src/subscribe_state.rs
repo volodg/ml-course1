@@ -5,7 +5,7 @@ use js_sys::Math::sign;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
-use web_commons::html::AddListener;
+use web_commons::subscribers::AddListener;
 use web_sys::MouseEvent;
 
 pub trait StateSubscriber {
@@ -24,7 +24,7 @@ impl StateSubscriber for HtmlDom {
                     borrow.last_x_pos = next_pos;
                     borrow.update_points();
                 }
-                app_state.borrow().draw().expect("")
+                app_state.borrow().draw()
             })
     }
 }

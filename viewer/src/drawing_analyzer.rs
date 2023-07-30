@@ -7,8 +7,8 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::{JsCast, JsValue};
 use web_commons::chart::Chart;
-use web_commons::html::AddListener;
 use web_commons::html::Visibility;
+use web_commons::subscribers::AddListener;
 use web_sys::{window, HtmlElement, MouseEvent};
 
 pub trait DrawingAnalyzer {
@@ -28,9 +28,7 @@ impl DrawingAnalyzer for HtmlDom {
         handle_toggle_input(&chart, &sketch_pad)?;
 
         self.control_panel_button
-            .on_click(move |_event: MouseEvent| {
-                handle_toggle_input(&chart, &sketch_pad).expect("");
-            })
+            .on_click(move |_event: MouseEvent| handle_toggle_input(&chart, &sketch_pad))
     }
 
     fn subscribe_drawing_updates(

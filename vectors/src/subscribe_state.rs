@@ -5,7 +5,7 @@ use crate::vector::VectorXY;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
-use web_commons::html::AddListener;
+use web_commons::subscribers::AddListener;
 use web_sys::MouseEvent;
 
 pub trait StateSubscriber {
@@ -21,7 +21,7 @@ impl StateSubscriber for HtmlDom {
                     event.offset_x() as f64 - offset[0],
                     event.offset_y() as f64 - offset[0],
                 );
-                app_state.borrow().draw().expect("");
+                app_state.borrow().draw()
             })
     }
 }

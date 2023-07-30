@@ -7,7 +7,7 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::chart_models::Sample;
 use web_commons::document::DocumentExt;
-use web_commons::html::AddListener;
+use web_commons::subscribers::AddListener;
 use web_sys::{
     window, HtmlTableRowElement, HtmlTableSectionElement, ScrollBehavior, ScrollIntoViewOptions,
     ScrollLogicalPosition,
@@ -36,13 +36,7 @@ impl DrawWithState for HtmlDom {
             {
                 let sample = sample.clone();
                 let app_state = app_state.clone();
-                tr.on_click(move |_| {
-                    app_state
-                        .borrow()
-                        .html
-                        .handle_click(Some(&sample), false)
-                        .expect("");
-                })?;
+                tr.on_click(move |_| app_state.borrow().html.handle_click(Some(&sample), false))?;
             }
             tr.insert_cell()?
                 .set_inner_html(sample.id.to_string().as_str());

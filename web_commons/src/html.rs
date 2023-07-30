@@ -1,7 +1,6 @@
 use js_sys::eval;
-use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::{JsCast, JsValue};
-use web_sys::{window, Element, EventTarget, HtmlElement, HtmlScriptElement, MouseEvent};
+use web_sys::{window, Element, HtmlElement, HtmlScriptElement};
 
 pub trait Visibility {
     fn set_visible(&self, visible: bool) -> Result<(), JsValue>;
@@ -41,43 +40,6 @@ pub fn alert(msg: &str) -> Result<(), JsValue> {
         return window.alert_with_message(msg);
     }
     Err(JsValue::from_str("no window"))
-}
-
-pub trait AddListener {
-    fn add_listener<Event: wasm_bindgen::convert::FromWasmAbi + 'static, F>(
-        &self,
-        name: &str,
-        listener: F,
-    ) -> Result<(), JsValue>
-    where
-        F: FnMut(Event) + 'static;
-
-    fn on_click<F>(&self, listener: F) -> Result<(), JsValue>
-    where
-        F: FnMut(MouseEvent) + 'static;
-}
-
-impl AddListener for EventTarget {
-    fn add_listener<Event: wasm_bindgen::convert::FromWasmAbi + 'static, F>(
-        &self,
-        name: &str,
-        mut listener: F,
-    ) -> Result<(), JsValue>
-    where
-        F: FnMut(Event) + 'static,
-    {
-        let closure = Closure::<dyn FnMut(_)>::new(move |event: Event| listener(event));
-        self.add_event_listener_with_callback(name, closure.as_ref().unchecked_ref())?;
-        closure.forget();
-        Ok(())
-    }
-
-    fn on_click<F>(&self, listener: F) -> Result<(), JsValue>
-    where
-        F: FnMut(MouseEvent) + 'static,
-    {
-        self.add_listener("click", listener)
-    }
 }
 
 pub trait InnerHtmlSetter {

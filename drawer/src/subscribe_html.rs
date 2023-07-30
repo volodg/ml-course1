@@ -7,7 +7,7 @@ use drawing_commons::models::DrawingPaths;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
-use web_commons::html::AddListener;
+use web_commons::subscribers::AddListener;
 use web_sys::MouseEvent;
 
 trait SubscribeDrawings {
@@ -47,7 +47,7 @@ impl StateSubscriber for InitialState<HtmlDom> {
     fn subscribe(&self, app_state: Rc<RefCell<AppState<HtmlDom>>>) -> Result<(), JsValue> {
         self.get_view()
             .advance_btn
-            .on_click(move |_event: MouseEvent| handle_advance_btn_click(&app_state).unwrap())
+            .on_click(move |_event: MouseEvent| handle_advance_btn_click(&app_state))
     }
 }
 
