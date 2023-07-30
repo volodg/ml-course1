@@ -379,10 +379,14 @@ version = "0.1.0"
 dependencies = [
  "commons",
  "const_format",
+ "itertools",
+ "js-sys",
  "lazy_static",
  "serde",
  "serde_json",
+ "wasm-bindgen",
  "web-sys",
+ "web_commons",
 ]
 
 [[package]]

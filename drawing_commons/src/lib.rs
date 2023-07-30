@@ -1,8 +1,9 @@
+pub mod array;
 pub mod classifiers;
 pub mod data;
 pub mod models;
+pub mod sketch_pad;
 pub mod ui;
-pub mod array;
 
 use const_format::concatcp;
 

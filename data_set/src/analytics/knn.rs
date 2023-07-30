@@ -1,9 +1,9 @@
+use drawing_commons::array::MostFrequentElement;
 use drawing_commons::{TESTING_CSV, TRAINING_CSV};
 use lazy_static::lazy_static;
-use std::collections::HashMap;
 use linfa_nn::{distance::*, LinearSearch, NearestNeighbour};
 use ndarray::{Array1, Array2};
-use drawing_commons::array::MostFrequentElement;
+use std::collections::HashMap;
 
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "PascalCase")]
@@ -28,7 +28,6 @@ lazy_static! {
 
         result
     };
-
     pub static ref LABEL_PER_ID: HashMap<usize, &'static str> = {
         let mut result = HashMap::new();
 
@@ -48,8 +47,7 @@ lazy_static! {
 fn read_data(file_name: &str) -> (Vec<[f64; 2]>, Vec<usize>) {
     let mut rdr = csv::Reader::from_path(file_name).expect("REASON");
 
-    rdr
-        .deserialize::<SampleRecord>()
+    rdr.deserialize::<SampleRecord>()
         .into_iter()
         .flat_map(|x| x)
         .map(|x| {
@@ -75,7 +73,11 @@ pub fn knn() {
     for (test, expected_id) in xy_test.0.into_iter().zip(xy_test.1) {
         let point: Array1<_> = vec![test[0], test[1]].into();
         let result = model.k_nearest(point.view(), 50).expect("");
-        let result = result.into_iter().map(|x| x.1).most_frequent_element().expect("");
+        let result = result
+            .into_iter()
+            .map(|x| x.1)
+            .most_frequent_element()
+            .expect("");
 
         if ids[result] == expected_id {
             correct_count += 1;

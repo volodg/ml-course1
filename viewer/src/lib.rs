@@ -2,7 +2,6 @@ mod drawing_analyzer;
 mod html;
 mod html_draw;
 mod images;
-mod sketch_pad;
 
 use crate::drawing_analyzer::DrawingAnalyzer;
 use crate::html::HtmlDom;

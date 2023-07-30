@@ -1,8 +1,8 @@
 use crate::images::create_background_image;
-use crate::sketch_pad::SketchPad;
 use commons::utils::OkExt;
 use drawing_commons::classifiers::knn::KNN;
 use drawing_commons::data::TRAINING_FEATURES;
+use drawing_commons::sketch_pad::SketchPad;
 use drawing_commons::ui::COLOR_PER_LABEL;
 use std::cell::RefCell;
 use std::collections::HashMap;

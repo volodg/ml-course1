@@ -6,8 +6,9 @@ pub trait MostFrequentElement<A> {
 }
 
 impl<I, A> MostFrequentElement<A> for I
-    where
-        I: Iterator<Item = A>, A: Eq + Hash + Clone,
+where
+    I: Iterator<Item = A>,
+    A: Eq + Hash + Clone,
 {
     fn most_frequent_element(self) -> Option<A> {
         let (_, (_, result)) = self.fold(

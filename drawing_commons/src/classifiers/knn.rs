@@ -1,6 +1,6 @@
+use crate::array::MostFrequentElement;
 use crate::models::SampleWithFeatures;
 use commons::math::Point;
-use crate::array::MostFrequentElement;
 
 pub struct KNN {
     features: Vec<SampleWithFeatures>,
@@ -32,7 +32,9 @@ impl KNN {
             .map(|i| self.features[*i].clone())
             .collect::<Vec<_>>();
 
-        let label = nearest_samples.iter().map(|x| &x.sample.label)
+        let label = nearest_samples
+            .iter()
+            .map(|x| &x.sample.label)
             .most_frequent_element()
             .expect("")
             .clone();

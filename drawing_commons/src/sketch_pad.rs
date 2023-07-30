@@ -1,6 +1,6 @@
+use crate::models::DrawingPaths;
 use commons::math::Point;
 use commons::utils::OkExt;
-use drawing_commons::models::DrawingPaths;
 use itertools::Itertools;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -78,7 +78,6 @@ impl SketchPad {
         result.ok()
     }
 
-    #[allow(dead_code)]
     pub fn set_on_update(&mut self, on_update: Rc<RefCell<dyn FnMut(&DrawingPaths<Point>)>>) {
         self.on_update = Some(on_update)
     }

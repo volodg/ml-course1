@@ -1,7 +1,7 @@
 use crate::html::HtmlDom;
-use crate::sketch_pad::SketchPad;
 use commons::math::{normalize_points, Point};
 use drawing_commons::models::{DrawingPaths, Features};
+use drawing_commons::sketch_pad::SketchPad;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::{JsCast, JsValue};
