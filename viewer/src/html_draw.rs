@@ -71,8 +71,8 @@ impl Draw for HtmlDom {
             };
             let html = html.clone();
             sample_container.on_click(move |event: MouseEvent| {
-                log(std::format!("{:?}", event.to_string()).as_str());
-                if event.ctrl_key() {
+                log(std::format!("ctrl_key: {:?}", event.shift_key()).as_str());
+                if event.shift_key() {
                     toggle_flagged_sample(&sample)
                 } else {
                     handle_click(&html, Some(&sample), false, testing)

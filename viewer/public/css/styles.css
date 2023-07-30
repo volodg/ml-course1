@@ -133,3 +133,6 @@ button:disabled:hover {
     font-size: 20px;
     padding: 20px;
 }
+.flagged {
+    background-color: red !important;
+}

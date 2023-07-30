@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use lazy_static::lazy_static;
 use std::sync::RwLock;
 use wasm_bindgen::JsValue;
@@ -6,16 +7,16 @@ use web_commons::document::DocumentExt;
 use web_sys::window;
 
 lazy_static! {
-    pub static ref FLAGGED_SAMPLES: RwLock<Vec<Sample>> = RwLock::new(vec![]);
+    pub static ref FLAGGED_SAMPLES: RwLock<HashSet<usize>> = RwLock::new(HashSet::new());
 }
 
 fn toggle_flagged_sample_model(sample: &Sample) {
     let mut samples = FLAGGED_SAMPLES.write().expect("");
 
-    if samples.iter().find(|x| x.id == sample.id).is_some() {
-        samples.retain(|x| x.id != sample.id);
+    if samples.contains(&sample.id) {
+        samples.remove(&sample.id);
     } else {
-        samples.push(sample.clone());
+        samples.insert(sample.id);
     }
 }
 
@@ -23,7 +24,20 @@ pub fn toggle_flagged_sample(sample: &Sample) -> Result<(), JsValue> {
     toggle_flagged_sample_model(sample);
 
     let document = window().expect("").document().expect("");
-    document.remove_all_classes("flagged")
+    let class_name = "flagged";
+    document.remove_all_classes(class_name)?;
+
+    {
+        let samples = FLAGGED_SAMPLES.read().expect("");
+        for sample_id in samples.iter() {
+            let element = document
+                .get_element_by_id(std::format!("sample_{}", sample_id).as_str())
+                .unwrap();
+
+            element.class_list().add_1(class_name)?;
+        }
+    }
+    Ok(())
 }
 
 #[cfg(test)]
