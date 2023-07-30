@@ -62,6 +62,7 @@ fn read_data(file_name: &str) -> (Vec<[f64; 2]>, Vec<usize>) {
 pub fn knn() {
     let xy_train = read_data(TRAINING_CSV);
 
+    let ids = xy_train.1;
     let xy_train: Array2<_> = xy_train.0.into();
 
     let model = LinearSearch::new().from_batch(&xy_train, L2Dist).expect("");
@@ -76,7 +77,7 @@ pub fn knn() {
         let result = model.k_nearest(point.view(), 50).expect("");
         let result = result.into_iter().map(|x| x.1).most_frequent_element().expect("");
 
-        if result == expected_id {
+        if ids[result] == expected_id {
             correct_count += 1;
         }
     }
