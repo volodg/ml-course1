@@ -8,8 +8,11 @@ use std::collections::HashMap;
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "PascalCase")]
 struct SampleRecord {
+    #[allow(dead_code)]
     width: f64,
+    #[allow(dead_code)]
     height: f64,
+    #[allow(dead_code)]
     label: String,
 }
 
@@ -44,6 +47,7 @@ lazy_static! {
     };
 }
 
+#[allow(dead_code)]
 fn read_data(file_name: &str) -> (Vec<[f64; 2]>, Vec<usize>) {
     let mut rdr = csv::Reader::from_path(file_name).expect("REASON");
 
@@ -57,6 +61,7 @@ fn read_data(file_name: &str) -> (Vec<[f64; 2]>, Vec<usize>) {
         .unzip()
 }
 
+#[allow(dead_code)]
 pub fn knn() {
     let xy_train = read_data(TRAINING_CSV);
 

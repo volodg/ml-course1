@@ -72,10 +72,6 @@ button:disabled:hover {
     flex: 1 1 0;
     text-align: center;
     overflow: hidden;
-    /*background-color: white;
-    border-radius: 10%;
-    margin: 1px;*/
-    /**style change*/
     margin: 2px;
     outline: 2px solid #f60;
     border-radius: 5px;

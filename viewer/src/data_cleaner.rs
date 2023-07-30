@@ -1,9 +1,10 @@
-use std::collections::HashSet;
 use lazy_static::lazy_static;
+use std::collections::HashSet;
 use std::sync::RwLock;
 use wasm_bindgen::JsValue;
 use web_commons::chart_models::Sample;
 use web_commons::document::DocumentExt;
+use web_commons::log;
 use web_sys::window;
 
 lazy_static! {
@@ -36,6 +37,7 @@ pub fn toggle_flagged_sample(sample: &Sample) -> Result<(), JsValue> {
 
             element.class_list().add_1(class_name)?;
         }
+        log(std::format!("samples: {:?}", samples).as_str())
     }
     Ok(())
 }

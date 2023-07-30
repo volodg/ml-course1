@@ -20,6 +20,7 @@ web_commons = { path = "../web_commons" }
 version = "0.3.4"
 features = [
     'CssStyleDeclaration',
+    'HtmlButtonElement',
     'HtmlImageElement',
     'MouseEvent',
 ]

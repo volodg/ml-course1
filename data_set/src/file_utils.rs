@@ -6,8 +6,8 @@ use drawing_commons::models::{
     SampleWithFeatures,
 };
 use drawing_commons::{
-    FEATURES, IMG_DIR, JSON_DIR, MIN_MAX_JS, RAW_DIR, SAMPLES, TESTING, TESTING_CSV,
-    TESTING_FEATURES, TRAINING, TRAINING_CSV, TRAINING_FEATURES,
+    FEATURES, FLAGGED_SAMPLES, IMG_DIR, JSON_DIR, MIN_MAX_JS, RAW_DIR, SAMPLES, TESTING,
+    TESTING_CSV, TESTING_FEATURES, TRAINING, TRAINING_CSV, TRAINING_FEATURES,
 };
 use std::collections::HashMap;
 use std::io::{stdout, ErrorKind, Write};
@@ -75,6 +75,7 @@ fn get_samples(inputs: &Vec<SortedDrawingData>) -> Vec<Sample> {
             student_name,
             student_id,
         })
+        .filter(|x| !FLAGGED_SAMPLES.contains(&x.id))
         .collect()
 }
 
@@ -140,7 +141,8 @@ pub fn store_drawings_as_png(drawings: &HashMap<u64, Vec<Vec<[i32; 2]>>>) {
 }
 
 #[allow(dead_code)]
-fn build_data_set() -> Result<(), std::io::Error> {
+//dataset_generator
+pub fn build_data_set() -> Result<(), std::io::Error> {
     let drawing_data = read_drawing_data()?;
 
     store_samples(&drawing_data)?;

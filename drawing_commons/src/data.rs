@@ -39,7 +39,7 @@ mod tests {
 
     #[test]
     fn test_resources() {
-        let samples_count = 5728;
+        let samples_count = 4835;
 
         let size = SAMPLES_DATA.len();
         assert_eq!(size, samples_count);
@@ -48,21 +48,21 @@ mod tests {
         assert_eq!(size, samples_count);
 
         let size = TESTING_DATA.len();
-        assert_eq!(size, 2864);
+        assert_eq!(size, 2418);
 
         let size = MIN_MAX_DATA.len();
         assert_eq!(size, 2);
 
         let size = TRAINING_DATA.len();
-        assert_eq!(size, 2864);
+        assert_eq!(size, 2417);
 
         let size = TRAINING_FEATURES.features.len();
-        assert_eq!(size, 2864);
+        assert_eq!(size, 2417);
 
         let size = TESTING_DATA.len();
-        assert_eq!(size, 2864);
+        assert_eq!(size, 2418);
 
         let size = TESTING_FEATURES.read().expect("").features.len();
-        assert_eq!(size, 2864);
+        assert_eq!(size, 2418);
     }
 }

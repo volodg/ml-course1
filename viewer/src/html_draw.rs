@@ -9,7 +9,6 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::chart_models::Sample;
 use web_commons::document::DocumentExt;
-use web_commons::log;
 use web_commons::subscribers::AddListener;
 use web_sys::{
     window, HtmlElement, HtmlImageElement, MouseEvent, ScrollBehavior, ScrollIntoViewOptions,
@@ -71,7 +70,6 @@ impl Draw for HtmlDom {
             };
             let html = html.clone();
             sample_container.on_click(move |event: MouseEvent| {
-                log(std::format!("ctrl_key: {:?}", event.shift_key()).as_str());
                 if event.shift_key() {
                     toggle_flagged_sample(&sample)
                 } else {
