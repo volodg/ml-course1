@@ -72,7 +72,7 @@ fn start() -> Result<(), JsValue> {
 
     add_rows(&html, &TESTING_FEATURES.read().expect("").features, true)?;
 
-    html.borrow().plot_statistic(&html, &TRAINING_FEATURES)?;
+    html.borrow().plot_statistic(&html, &TESTING_FEATURES.read().expect(""))?;
 
     html.borrow().subscribe_drawing_updates(&html, &MIN_MAX_DATA);
     html.borrow().toggle_input()?;
