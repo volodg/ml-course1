@@ -13,6 +13,7 @@ impl Draw for DrawingState<HtmlDom> {
         view.sketch_pad.borrow().set_visible(true)?;
 
         view.student_input.set_display(false)?;
+        view.instructions_spn.set_display(true)?;
         view.advance_btn.set_inner_html("NEXT");
 
         let label = self.get_current_label();

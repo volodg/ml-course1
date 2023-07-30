@@ -39,10 +39,10 @@ impl SketchPad {
         let size = 400;
         canvas.set_width(size);
         canvas.set_height(size);
-        canvas.style().set_property("background-color", "white")?;
+        canvas.style().set_property("background-color", "black")?;
         canvas
             .style()
-            .set_property("box-shadow", "0px 0px 10px 2px black")?;
+            .set_property("box-shadow", "0px 0px 10px 2px white")?;
 
         container.append_child(&canvas)?;
 
@@ -209,6 +209,7 @@ impl SketchPad {
             for (from, to) in path.iter().tuple_windows() {
                 self.context.begin_path();
                 self.context.set_line_width(3.0);
+                self.context.set_stroke_style(&JsValue::from_str("white"));
                 self.context.set_line_cap("round");
                 self.context.set_line_join("round");
 
