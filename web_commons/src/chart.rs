@@ -22,6 +22,8 @@ pub struct Chart {
     samples: Vec<Sample>,
     canvas: HtmlCanvasElement,
     context: CanvasRenderingContext2d,
+    overlay_canvas: HtmlCanvasElement,
+    overlay_context: CanvasRenderingContext2d,
     margin: f64,
     transparency: f64,
     data_trans: DataTransformation,
@@ -47,6 +49,7 @@ impl Chart {
         canvas.set_width(options.size);
         canvas.set_height(options.size);
         canvas.style().set_property("background-color", "white")?;
+        canvas.style().set_property("pointerEvents", "none")?;
 
         let context = canvas
             .get_context("2d")?
@@ -55,6 +58,25 @@ impl Chart {
         context.set_image_smoothing_enabled(false);
 
         container.append_child(&canvas)?;
+
+        let overlay_canvas = document
+            .create_element("canvas")?
+            .dyn_into::<HtmlCanvasElement>()?;
+
+        overlay_canvas.set_width(options.size);
+        overlay_canvas.set_height(options.size);
+        overlay_canvas
+            .style()
+            .set_property("position", "absolute")?;
+        overlay_canvas.style().set_property("left", "0px")?;
+
+        let overlay_context = overlay_canvas
+            .get_context("2d")?
+            .unwrap()
+            .dyn_into::<CanvasRenderingContext2d>()?;
+        overlay_context.set_image_smoothing_enabled(false);
+
+        container.append_child(&overlay_canvas)?;
 
         let data_trans = DataTransformation {
             offset: Point::default(),
@@ -74,6 +96,8 @@ impl Chart {
             samples: vec![],
             canvas,
             context,
+            overlay_canvas,
+            overlay_context,
             margin,
             transparency,
             data_trans,
@@ -112,7 +136,7 @@ impl Chart {
         point: Option<(Point, String, Vec<Sample>)>,
     ) -> Result<(), JsValue> {
         self.dynamic_point = point;
-        self.draw()
+        self.draw_overlay()
     }
 
     pub fn samples(&self) -> &[Sample] {
@@ -129,8 +153,8 @@ impl Chart {
         let chart_copy = chart.clone();
         chart
             .borrow()
-            .canvas
-            .add_listener("mousedown", move |event: MouseEvent| {
+            .overlay_canvas
+            .add_listener("pointerdown", move |event: MouseEvent| {
                 let mut chart = chart_copy.borrow_mut();
                 let data_loc = chart.get_mouse(&event, true);
                 chart.drag_info.start = data_loc;
@@ -141,8 +165,8 @@ impl Chart {
         let chart_copy = chart.clone();
         chart
             .borrow()
-            .canvas
-            .add_listener("mousemove", move |event: MouseEvent| {
+            .overlay_canvas
+            .add_listener("pointermove", move |event: MouseEvent| {
                 let mut chart = chart_copy.borrow_mut();
                 if chart.drag_info.dragging {
                     let data_loc = chart.get_mouse(&event, true);
@@ -181,14 +205,19 @@ impl Chart {
                     None
                 };
 
-                chart.draw().expect("")
+                if chart.drag_info.dragging {
+                    chart.draw().expect("");
+                    chart.draw_overlay().expect("")
+                } else {
+                    chart.draw_overlay().expect("")
+                }
             })?;
 
         let chart_copy = chart.clone();
         chart
             .borrow()
-            .canvas
-            .add_listener("mouseup", move |_event: MouseEvent| {
+            .overlay_canvas
+            .add_listener("pointerup", move |_event: MouseEvent| {
                 let mut chart = chart_copy.borrow_mut();
                 if chart.drag_info.dragging {
                     chart.data_trans.offset =
@@ -199,7 +228,7 @@ impl Chart {
         let chart_copy = chart.clone();
         chart
             .borrow()
-            .canvas
+            .overlay_canvas
             .add_listener("wheel", move |event: WheelEvent| {
                 let mut chart = chart_copy.borrow_mut();
                 let dir = sign(event.delta_y());
@@ -210,33 +239,38 @@ impl Chart {
                 let new_scale = chart.data_trans.scale;
                 chart.update_data_bounds(new_offset, new_scale);
                 chart.draw().expect("");
+                chart.draw_overlay().expect("");
                 event.prevent_default();
             })?;
         let chart_copy = chart.clone();
-        chart.borrow().canvas.on_click(move |_event: MouseEvent| {
-            if chart_copy.borrow().drag_info.offset != Point::default() {
-                return;
-            }
-
-            let hovered_sample = chart_copy.borrow().hovered_sample.clone();
-            let selected_sample = if let Some(hovered_sample) = hovered_sample {
-                if chart_copy.borrow().selected_sample.as_ref() == Some(&hovered_sample) {
-                    None
-                } else {
-                    Some(hovered_sample.clone())
+        chart
+            .borrow()
+            .overlay_canvas
+            .on_click(move |_event: MouseEvent| {
+                if chart_copy.borrow().drag_info.offset != Point::default() {
+                    return;
                 }
-            } else {
-                None
-            };
-            chart_copy.borrow_mut().selected_sample = selected_sample.clone();
 
-            let on_click = chart_copy.borrow().on_click.clone();
-            if let Some(on_click) = on_click {
-                on_click.borrow_mut()(selected_sample.as_ref())
-            }
+                let hovered_sample = chart_copy.borrow().hovered_sample.clone();
+                let selected_sample = if let Some(hovered_sample) = hovered_sample {
+                    if chart_copy.borrow().selected_sample.as_ref() == Some(&hovered_sample) {
+                        None
+                    } else {
+                        Some(hovered_sample.clone())
+                    }
+                } else {
+                    None
+                };
+                chart_copy.borrow_mut().selected_sample = selected_sample.clone();
 
-            chart_copy.borrow().draw().expect("");
-        })
+                let on_click = chart_copy.borrow().on_click.clone();
+                if let Some(on_click) = on_click {
+                    on_click.borrow_mut()(selected_sample.as_ref())
+                }
+
+                chart_copy.borrow().draw().expect("");
+                chart_copy.borrow().draw_overlay().expect("");
+            })
     }
 
     fn update_data_bounds(&mut self, offset: Point, scale: f64) {
@@ -279,6 +313,64 @@ impl Chart {
         }
     }
 
+    fn draw_overlay(&self) -> Result<(), JsValue> {
+        self.overlay_context.clear_rect(
+            0.0,
+            0.0,
+            self.overlay_canvas.width().into(),
+            self.overlay_canvas.height().into(),
+        );
+
+        if let Some(hovered_sample) = self.hovered_sample.as_ref() {
+            self.emphasize_samples(hovered_sample, "white")?;
+        }
+
+        if let Some(selected_sample) = self.selected_sample.as_ref() {
+            self.emphasize_samples(selected_sample, "yellow")?;
+        }
+
+        self.show_nearest(&self.overlay_context)?;
+
+        self.draw_axis(&self.overlay_context)?;
+
+        Ok(())
+    }
+
+    fn show_nearest(&self, context: &CanvasRenderingContext2d) -> Result<(), JsValue> {
+        if let Some((dynamic_point, label, samples)) = self.dynamic_point.as_ref() {
+            let pixel_location = dynamic_point.remap(&self.data_bounds, &self.pixel_bounds);
+            context.draw_point_with_color_and_size(
+                &pixel_location,
+                "rgba(255,255,255,0.7)",
+                10000000.0,
+            )?;
+
+            context.set_stroke_style(&JsValue::from_str("black"));
+
+            context.begin_path();
+            for sample in samples {
+                context.move_to(pixel_location.x, pixel_location.y);
+                let line_to = sample.point.remap(&self.data_bounds, &self.pixel_bounds);
+                context.line_to(line_to.x, line_to.y);
+            }
+            context.stroke();
+
+            context.draw_image_at_center(
+                &self
+                    .options
+                    .styles
+                    .get(label)
+                    .expect("")
+                    .image
+                    .clone()
+                    .expect(""),
+                &pixel_location,
+            )?;
+        }
+
+        Ok(())
+    }
+
     pub fn draw(&self) -> Result<(), JsValue> {
         self.context.clear_rect(
             0.0,
@@ -303,68 +395,24 @@ impl Chart {
         }
 
         self.context.set_global_alpha(self.transparency);
-        self.draw_samples(&self.samples)?;
+        self.draw_samples(&self.samples, &self.context)?;
         self.context.set_global_alpha(1.0);
 
-        if let Some(hovered_sample) = self.hovered_sample.as_ref() {
-            self.emphasize_samples(hovered_sample, "white")?;
-        }
-
-        if let Some(selected_sample) = self.selected_sample.as_ref() {
-            self.emphasize_samples(selected_sample, "yellow")?;
-        }
-
-        if let Some((dynamic_point, label, samples)) = self.dynamic_point.as_ref() {
-            let pixel_location = dynamic_point.remap(&self.data_bounds, &self.pixel_bounds);
-            self.context.draw_point_with_color_and_size(
-                &pixel_location,
-                "rgba(255,255,255,0.7)",
-                10000000.0,
-            )?;
-
-            // if !disable_samples {
-            self.context.set_stroke_style(&JsValue::from_str("black"));
-            log(std::format!("draw spider: {}", samples.len()).as_str());
-
-            self.context.begin_path();
-            for sample in samples {
-                self.context.move_to(pixel_location.x, pixel_location.y);
-                let line_to = sample.point.remap(&self.data_bounds, &self.pixel_bounds);
-                self.context.line_to(line_to.x, line_to.y);
-            }
-            self.context.stroke();
-            // }
-
-            self.context.draw_image_at_center(
-                &self
-                    .options
-                    .styles
-                    .get(label)
-                    .expect("")
-                    .image
-                    .clone()
-                    .expect(""),
-                &pixel_location,
-            )?;
-        }
-
-        self.draw_axis()?;
+        self.draw_axis(&self.context)?;
 
         Ok(())
     }
 
-    fn draw_axis(&self) -> Result<(), JsValue> {
-        self.context
-            .clear_rect(0.0, 0.0, self.canvas.width() as f64, self.margin);
-        self.context
-            .clear_rect(0.0, 0.0, self.margin, self.canvas.height() as f64);
-        self.context.clear_rect(
+    fn draw_axis(&self, context: &CanvasRenderingContext2d) -> Result<(), JsValue> {
+        context.clear_rect(0.0, 0.0, self.canvas.width() as f64, self.margin);
+        context.clear_rect(0.0, 0.0, self.margin, self.canvas.height() as f64);
+        context.clear_rect(
             self.canvas.width() as f64 - self.margin,
             0.0,
             self.margin,
             self.canvas.height() as f64,
         );
-        self.context.clear_rect(
+        context.clear_rect(
             0.0,
             self.canvas.height() as f64 - self.margin,
             self.canvas.width() as f64,
@@ -373,7 +421,7 @@ impl Chart {
 
         // Draw X Axis text
         {
-            self.context.draw_text_with_params(
+            context.draw_text_with_params(
                 self.options.axis_labels[0].as_str(),
                 &Point {
                     x: self.canvas.width() as f64 / 2.0,
@@ -388,14 +436,14 @@ impl Chart {
 
         // Draw Y Axis text
         {
-            self.context.save();
-            self.context.translate(
+            context.save();
+            context.translate(
                 self.pixel_bounds.left - self.margin / 2.0,
                 self.canvas.height() as f64 / 2.0,
             )?;
-            self.context.rotate(-FRAC_PI_2)?;
+            context.rotate(-FRAC_PI_2)?;
 
-            self.context.draw_text_with_params(
+            context.draw_text_with_params(
                 self.options.axis_labels[1].as_str(),
                 &Point::default(),
                 DrawTextParams {
@@ -404,25 +452,21 @@ impl Chart {
                 },
             )?;
 
-            self.context.restore();
+            context.restore();
         }
 
         // Draw Axis
         {
-            self.context.begin_path();
-            self.context
-                .move_to(self.pixel_bounds.left, self.pixel_bounds.top);
-            self.context
-                .line_to(self.pixel_bounds.left, self.pixel_bounds.bottom);
-            self.context
-                .line_to(self.pixel_bounds.right, self.pixel_bounds.bottom);
+            context.begin_path();
+            context.move_to(self.pixel_bounds.left, self.pixel_bounds.top);
+            context.line_to(self.pixel_bounds.left, self.pixel_bounds.bottom);
+            context.line_to(self.pixel_bounds.right, self.pixel_bounds.bottom);
             let array = Array::of2(&JsValue::from(5), &JsValue::from(4));
-            self.context.set_line_dash(&array)?;
-            self.context.set_line_width(2.0);
-            self.context
-                .set_stroke_style(&JsValue::from_str("lightgray"));
-            self.context.stroke();
-            self.context.set_line_dash(&Array::new())?;
+            context.set_line_dash(&array)?;
+            context.set_line_width(2.0);
+            context.set_stroke_style(&JsValue::from_str("lightgray"));
+            context.stroke();
+            context.set_line_dash(&Array::new())?;
         }
 
         {
@@ -432,7 +476,7 @@ impl Chart {
                 y: self.pixel_bounds.bottom,
             }
             .remap(&self.pixel_bounds, &self.data_bounds);
-            self.context.draw_text_with_params(
+            context.draw_text_with_params(
                 std::format!("{:.2}", data_min.x).as_str(),
                 &Point {
                     x: self.pixel_bounds.left,
@@ -447,11 +491,10 @@ impl Chart {
             )?;
 
             // Draw y0 scale
-            self.context.save();
-            self.context
-                .translate(self.pixel_bounds.left, self.pixel_bounds.bottom)?;
-            self.context.rotate(-FRAC_PI_2)?;
-            self.context.draw_text_with_params(
+            context.save();
+            context.translate(self.pixel_bounds.left, self.pixel_bounds.bottom)?;
+            context.rotate(-FRAC_PI_2)?;
+            context.draw_text_with_params(
                 std::format!("{:.2}", data_min.y).as_str(),
                 &Point::default(),
                 DrawTextParams {
@@ -462,7 +505,7 @@ impl Chart {
                 },
             )?;
 
-            self.context.restore();
+            context.restore();
         }
 
         {
@@ -472,7 +515,7 @@ impl Chart {
                 y: self.pixel_bounds.top,
             }
             .remap(&self.pixel_bounds, &self.data_bounds);
-            self.context.draw_text_with_params(
+            context.draw_text_with_params(
                 std::format!("{:.2}", data_max.x).as_str(),
                 &Point {
                     x: self.pixel_bounds.right,
@@ -487,11 +530,10 @@ impl Chart {
             )?;
 
             // Draw y[-1] scale
-            self.context.save();
-            self.context
-                .translate(self.pixel_bounds.left, self.pixel_bounds.top)?;
-            self.context.rotate(-FRAC_PI_2)?;
-            self.context.draw_text_with_params(
+            context.save();
+            context.translate(self.pixel_bounds.left, self.pixel_bounds.top)?;
+            context.rotate(-FRAC_PI_2)?;
+            context.draw_text_with_params(
                 std::format!("{:.2}", data_max.y).as_str(),
                 &Point::default(),
                 DrawTextParams {
@@ -502,7 +544,7 @@ impl Chart {
                 },
             )?;
 
-            self.context.restore();
+            context.restore();
         }
 
         Ok(())
@@ -510,7 +552,7 @@ impl Chart {
 
     fn emphasize_samples(&self, sample: &Sample, color: &str) -> Result<(), JsValue> {
         let pixel_location = sample.point.remap(&self.data_bounds, &self.pixel_bounds);
-        let gradient = self.context.create_radial_gradient(
+        let gradient = self.overlay_context.create_radial_gradient(
             pixel_location.x,
             pixel_location.y,
             0.0,
@@ -521,23 +563,27 @@ impl Chart {
         gradient.add_color_stop(0.0, color)?;
         gradient.add_color_stop(1.0, "rgba(255, 255, 255, 0)")?;
 
-        self.context.draw_point_with_gradient_and_size(
+        self.overlay_context.draw_point_with_gradient_and_size(
             &pixel_location,
             &gradient,
             self.margin * 2.0,
         )?;
 
-        self.draw_samples(&[sample.clone()])?;
+        self.draw_samples(&[sample.clone()], &self.overlay_context)?;
 
         Ok(())
     }
 
-    fn draw_samples(&self, samples: &[Sample]) -> Result<(), JsValue> {
+    fn draw_samples(
+        &self,
+        samples: &[Sample],
+        context: &CanvasRenderingContext2d,
+    ) -> Result<(), JsValue> {
         for sample in samples {
             let pixel_location = sample.point.remap(&self.data_bounds, &self.pixel_bounds);
             let style = self.options.styles.get(&sample.label).expect("");
             match self.options.icon {
-                SampleStyleType::Text => self.context.draw_text_with_params(
+                SampleStyleType::Text => context.draw_text_with_params(
                     &style.text,
                     &pixel_location,
                     DrawTextParams {
@@ -545,11 +591,10 @@ impl Chart {
                         ..DrawTextParams::default()
                     },
                 )?,
-                SampleStyleType::Dot => self
-                    .context
-                    .draw_point_with_color(&pixel_location, &style.color)?,
-                SampleStyleType::Image => self
-                    .context
+                SampleStyleType::Dot => {
+                    context.draw_point_with_color(&pixel_location, &style.color)?
+                }
+                SampleStyleType::Image => context
                     .draw_image_at_center(&style.image.as_ref().expect(""), &pixel_location)?,
             }
         }
