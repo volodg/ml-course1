@@ -13,6 +13,7 @@ use web_sys::{window, HtmlElement, MouseEvent};
 
 pub trait DrawingAnalyzer {
     fn toggle_input(&self) -> Result<(), JsValue>;
+    fn toggle_output(&self) -> Result<(), JsValue>;
     fn subscribe_drawing_updates(
         &self,
         html: &Rc<RefCell<HtmlDom>>,
@@ -27,8 +28,13 @@ impl DrawingAnalyzer for HtmlDom {
 
         handle_toggle_input(&chart, &sketch_pad)?;
 
-        self.control_panel_button
+        self.toggle_input_button
             .on_click(move |_event: MouseEvent| handle_toggle_input(&chart, &sketch_pad))
+    }
+
+    fn toggle_output(&self) -> Result<(), JsValue> {
+        self.toggle_output_button
+            .on_click(move |_event: MouseEvent| handle_toggle_output())
     }
 
     fn subscribe_drawing_updates(
@@ -63,11 +69,10 @@ fn handle_toggle_input(
     let container = document
         .get_element_by_id("inputContainer")
         .unwrap()
-        .dyn_into::<HtmlElement>()
-        .expect("");
+        .dyn_into::<HtmlElement>()?;
 
     let is_displayed = container.is_displayed();
-    container.set_display(!is_displayed).expect("");
+    container.set_display(!is_displayed)?;
     if is_displayed {
         chart.borrow_mut().show_dynamic_point(None)?;
     } else {
@@ -75,4 +80,16 @@ fn handle_toggle_input(
     }
 
     Ok(())
+}
+
+fn handle_toggle_output() -> Result<(), JsValue> {
+    let document = window().expect("").document().expect("");
+    let container = document
+        .get_element_by_id("confusionContainer")
+        .unwrap()
+        .dyn_into::<HtmlElement>()
+        .expect("");
+
+    let is_displayed = container.is_displayed();
+    container.set_display(!is_displayed)
 }

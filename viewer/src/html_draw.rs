@@ -112,9 +112,8 @@ impl Draw for HtmlDom {
         let samples = feature_data
             .features
             .iter()
-            .zip(1..)
-            .map(|(feature, id)| Sample {
-                id,
+            .map(|feature| Sample {
+                id: feature.sample.id,
                 label: feature.sample.label.clone(),
                 point: Point {
                     x: feature.point[0],

@@ -56,7 +56,8 @@ pub struct HtmlDom {
     pub container: Element,
     pub statistics: Element,
     pub predicted_label_container: Element,
-    pub control_panel_button: HtmlButtonElement,
+    pub toggle_input_button: HtmlButtonElement,
+    pub toggle_output_button: HtmlButtonElement,
     pub chart: Rc<RefCell<Chart>>,
     pub sketch_pad: Rc<RefCell<SketchPad>>,
     pub classifier: Rc<RefCell<KNN>>,
@@ -73,10 +74,13 @@ impl HtmlDom {
             default_chart_options(feature_names)?,
         )?;
 
-        let control_panel = document.get_element_by_id("controlPanel").unwrap();
-        let control_panel_button = control_panel
-            .query_selector("button")?
-            .expect("")
+        let toggle_input_button = document
+            .get_element_by_id("toggleInput")
+            .unwrap()
+            .dyn_into::<HtmlButtonElement>()?;
+        let toggle_output_button = document
+            .get_element_by_id("toggleOutput")
+            .unwrap()
             .dyn_into::<HtmlButtonElement>()?;
 
         let statistics = document.get_element_by_id("statistics").unwrap();
@@ -96,7 +100,8 @@ impl HtmlDom {
             container,
             statistics,
             predicted_label_container,
-            control_panel_button,
+            toggle_input_button,
+            toggle_output_button,
             chart,
             sketch_pad,
             classifier,

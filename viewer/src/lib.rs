@@ -88,6 +88,7 @@ fn start() -> Result<(), JsValue> {
     html.borrow()
         .subscribe_drawing_updates(&html, &MIN_MAX_DATA);
     html.borrow().toggle_input()?;
+    html.borrow().toggle_output()?;
 
     Ok(())
 }
