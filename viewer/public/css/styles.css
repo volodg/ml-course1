@@ -1,16 +1,12 @@
 .centered-title {
     text-align: center;
 }
+
 body {
     font-family: Arial;
     overscroll-behavior: none;
     /**compatibility*/
     touch-action: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    user-select: none;
-    /*background-color: skyblue;*/
-    /**style change*/
     background-color: #000;
     color: white;
     margin: 0;
@@ -18,14 +14,10 @@ body {
     -moz-user-select: none;
     user-select: none;
 }
+
 button {
     cursor: pointer;
     color: white;
-    /*border: none;
-    padding: 2px 10px 2px 10px;
-    height: 22px;
-    background-color: navy;*/
-    /**style change*/
     border: transparent;
     padding: 0.75rem 1.25rem;
     border-radius: 5px;
@@ -33,41 +25,42 @@ button {
     vertical-align: middle;
     transition: 200ms ease-in-out;
 }
+
 button:hover {
-    /*background-color: mediumblue;*/
-    /**style change*/
     background-color: #f80;
 }
+
 button:disabled,
 button:disabled:hover {
     background-color: gray;
     cursor: default;
 }
+
 .row {
     display: flex;
     align-items: center;
-    /**style change*/
     background-color: #151515;
 }
-/**new style*/
+
 .row:nth-child(even) {
     background-color: #000;
 }
+
 .thumb {
     width: 100%;
-    /**style change*/
     filter: invert(1);
 }
+
 .rowLabel {
     flex: 2 1 0;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    /**style change*/
     width: 15%;
     margin-left: 3rem;
     font-weight: bold;
 }
+
 .sampleContainer {
     flex: 1 1 0;
     text-align: center;
@@ -78,28 +71,28 @@ button:disabled:hover {
     text-transform: capitalize;
     max-width: 8%;
 }
+
 .blur {
-    /*filter: blur(5px);*/
-    /**style change*/
     filter: invert(1) blur(5px);
 }
+
 .emphasize {
-    /*background-color: yellow !important;*/
-    /**style change*/
     background-color: #AA0 !important;
 }
+
 #container {
     width: calc(100% - 500px);
 }
+
 #chartContainer {
     position: fixed;
     right: 0;
     top: 50%;
     transform: translate(0, -50%);
-    /**new style*/
     z-index: 2;
     color: black;
 }
+
 #inputContainer {
     position: fixed;
     right: 500px;
@@ -107,9 +100,9 @@ button:disabled:hover {
     transform: translate(0, -50%);
     text-align: center;
     margin: 10px;
-    /**new style*/
     z-index: 1;
 }
+
 #controlPanel {
     position: fixed;
     right: 0;
@@ -119,16 +112,38 @@ button:disabled:hover {
     padding: 10px;
     z-index: 1;
 }
+
 #predictedLabelContainer {
     color: white;
     font-size: 30px;
     position: relative;
     z-index: 1;
 }
+
 #statistics {
     font-size: 20px;
     padding: 20px;
 }
+
 .flagged {
     background-color: red !important;
+}
+
+.infoButton {
+    color: red;
+    cursor: pointer;
+}
+
+.infoButton:hover .tooltipText {
+    visibility: visible;
+}
+
+.tooltipText {
+    color: white;
+    background-color: red;
+    position: absolute;
+    visibility: hidden;
+    font-size: small;
+    border-radius: 6px;
+    font-weight: normal;
 }
