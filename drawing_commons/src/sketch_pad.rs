@@ -8,13 +8,15 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::geometry::try_convert_touch_event_into_point;
 use web_commons::html::AddListener;
+use web_commons::html::Visibility;
 use web_sys::{
     window, CanvasRenderingContext2d, Document, Element, HtmlButtonElement, HtmlCanvasElement,
-    MouseEvent, TouchEvent,
+    HtmlElement, MouseEvent, TouchEvent,
 };
 
 pub struct SketchPad {
     document: Document,
+    container: HtmlElement,
     canvas: HtmlCanvasElement,
     context: CanvasRenderingContext2d,
     undo_btn: HtmlButtonElement,
@@ -26,7 +28,10 @@ pub struct SketchPad {
 impl SketchPad {
     pub fn create(container_id: &str) -> Result<Rc<RefCell<Self>>, JsValue> {
         let document = window().expect("").document().expect("");
-        let container = document.get_element_by_id(container_id).unwrap();
+        let container = document
+            .get_element_by_id(container_id)
+            .unwrap()
+            .dyn_into::<HtmlElement>()?;
 
         let canvas = document
             .create_element("canvas")?
@@ -38,10 +43,6 @@ impl SketchPad {
         canvas
             .style()
             .set_property("box-shadow", "0px 0px 10px 2px black")?;
-
-        let mut canvas_css = canvas.style().css_text();
-        canvas_css.push_str("outline:10000px solid rgba(0,0,0,0.7)");
-        canvas.style().set_css_text(&canvas_css);
 
         container.append_child(&canvas)?;
 
@@ -61,6 +62,7 @@ impl SketchPad {
 
         let result = Self {
             document,
+            container,
             canvas,
             context,
             undo_btn,
@@ -76,6 +78,16 @@ impl SketchPad {
         Self::add_event_listeners(&result)?;
 
         result.ok()
+    }
+
+    pub fn add_shadow(&self) {
+        let mut canvas_css = self.canvas.style().css_text();
+        canvas_css.push_str("outline:10000px solid rgba(0,0,0,0.7)");
+        self.canvas.style().set_css_text(&canvas_css)
+    }
+
+    pub fn set_visible(&self, visible: bool) -> Result<(), JsValue> {
+        self.container.set_visible(visible)
     }
 
     pub fn set_on_update(&mut self, on_update: Rc<RefCell<dyn FnMut(&DrawingPaths<Point>)>>) {
@@ -206,6 +218,11 @@ impl SketchPad {
                 self.context.stroke();
             }
         }
+    }
+
+    pub fn reset(&mut self) {
+        self.paths.clear();
+        self.draw();
     }
 
     fn draw(&self) {

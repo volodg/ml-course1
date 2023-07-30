@@ -11,7 +11,6 @@ use crate::draw::Draw;
 use crate::html::HtmlDom;
 use crate::html_state::Save;
 use crate::subscribe_state::StateSubscriber;
-use commons::math::Point;
 use commons::utils::SomeExt;
 use std::cell::RefCell;
 use std::ops::Deref;
@@ -32,6 +31,7 @@ fn handle_next(app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Result<(), JsValue
             new_state.draw()?;
             new_state.some()
         } else {
+            state.get_view().sketch_pad.borrow_mut().reset();
             state.draw()?;
             None
         }
@@ -42,25 +42,6 @@ fn handle_next(app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Result<(), JsValue
     }
 
     Ok(())
-}
-
-fn handle_touch_start(state: &mut DrawingState<HtmlDom>, point: Option<Point>) {
-    state.set_pressed(true);
-    let path = point.map(|x| vec![x]).unwrap_or(vec![]);
-    state.add_path(path);
-}
-
-fn handle_touch_move(state: &mut DrawingState<HtmlDom>, point: Point) {
-    if state.is_pressed() {
-        state.add_point(point);
-        state.draw().unwrap()
-    }
-}
-
-fn handle_touch_end(state: &mut DrawingState<HtmlDom>) {
-    if state.is_pressed() {
-        state.set_pressed(false);
-    }
 }
 
 fn handle_advance_btn_click(app_state: &Rc<RefCell<AppState<HtmlDom>>>) -> Result<(), JsValue> {

@@ -7,7 +7,6 @@ const DRAWING_SIZE: usize = 8;
 #[derive(Clone)]
 pub struct Drawing {
     label: &'static str,
-    pressed: bool,
     paths: Vec<Vec<Point>>,
 }
 
@@ -15,7 +14,6 @@ impl Drawing {
     fn create(label: &'static str) -> Self {
         Self {
             label,
-            pressed: false,
             paths: vec![],
         }
     }
@@ -90,40 +88,12 @@ impl<View: Clone + WithStudent> DrawingState<View> {
         &self.view
     }
 
-    pub fn set_pressed(&mut self, value: bool) {
-        self.drawings[self.label_index].pressed = value
-    }
-
-    pub fn is_pressed(&self) -> bool {
-        self.drawings[self.label_index].pressed
-    }
-
     pub fn curr_path(&self) -> &Vec<Vec<Point>> {
         &self.drawings[self.label_index].paths
     }
 
-    fn curr_path_mut(&mut self) -> &mut Vec<Vec<Point>> {
+    pub fn curr_path_mut(&mut self) -> &mut Vec<Vec<Point>> {
         &mut self.drawings[self.label_index].paths
-    }
-
-    pub fn add_point(&mut self, point: Point) {
-        let size = self.curr_path().len();
-        self.curr_path_mut()[size - 1].push(point);
-    }
-
-    pub fn add_path(&mut self, points: Vec<Point>) {
-        self.curr_path_mut().push(points);
-    }
-
-    pub fn undo(&mut self) {
-        while let Some(last) = self.curr_path().last() {
-            if last.is_empty() {
-                self.curr_path_mut().pop();
-            } else {
-                break;
-            }
-        }
-        self.curr_path_mut().pop();
     }
 
     pub fn get_current_label(&self) -> &str {

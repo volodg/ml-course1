@@ -86,6 +86,7 @@ impl HtmlDom {
             .unwrap();
 
         let sketch_pad = SketchPad::create("inputContainer")?;
+        sketch_pad.borrow().add_shadow();
 
         let testing_data = &TRAINING_FEATURES.features;
         let classifier = Rc::new(RefCell::new(KNN::new(testing_data, 50)));

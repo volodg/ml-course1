@@ -1,6 +1,5 @@
 use crate::app_state::{DrawingState, ReadyState, SavedState};
 use crate::html::HtmlDom;
-use itertools::Itertools;
 use wasm_bindgen::JsValue;
 use web_commons::html::Visibility;
 
@@ -11,40 +10,10 @@ pub trait Draw {
 impl Draw for DrawingState<HtmlDom> {
     fn draw(&self) -> Result<(), JsValue> {
         let view = self.get_view();
-        view.canvas.set_visible(true)?;
-        view.undo_btn.set_visible(true)?;
+        view.sketch_pad.borrow().set_visible(true)?;
+
         view.student_input.set_display(false)?;
         view.advance_btn.set_inner_html("NEXT");
-
-        view.context.clear_rect(
-            0.0,
-            0.0,
-            view.canvas.width().into(),
-            view.canvas.height().into(),
-        );
-
-        let mut empty = true;
-
-        for path in self.curr_path() {
-            if path.is_empty() {
-                continue;
-            }
-            empty = false;
-
-            for (from, to) in path.iter().tuple_windows() {
-                view.context.begin_path();
-                view.context.set_line_width(3.0);
-                view.context.set_line_cap("round");
-                view.context.set_line_join("round");
-
-                view.context.move_to(from.x as f64, from.y as f64);
-                view.context.line_to(to.x as f64, to.y as f64);
-
-                view.context.stroke();
-            }
-        }
-
-        view.undo_btn.set_disabled(empty);
 
         let label = self.get_current_label();
         view.instructions_spn
@@ -56,8 +25,7 @@ impl Draw for DrawingState<HtmlDom> {
 impl Draw for ReadyState<HtmlDom> {
     fn draw(&self) -> Result<(), JsValue> {
         let view = self.get_view();
-        view.canvas.set_visible(false)?;
-        view.undo_btn.set_visible(false)?;
+        view.sketch_pad.borrow().set_visible(false)?;
 
         view.instructions_spn.set_inner_html("Thank you!");
         view.advance_btn.set_inner_html("SAVE");
