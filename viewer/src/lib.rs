@@ -1,3 +1,4 @@
+mod data_cleaner;
 mod drawing_analyzer;
 mod html;
 mod html_draw;

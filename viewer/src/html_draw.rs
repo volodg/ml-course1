@@ -1,3 +1,4 @@
+use crate::data_cleaner::toggle_flagged_sample;
 use crate::html::HtmlDom;
 use commons::math::Point;
 use drawing_commons::models::{FeaturesData, SampleWithFeatures};
@@ -6,9 +7,9 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_commons::chart::Chart;
 use web_commons::chart_models::Sample;
 use web_commons::html::AddListener;
+use web_commons::log;
 use web_sys::{
     window, Element, HtmlElement, HtmlImageElement, MouseEvent, ScrollBehavior,
     ScrollIntoViewOptions, ScrollLogicalPosition,
@@ -59,7 +60,6 @@ impl Draw for HtmlDom {
                 .dyn_into::<HtmlElement>()?;
             sample_container.set_id(std::format!("sample_{}", feature.sample.id).as_str());
 
-            let chart = self.chart.clone();
             let sample = Sample {
                 id: feature.sample.id,
                 label: feature.sample.label.clone(),
@@ -69,8 +69,13 @@ impl Draw for HtmlDom {
                 },
             };
             let html = html.clone();
-            sample_container.on_click(move |_event: MouseEvent| {
-                handle_click(&html, &chart, Some(&sample), false, testing).expect("");
+            sample_container.on_click(move |event: MouseEvent| {
+                log(std::format!("{:?}", event.to_string()).as_str());
+                if event.ctrl_key() {
+                    toggle_flagged_sample(&sample);
+                } else {
+                    handle_click(&html, Some(&sample), false, testing).expect("");
+                }
             })?;
 
             _ = sample_container.class_list().add_1("sampleContainer")?;
@@ -121,10 +126,9 @@ impl Draw for HtmlDom {
 
         chart.set_samples(samples);
 
-        let on_click_chart = self.chart.clone();
         let html = html.clone();
         let on_click_callback = Rc::new(RefCell::new(move |sample: Option<&Sample>| {
-            handle_click(&html, &on_click_chart, sample, true, false).expect("")
+            handle_click(&html, sample, true, false).expect("")
         }));
 
         chart.set_on_click(on_click_callback);
@@ -164,7 +168,6 @@ impl Draw for HtmlDom {
 
 fn handle_click(
     html: &Rc<RefCell<HtmlDom>>,
-    chart: &Rc<RefCell<Chart>>,
     sample: Option<&Sample>,
     scroll: bool,
     testing: bool,
@@ -216,7 +219,7 @@ fn handle_click(
         }
     };
 
-    chart.borrow_mut().select_sample(sample)?;
+    html.borrow().chart.borrow_mut().select_sample(sample)?;
     html.borrow().show_classified_point(point)?;
 
     Ok(())
