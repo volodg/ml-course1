@@ -12,6 +12,7 @@ use web_sys::{
     window, Element, HtmlElement, HtmlImageElement, MouseEvent, ScrollBehavior,
     ScrollIntoViewOptions, ScrollLogicalPosition,
 };
+use web_commons::chart_models::Sample;
 
 pub trait Draw {
     fn create_row(
@@ -20,6 +21,7 @@ pub trait Draw {
         features: &[&SampleWithFeatures],
     ) -> Result<(), JsValue>;
     fn plot_statistic(&self, feature_data: &FeaturesData) -> Result<(), JsValue>;
+    fn show_classified_point(&self, point: Point) -> Result<(), JsValue>;
 }
 
 impl Draw for HtmlDom {
@@ -90,8 +92,6 @@ impl Draw for HtmlDom {
     fn plot_statistic(&self, feature_data: &FeaturesData) -> Result<(), JsValue> {
         let mut chart = self.chart.borrow_mut();
 
-        use web_commons::chart_models::Sample;
-
         let samples = feature_data
             .features
             .iter()
@@ -116,6 +116,28 @@ impl Draw for HtmlDom {
         chart.set_on_click(on_click_callback);
 
         chart.draw()
+    }
+
+    fn show_classified_point(&self, point: Point) -> Result<(), JsValue> {
+        let predicted_label_container = self.predicted_label_container.clone();
+        let classifier = self.classifier.clone();
+
+        let (label, samples) = classifier.borrow().predict(&point);
+        predicted_label_container
+            .set_inner_html(std::format!("Is it a {:?} ?", label).as_str());
+        let samples = samples
+            .into_iter()
+            .map(|feature| Sample {
+                id: feature.sample.id,
+                label: feature.sample.label,
+                point: Point {
+                    x: feature.point[0],
+                    y: feature.point[1],
+                },
+            })
+            .collect();
+
+        self.chart.borrow_mut().show_dynamic_point(Some((point, label, samples)))
     }
 }
 

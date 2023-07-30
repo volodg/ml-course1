@@ -6,7 +6,6 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_commons::geometry::try_convert_touch_event_into_point;
 use web_commons::html::AddListener;
 use web_commons::html::Visibility;
 use web_sys::{

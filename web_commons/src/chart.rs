@@ -15,6 +15,7 @@ use wasm_bindgen::JsValue;
 use web_sys::{
     window, CanvasRenderingContext2d, Element, HtmlCanvasElement, MouseEvent, WheelEvent,
 };
+use crate::log;
 
 pub struct Chart {
     samples: Vec<Sample>,
@@ -291,8 +292,8 @@ impl Chart {
                 .draw_image_with_size(background, &top_left, size)?
         }
 
-        let disable_samples = false;
-        if !disable_samples {
+        // let disable_samples = false;
+        // if !disable_samples {
             self.context.set_global_alpha(self.transparency);
             self.draw_samples(&self.samples)?;
             self.context.set_global_alpha(1.0);
@@ -304,7 +305,7 @@ impl Chart {
             if let Some(selected_sample) = self.selected_sample.as_ref() {
                 self.emphasize_samples(selected_sample, "yellow")?;
             }
-        }
+        // }
 
         if let Some((dynamic_point, label, samples)) = self.dynamic_point.as_ref() {
             let pixel_location = dynamic_point.remap(&self.data_bounds, &self.pixel_bounds);
@@ -314,8 +315,9 @@ impl Chart {
                 10000000.0,
             )?;
 
-            if !disable_samples {
-                self.context.set_stroke_style(&JsValue::from_str("gray"));
+            // if !disable_samples {
+                self.context.set_stroke_style(&JsValue::from_str("black"));
+            log(std::format!("draw spider: {}", samples.len()).as_str());
 
                 self.context.begin_path();
                 for sample in samples {
@@ -324,7 +326,7 @@ impl Chart {
                     self.context.line_to(line_to.x, line_to.y);
                 }
                 self.context.stroke();
-            }
+            // }
 
             self.context.draw_image_at_center(
                 &self

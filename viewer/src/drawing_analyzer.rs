@@ -6,14 +6,14 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::{JsCast, JsValue};
 use web_commons::chart::Chart;
-use web_commons::chart_models::Sample;
 use web_commons::html::AddListener;
 use web_commons::html::Visibility;
 use web_sys::{window, HtmlElement, MouseEvent};
+use crate::html_draw::Draw;
 
 pub trait DrawingAnalyzer {
     fn toggle_input(&self) -> Result<(), JsValue>;
-    fn subscribe_drawing_updates(&self, min_max: &'static Vec<Vec<f64>>);
+    fn subscribe_drawing_updates(&self, html: &Rc<RefCell<HtmlDom>>, min_max: &'static Vec<Vec<f64>>);
 }
 
 impl DrawingAnalyzer for HtmlDom {
@@ -29,12 +29,10 @@ impl DrawingAnalyzer for HtmlDom {
             })
     }
 
-    fn subscribe_drawing_updates(&self, min_max: &'static Vec<Vec<f64>>) {
+    fn subscribe_drawing_updates(&self, html: &Rc<RefCell<HtmlDom>>, min_max: &'static Vec<Vec<f64>>) {
         let mut sketch_pad = self.sketch_pad.borrow_mut();
-        let chart = self.chart.clone();
-        let predicted_label_container = self.predicted_label_container.clone();
-        let classifier = self.classifier.clone();
 
+        let html = html.clone();
         let on_update_callback = Rc::new(RefCell::new(move |drawing: &DrawingPaths<Point>| {
             let point = drawing.get_feature(|x| x.x, |x| x.y);
 
@@ -44,24 +42,9 @@ impl DrawingAnalyzer for HtmlDom {
                 y: point[0][1],
             };
 
-            let (label, samples) = classifier.borrow().predict(&point);
-            predicted_label_container
-                .set_inner_html(std::format!("Is it a {:?} ?", label).as_str());
-            let samples = samples
-                .into_iter()
-                .map(|feature| Sample {
-                    id: feature.sample.id,
-                    label: feature.sample.label,
-                    point: Point {
-                        x: feature.point[0],
-                        y: feature.point[1],
-                    },
-                })
-                .collect();
-
-            chart
-                .borrow_mut()
-                .show_dynamic_point(Some((point, label, samples)))
+            html
+                .borrow()
+                .show_classified_point(point)
                 .expect("");
         }));
 

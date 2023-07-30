@@ -3,6 +3,8 @@ mod html;
 mod html_draw;
 mod images;
 
+use std::cell::RefCell;
+use std::rc::Rc;
 use crate::drawing_analyzer::DrawingAnalyzer;
 use crate::html::HtmlDom;
 use crate::html_draw::Draw;
@@ -71,9 +73,9 @@ fn start() -> Result<(), JsValue> {
 
     html.plot_statistic(&TRAINING_FEATURES)?;
 
-    // TODO update - MIN_MAX_DATA?
-    html.subscribe_drawing_updates(&MIN_MAX_DATA);
-    html.toggle_input()?;
+    let html = Rc::new(RefCell::new(html));
+    html.borrow().subscribe_drawing_updates(&html, &MIN_MAX_DATA);
+    html.borrow().toggle_input()?;
 
     Ok(())
 }
