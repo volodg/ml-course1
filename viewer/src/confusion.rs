@@ -81,7 +81,21 @@ impl Confusion {
             result.push(row)
         }
 
-        for sample in &self.samples {}
+        for sample in &self.samples {
+            let row = self
+                .classes
+                .iter()
+                .position(|x| sample.truth.as_ref().expect("") == *x)
+                .expect("")
+                + 1;
+            let column = self
+                .classes
+                .iter()
+                .position(|x| sample.label == *x)
+                .expect("")
+                + 1;
+            result[row][column] = 2;
+        }
 
         result
     }

@@ -61,7 +61,7 @@ mod tests {
         let size = TESTING_DATA.len();
         assert_eq!(size, 2418);
 
-        let size = TESTING_FEATURES.read().expect("").features.len();
+        let size = TESTING_FEATURES.features.len();
         assert_eq!(size, 2418);
     }
 }

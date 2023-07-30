@@ -35,6 +35,8 @@ impl From<Car> for Sample {
     fn from(value: Car) -> Self {
         Sample::create(
             value.id,
+            0,
+            "".to_string(),
             value.car_type.to_string(),
             Point {
                 x: value.km,

@@ -14,7 +14,7 @@ pub fn run_knn_evaluations() -> Result<(), std::io::Error> {
 
     let knn = KNN::new(training_samples, 50);
 
-    let training_samples = &TESTING_FEATURES.read().expect("").features;
+    let training_samples = &TESTING_FEATURES.features;
 
     let mut correct_count = 0;
     let mut total_count = 0;
