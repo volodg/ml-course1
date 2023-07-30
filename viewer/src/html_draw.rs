@@ -66,7 +66,7 @@ impl Draw for HtmlDom {
             if feature.correct.unwrap_or(false) {
                 sample_container
                     .style()
-                    .set_property("background-color", "lightgreen")?;
+                    .set_property("background-color", "#006")?;
             }
 
             let sample_label = self.document.create_element("div")?;

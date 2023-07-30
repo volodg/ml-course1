@@ -53,8 +53,8 @@ impl DrawingAnalyzer for HtmlDom {
                     id: feature.sample.id,
                     label: feature.sample.label,
                     point: Point {
-                        x: feature.point[0] as f64,
-                        y: feature.point[1] as f64,
+                        x: feature.point[0],
+                        y: feature.point[1],
                     },
                 })
                 .collect();
