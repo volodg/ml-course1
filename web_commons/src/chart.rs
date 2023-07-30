@@ -48,7 +48,7 @@ impl Chart {
         canvas.set_width(options.size as u32);
         canvas.set_height(options.size as u32);
         canvas.style().set_property("background-color", "white")?;
-        canvas.style().set_property("pointerEvents", "none")?;
+        canvas.style().set_property("pointer-events", "none")?;
 
         let context = canvas
             .get_context("2d")?
