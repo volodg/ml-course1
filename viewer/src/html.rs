@@ -73,7 +73,7 @@ impl HtmlDom {
         let chart = Chart::create(chart_container.clone(), options.clone())?;
 
         let confusion_container = document.get_element_by_id("confusionContainer").unwrap();
-        let confusion = Confusion::create(confusion_container, options)?;
+        let confusion = Confusion::create(document.clone(), confusion_container, options)?;
 
         let toggle_input_button = document
             .get_element_by_id("toggleInput")

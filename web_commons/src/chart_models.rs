@@ -47,7 +47,7 @@ pub enum SampleStyleType {
 
 #[derive(Clone)]
 pub struct Options {
-    pub size: u32,
+    pub size: usize,
     pub axis_labels: [String; 2],
     pub styles: HashMap<String, SampleStyle>,
     pub icon: SampleStyleType,
@@ -57,7 +57,7 @@ pub struct Options {
 
 impl Options {
     pub fn create(
-        size: u32,
+        size: usize,
         axis_labels: [String; 2],
         styles: HashMap<String, SampleStyle>,
         icon: SampleStyleType,

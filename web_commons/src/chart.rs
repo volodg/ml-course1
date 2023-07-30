@@ -45,8 +45,8 @@ impl Chart {
             .create_element("canvas")?
             .dyn_into::<HtmlCanvasElement>()?;
 
-        canvas.set_width(options.size);
-        canvas.set_height(options.size);
+        canvas.set_width(options.size as u32);
+        canvas.set_height(options.size as u32);
         canvas.style().set_property("background-color", "white")?;
         canvas.style().set_property("pointerEvents", "none")?;
 
@@ -62,8 +62,8 @@ impl Chart {
             .create_element("canvas")?
             .dyn_into::<HtmlCanvasElement>()?;
 
-        overlay_canvas.set_width(options.size);
-        overlay_canvas.set_height(options.size);
+        overlay_canvas.set_width(options.size as u32);
+        overlay_canvas.set_height(options.size as u32);
         overlay_canvas
             .style()
             .set_property("position", "absolute")?;
