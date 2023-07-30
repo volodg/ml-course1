@@ -75,6 +75,20 @@ impl Confusion {
             top_text.style().set_property("marginLeft", std::format!("{}px", cell_size / 2).as_str())?;
 
             self.container.append_child(&top_text)?;
+
+            let left_text = self.document.create_element("div")?.dyn_into::<HtmlElement>()?;
+            left_text.set_inner_html("True Class");
+            left_text.style().set_property("position", "absolute")?;
+            left_text.style().set_property("fontSize", "x-large")?;
+            left_text.style().set_property("top", "50%")?;
+            left_text.style().set_property("left", "0")?;
+            left_text.style().set_property("transform", "translate(-50%) rotate(-90deg)")?;
+            left_text.style().set_property("height", std::format!("{cell_size}px").as_str())?;
+            left_text.style().set_property("display", "flex")?;
+            left_text.style().set_property("alignItems", "center")?;
+            left_text.style().set_property("marginLeft", std::format!("{}px", cell_size / 2).as_str())?;
+
+            self.container.append_child(&left_text)?;
         }
 
         let matrix = self.prepare_matrix(cells_row_count);

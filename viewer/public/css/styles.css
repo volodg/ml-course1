@@ -152,5 +152,6 @@ button:disabled:hover {
     visibility: hidden;
     font-size: small;
     border-radius: 6px;
+    padding: 6px;
     font-weight: normal;
 }
