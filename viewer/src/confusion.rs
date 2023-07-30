@@ -61,6 +61,22 @@ impl Confusion {
 
         self.container.append_child(&table)?;
 
+        {
+            let top_text = self.document.create_element("div")?.dyn_into::<HtmlElement>()?;
+            top_text.set_inner_html("Predicted Class");
+            top_text.style().set_property("position", "absolute")?;
+            top_text.style().set_property("fontSize", "x-large")?;
+            top_text.style().set_property("top", "0")?;
+            top_text.style().set_property("left", "50%")?;
+            top_text.style().set_property("transform", "translate(-50%)")?;
+            top_text.style().set_property("height", std::format!("{cell_size}px").as_str())?;
+            top_text.style().set_property("display", "flex")?;
+            top_text.style().set_property("alignItems", "center")?;
+            top_text.style().set_property("marginLeft", std::format!("{}px", cell_size / 2).as_str())?;
+
+            self.container.append_child(&top_text)?;
+        }
+
         let matrix = self.prepare_matrix(cells_row_count);
 
         self.fill_table(table, cells_row_count, cell_size, matrix)?;
