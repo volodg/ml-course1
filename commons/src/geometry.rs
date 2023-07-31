@@ -19,9 +19,8 @@ pub type PolygonN = Vec<PointN>;
 pub fn polygon_length(polygon: &PolygonN) -> f64 {
     let mut result = 0.0;
 
-    for (el, idx) in polygon.iter().zip(0..) {
-        let next_idx = (idx + 1) % polygon.len();
-        result += euclidean_distance(el, &polygon[next_idx])
+    for (el, next_el) in polygon.iter().zip(polygon.iter().cycle().skip(1)) {
+        result += euclidean_distance(el, next_el)
     }
 
     result
