@@ -63,7 +63,7 @@ pub fn polygon_roundness(polygon: &PolygonN) -> f64 {
     let length = polygon_length(polygon);
     let area = polygon_area(polygon);
     let radius = length / TAU;
-    let cycle_area = (PI * radius).powi(2);
+    let cycle_area = PI * radius.powi(2);
     let result = area / cycle_area;
 
     if result.is_nan() {

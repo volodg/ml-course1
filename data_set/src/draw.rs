@@ -53,7 +53,7 @@ pub fn generate_image_file(file: &str, paths: &DrawingPaths<[i32; 2]>) {
     dt.draw_path(paths);
 
     let all_points = paths.clone().into_iter().flatten().collect::<Vec<_>>();
-    let hull = graham_scan(&all_points);
+    let mut hull = graham_scan(&all_points);
     let roundness =
         polygon_roundness(&hull.clone().into_iter().map(|x| vec![x[0], x[1]]).collect());
 
@@ -61,6 +61,7 @@ pub fn generate_image_file(file: &str, paths: &DrawingPaths<[i32; 2]>) {
     let green = 0;
     let blue = (255.0 * (1.0 - roundness)).floor() as u8;
 
+    hull.push(hull[0]);
     dt.draw_path_with_color(&vec![hull], (red, green, blue, 255));
 
     dt.write_png(file).unwrap()
