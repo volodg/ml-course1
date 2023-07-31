@@ -1,7 +1,7 @@
 use crate::app_state::AppState;
 use crate::draw::DrawWithState;
 use crate::html::HtmlDom;
-use commons::math::lerp;
+use commons::math::lerp::lerp;
 use js_sys::{Array, Date};
 use std::cell::RefCell;
 use std::f64::consts::{PI, TAU};

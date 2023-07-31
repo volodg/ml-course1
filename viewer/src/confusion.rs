@@ -1,3 +1,5 @@
+use commons::math::lerp::inv_lerp;
+use commons::math::min_max;
 use commons::utils::OkExt;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -6,7 +8,6 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::chart_models::{Options, Sample, SampleStyle};
 use web_sys::{Document, Element, HtmlElement};
-use commons::math::{inv_lerp, min_max};
 
 // TODO move it to web commons
 pub struct Confusion {
@@ -167,16 +168,12 @@ impl Confusion {
         cell_size: f64,
         matrix: Vec<Vec<i64>>,
     ) -> Result<(), JsValue> {
-
         let zero_min_max: Option<i64> = None;
         let (min, max) = matrix[1..].iter().map(|x| &x[1..]).flatten().fold(
             (zero_min_max, zero_min_max),
             |(min, max), el| {
                 let minmax = min_max((min, max), *el);
-                (
-                    Some(minmax.0),
-                    Some(minmax.1),
-                )
+                (Some(minmax.0), Some(minmax.1))
             },
         );
 
@@ -224,15 +221,22 @@ impl Confusion {
                 };
 
                 if let Some(image_src) = image_src {
-                    cell.style().set_property("background-image", image_src.as_str())?;
-                    cell.style().set_property("background-repeat", "no-repeat")?;
-                    cell.style().set_property("background-position", "50% 20%")?;
+                    cell.style()
+                        .set_property("background-image", image_src.as_str())?;
+                    cell.style()
+                        .set_property("background-repeat", "no-repeat")?;
+                    cell.style()
+                        .set_property("background-position", "50% 20%")?;
                     cell.style().set_property("vertical-align", "bottom")?;
                     cell.style().set_property("font-weight", "bold")?;
                 }
 
                 if i > 0 && j > 0 {
-                    let proportion = inv_lerp(min.expect("") as f64, max.expect("") as f64, matrix[i][j] as f64);
+                    let proportion = inv_lerp(
+                        min.expect("") as f64,
+                        max.expect("") as f64,
+                        matrix[i][j] as f64,
+                    );
 
                     let color = if i == j {
                         std::format!("rgba(0, 0, 255, {})", proportion)
@@ -240,7 +244,8 @@ impl Confusion {
                         std::format!("rgba(255, 0, 0, {})", proportion)
                     };
 
-                    cell.style().set_property("background-color", color.as_str())?;
+                    cell.style()
+                        .set_property("background-color", color.as_str())?;
                 }
 
                 row.append_child(&cell)?;

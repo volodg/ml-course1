@@ -1,3 +1,6 @@
+pub mod lerp;
+
+use crate::math::lerp::{inv_lerp, remap};
 use binary_heap_plus::BinaryHeap as BinaryHeapExt;
 use std::cmp::Ordering;
 
@@ -105,19 +108,6 @@ impl Bounds {
     }
 }
 
-pub fn lerp(a: f64, b: f64, t: f64) -> f64 {
-    a * (1.0 - t) + b * t
-}
-
-pub fn inv_lerp(a: f64, b: f64, v: f64) -> f64 {
-    (v - a) / (b - a)
-}
-
-pub fn remap(from_a: f64, from_b: f64, to_a: f64, to_b: f64, v: f64) -> f64 {
-    let t = inv_lerp(from_a, from_b, v);
-    lerp(to_a, to_b, t)
-}
-
 pub trait Min {
     fn min_v(self, other: Self) -> Self;
 }
@@ -150,7 +140,10 @@ impl Max for i64 {
     }
 }
 
-pub fn min_max<NUM: Min + Max + Copy>((acc_min, acc_max): (Option<NUM>, Option<NUM>), el: NUM) -> (NUM, NUM) {
+pub fn min_max<NUM: Min + Max + Copy>(
+    (acc_min, acc_max): (Option<NUM>, Option<NUM>),
+    el: NUM,
+) -> (NUM, NUM) {
     (
         acc_min.map(|x| x.min_v(el)).unwrap_or(el),
         acc_max.map(|x| x.max_v(el)).unwrap_or(el),
