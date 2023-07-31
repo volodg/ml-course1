@@ -27,9 +27,9 @@ pub fn polygon_length(polygon: &PolygonN) -> f64 {
 }
 
 pub fn triangle_area(point_a: &PointN, point_b: &PointN, point_c: &PointN) -> f64 {
-    let a = euclidean_distance(point_a, point_b);
-    let b = euclidean_distance(point_b, point_c);
-    let c = euclidean_distance(point_c, point_a);
+    let a = euclidean_distance(point_b, point_c);
+    let b = euclidean_distance(point_c, point_a);
+    let c = euclidean_distance(point_a, point_b);
 
     let p = (a + b + c) / 2.0;
 
