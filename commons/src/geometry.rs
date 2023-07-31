@@ -40,7 +40,7 @@ pub fn triangle_area(point_a: &PointN, point_b: &PointN, point_c: &PointN) -> f6
 
 pub fn polygon_area(polygon: &PolygonN) -> f64 {
     if polygon.len() == 0 {
-        return 0.0
+        return 0.0;
     }
 
     let point_a = &polygon[0];
@@ -57,7 +57,7 @@ pub fn polygon_area(polygon: &PolygonN) -> f64 {
     result
 }
 
-pub fn roundness(polygon: &PolygonN) -> f64 {
+pub fn polygon_roundness(polygon: &PolygonN) -> f64 {
     let length = polygon_length(polygon);
     let area = polygon_area(polygon);
     let radius = length / TAU;
@@ -65,7 +65,7 @@ pub fn roundness(polygon: &PolygonN) -> f64 {
     let result = area / cycle_area;
 
     if result.is_nan() {
-        return 0.0
+        return 0.0;
     }
 
     result
@@ -86,9 +86,11 @@ mod tests {
     #[test]
     fn test_cycle_iter() {
         let points = vec![1, 2, 3];
-        let pairs = points.iter().zip(points.iter().cycle().skip(1)).map(|(a, b)| {
-            (*a, *b)
-        }).collect::<Vec<(_, _)>>();
+        let pairs = points
+            .iter()
+            .zip(points.iter().cycle().skip(1))
+            .map(|(a, b)| (*a, *b))
+            .collect::<Vec<(_, _)>>();
 
         assert_eq!(pairs, vec![(1, 2), (2, 3), (3, 1)]);
     }
