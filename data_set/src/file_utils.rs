@@ -16,7 +16,7 @@ use termion::clear;
 use termion::cursor::Goto;
 use termion::raw::IntoRawMode;
 
-type SortedDrawings = Vec<(String, DrawingPaths<[i32; 2]>)>;
+type SortedDrawings = Vec<(String, DrawingPaths<[f64; 2]>)>;
 
 pub struct SortedDrawingData {
     session: u64,
@@ -88,7 +88,7 @@ pub fn store_samples(inputs: &Vec<SortedDrawingData>) -> Result<(), std::io::Err
     std::fs::write(SAMPLES, json)
 }
 
-pub fn get_drawings_by_id(inputs: &Vec<SortedDrawingData>) -> HashMap<u64, Vec<Vec<[i32; 2]>>> {
+pub fn get_drawings_by_id(inputs: &Vec<SortedDrawingData>) -> HashMap<u64, Vec<Vec<[f64; 2]>>> {
     inputs
         .iter()
         .flat_map(|record| record.drawings.iter().map(|(_, drawings)| drawings.clone()))
@@ -99,7 +99,7 @@ pub fn get_drawings_by_id(inputs: &Vec<SortedDrawingData>) -> HashMap<u64, Vec<V
 
 #[allow(dead_code)]
 pub fn store_drawings_as_json(
-    drawings: &HashMap<u64, Vec<Vec<[i32; 2]>>>,
+    drawings: &HashMap<u64, Vec<Vec<[f64; 2]>>>,
 ) -> Result<(), std::io::Error> {
     for ((id, draw), count) in drawings.iter().zip(1..) {
         let json = serde_json::to_string(&draw)
@@ -132,7 +132,7 @@ pub fn print_progress(label: &str, count: usize, max: usize) {
     }
 }
 
-pub fn store_drawings_as_png(drawings: &HashMap<u64, Vec<Vec<[i32; 2]>>>) {
+pub fn store_drawings_as_png(drawings: &HashMap<u64, Vec<Vec<[f64; 2]>>>) {
     for (drawing, count) in drawings.iter().zip(1..) {
         let path = std::format!("{}/{}.png", IMG_DIR, drawing.0);
         print_progress("Generating images", count, drawings.len());
@@ -166,7 +166,7 @@ fn build_features_for(
 
             let draw_paths = std::fs::read_to_string(path)
                 .and_then(|content| {
-                    serde_json::from_str::<DrawingPaths<[i32; 2]>>(content.as_str())
+                    serde_json::from_str::<DrawingPaths<[f64; 2]>>(content.as_str())
                         .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))
                 })
                 .expect("");

@@ -10,7 +10,7 @@ pub struct Sample {
     pub student_id: u64,
 }
 
-type Drawings = HashMap<String, Vec<Vec<[i32; 2]>>>;
+type Drawings = HashMap<String, Vec<Vec<[f64; 2]>>>;
 
 #[derive(Deserialize, Serialize)]
 pub struct DrawingData {

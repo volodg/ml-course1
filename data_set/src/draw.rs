@@ -14,16 +14,26 @@ const STROKE_STYLE: StrokeStyle = StrokeStyle {
 };
 
 trait DrawTargetExt {
-    fn draw_path(&mut self, paths: &DrawingPaths<[i32; 2]>);
-    fn draw_path_with_color(&mut self, paths: &DrawingPaths<[i32; 2]>, color: (u8, u8, u8, u8));
+    fn draw_path(&mut self, width: f32, paths: &DrawingPaths<[f64; 2]>);
+    fn draw_path_with_color(
+        &mut self,
+        width: f32,
+        paths: &DrawingPaths<[f64; 2]>,
+        color: (u8, u8, u8, u8),
+    );
 }
 
 impl DrawTargetExt for DrawTarget {
-    fn draw_path(&mut self, paths: &DrawingPaths<[i32; 2]>) {
-        self.draw_path_with_color(paths, (0, 0, 0, 255))
+    fn draw_path(&mut self, width: f32, paths: &DrawingPaths<[f64; 2]>) {
+        self.draw_path_with_color(width, paths, (0, 0, 0, 255))
     }
 
-    fn draw_path_with_color(&mut self, paths: &DrawingPaths<[i32; 2]>, color: (u8, u8, u8, u8)) {
+    fn draw_path_with_color(
+        &mut self,
+        width: f32,
+        paths: &DrawingPaths<[f64; 2]>,
+        color: (u8, u8, u8, u8),
+    ) {
         for path in paths {
             let mut pb = PathBuilder::new();
 
@@ -42,15 +52,18 @@ impl DrawTargetExt for DrawTarget {
                 a: color.3,
             });
 
+            let mut style = STROKE_STYLE.clone();
+            style.width = width;
+
             self.stroke(&path, &source, &STROKE_STYLE, &DrawOptions::new());
         }
     }
 }
 
-pub fn generate_image_file(file: &str, paths: &DrawingPaths<[i32; 2]>) {
+pub fn generate_image_file(file: &str, paths: &DrawingPaths<[f64; 2]>) {
     let mut dt = DrawTarget::new(400, 400);
 
-    dt.draw_path(paths);
+    dt.draw_path(3.0, paths);
 
     let all_points = paths.clone().into_iter().flatten().collect::<Vec<_>>();
     let mut hull = graham_scan(&all_points);
@@ -62,7 +75,7 @@ pub fn generate_image_file(file: &str, paths: &DrawingPaths<[i32; 2]>) {
     let blue = (255.0 * (1.0 - roundness)).floor() as u8;
 
     hull.push(hull[0]);
-    dt.draw_path_with_color(&vec![hull], (red, green, blue, 255));
+    dt.draw_path_with_color(10.0, &vec![hull], (red, green, blue, 255));
 
     dt.write_png(file).unwrap()
 }

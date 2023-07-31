@@ -1,13 +1,13 @@
 extern crate core;
 
-use crate::file_utils::build_data_set;
+use crate::file_utils::build_features;
 
 mod analytics;
 mod draw;
 mod file_utils;
 
 fn main() -> Result<(), std::io::Error> {
-    build_data_set()?;
+    build_features()?;
     Ok(())
 }
 

@@ -14,7 +14,6 @@ pub struct Confusion {
     document: Document,
     container: Element,
     size: usize,
-    #[allow(dead_code)]
     styles: HashMap<String, SampleStyle>,
     samples: Vec<Sample>,
     classes: Vec<&'static str>,

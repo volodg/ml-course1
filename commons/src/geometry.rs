@@ -5,19 +5,19 @@ pub fn average(a: &[f64; 2], b: &[f64; 2]) -> [f64; 2] {
     [(a[0] + b[0]) / 2.0, (a[1] + b[1]) / 2.0]
 }
 
-pub fn euclidean_distance(a: &[i32], b: &[i32]) -> f64 {
+pub fn euclidean_distance(a: &[f64], b: &[f64]) -> f64 {
     if a.len() != b.len() {
         panic!("incompatible points")
     }
 
-    (a.iter().zip(b).fold(0, |acc, (a, b)| {
+    (a.iter().zip(b).fold(0.0, |acc, (a, b)| {
         let diff = a - b;
         acc + (diff * diff)
     }) as f64)
         .sqrt()
 }
 
-pub type PointN = Vec<i32>;
+pub type PointN = Vec<f64>;
 pub type PolygonN = Vec<PointN>;
 
 pub fn polygon_length(polygon: &PolygonN) -> f64 {
@@ -74,7 +74,7 @@ pub fn polygon_roundness(polygon: &PolygonN) -> f64 {
 }
 
 // finds a point with the lowest vertical position (leftmost wins in case of a tie)
-fn lowest_point(points: &[[i32; 2]]) -> Option<[i32; 2]> {
+fn lowest_point(points: &[[f64; 2]]) -> Option<[f64; 2]> {
     points.iter().fold(None, |lowest, point| match lowest {
         Some(lowest) => {
             if point[1] > lowest[1] {
@@ -95,11 +95,11 @@ fn lowest_point(points: &[[i32; 2]]) -> Option<[i32; 2]> {
 // to the right then the result is 1,
 // to the left then the result is -1,
 // on the line then the result is 0
-fn get_orientation(p1: &[i32; 2], p2: &[i32; 2], p3: &[i32; 2]) -> Ordering {
+fn get_orientation(p1: &[f64; 2], p2: &[f64; 2], p3: &[f64; 2]) -> Ordering {
     let val = (p2[1] - p1[1]) * (p3[0] - p2[0]) - (p2[0] - p1[0]) * (p3[1] - p2[1]);
-    if val == 0 {
+    if val == 0.0 {
         Ordering::Equal
-    } else if val > 0 {
+    } else if val > 0.0 {
         Ordering::Greater
     } else {
         Ordering::Less
@@ -107,7 +107,7 @@ fn get_orientation(p1: &[i32; 2], p2: &[i32; 2], p3: &[i32; 2]) -> Ordering {
 }
 
 // orders points in a counter-clockwise relative to the given origin
-fn sort_points(origin: &[i32; 2], points: &mut [[i32; 2]]) {
+fn sort_points(origin: &[f64; 2], points: &mut [[f64; 2]]) {
     points.sort_by(|a, b| {
         let orientation = get_orientation(origin, a, b);
 
@@ -121,7 +121,7 @@ fn sort_points(origin: &[i32; 2], points: &mut [[i32; 2]]) {
 
 // builds a convex hull (a polygon) using the Graham scan algorithm
 // https://en.wikipedia.org/wiki/Graham_scan
-pub fn graham_scan(points: &Vec<[i32; 2]>) -> Vec<[i32; 2]> {
+pub fn graham_scan(points: &Vec<[f64; 2]>) -> Vec<[f64; 2]> {
     let mut points = points.clone();
 
     if points.len() < 3 {
@@ -150,14 +150,93 @@ pub fn graham_scan(points: &Vec<[i32; 2]>) -> Vec<[i32; 2]> {
     stack
 }
 
+// builds a box with one of the edges being coincident with the edge
+// between hull's points i and j (expected to be neighbors)
+#[allow(dead_code)]
+fn coincident_box(hull: &Vec<[f64; 2]>, i: usize, j: usize) {
+    // a difference between two points (vector that connects them)
+    fn diff(a: &[f64; 2], b: &[f64; 2]) -> [f64; 2] {
+        [a[0] - b[0], a[1] - b[1]]
+    }
+
+    // a dot product of two vectors
+    fn dot(a: &[f64; 2], b: &[f64; 2]) -> f64 {
+        a[0] * b[0] + a[1] * b[1]
+    }
+
+    // a length of a vector
+    fn len(a: &[f64; 2]) -> f64 {
+        (a[0] * a[0] + a[1] * a[1]).sqrt()
+    }
+
+    // adds two vectors
+    fn add(a: &[f64; 2], b: &[f64; 2]) -> [f64; 2] {
+        [a[0] + b[0], a[1] + b[1]]
+    }
+
+    // multiplies a vector by a given magnitude
+    // const mult = (a, n) => [a[0] * n, a[1] * n];
+    fn mult(a: &[f64; 2], n: f64) -> [f64; 2] {
+        [a[0] * n, a[1] * n]
+    }
+}
+
+/*
+geometry.coincidentBox = (hull, i, j) => {
+    // divides a vector by a given magintued
+    const div = (a, n) => [a[0] / n, a[1] / n];
+    // builds a unit vector (one having a length of 1) with the same direction as a given one
+    const unit = (a) => div(a, len(a));
+
+    let origin = hull[i];
+    // build base vectors for a new system of coordinates
+    // where the x-axis is coincident with the i-j edge
+    let baseX = unit(diff(hull[j], origin));
+    // and the y-axis is orthogonal (90 degrees rotation counter-clockwise)
+    let baseY = [baseX[1], -baseX[0]];
+
+    let left = 0;
+    let right = 0;
+    let top = 0;
+    let bottom = 0;
+    // for every point of a hull
+    for (const p of hull) {
+        // calculate position relative to the origin
+        const n = [p[0] - origin[0], p[1] - origin[1]];
+        // calculate position in new axis (rotate)
+        const v = [dot(baseX, n), dot(baseY, n)];
+        // apply trivial logic for calculating the bounding box
+        // as rotation is out of consideration at this point
+        left = Math.min(v[0], left);
+        top = Math.min(v[1], top);
+        right = Math.max(v[0], right);
+        bottom = Math.max(v[1], bottom);
+    }
+
+    // calculate bounding box vertices back in original screen space
+    const vertices = [
+        add(add(mult(baseX, left), mult(baseY, top)), origin),
+        add(add(mult(baseX, left), mult(baseY, bottom)), origin),
+        add(add(mult(baseX, right), mult(baseY, bottom)), origin),
+        add(add(mult(baseX, right), mult(baseY, top)), origin),
+    ];
+
+    return {
+        vertices,
+        width: right - left,
+        height: bottom - top,
+    };
+}
+ */
+
 #[cfg(test)]
 mod tests {
     use crate::geometry::{euclidean_distance, polygon_area, polygon_length};
 
     #[test]
     fn test_euclidean_distance() {
-        let point1 = [1, 3];
-        let point2 = [5, 0];
+        let point1 = [1.0, 3.0];
+        let point2 = [5.0, 0.0];
 
         assert_eq!(euclidean_distance(&point1, &point2), 5.0);
     }
@@ -176,18 +255,18 @@ mod tests {
 
     #[test]
     fn test_polygon_length() {
-        let point1 = vec![1, 3];
-        let point2 = vec![5, 0];
-        let point3 = vec![1, 0];
+        let point1 = vec![1.0, 3.0];
+        let point2 = vec![5.0, 0.0];
+        let point3 = vec![1.0, 0.0];
 
         assert_eq!(polygon_length(&vec![point1, point2, point3]), 12.0);
     }
 
     #[test]
     fn test_polygon_area() {
-        let point1 = vec![1, 3];
-        let point2 = vec![5, 0];
-        let point3 = vec![1, 0];
+        let point1 = vec![1.0, 3.0];
+        let point2 = vec![5.0, 0.0];
+        let point3 = vec![1.0, 0.0];
 
         assert_eq!(polygon_area(&vec![point1, point2, point3]), 6.0);
     }

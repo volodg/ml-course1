@@ -28,7 +28,7 @@ fn convert_to_save_format(input: &ReadyState<HtmlDom>) -> DrawingData {
                 .iter()
                 .map(|path| {
                     path.iter()
-                        .map(|point| [point.x.floor() as i32, point.y.floor() as i32])
+                        .map(|point| [point.x, point.y])
                         .collect()
                 })
                 .collect();
