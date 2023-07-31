@@ -1,13 +1,13 @@
 extern crate core;
 
-use crate::analytics::custom_knn::run_knn_evaluations;
+use crate::file_utils::build_data_set;
 
 mod analytics;
 mod draw;
 mod file_utils;
 
 fn main() -> Result<(), std::io::Error> {
-    run_knn_evaluations()?;
+    build_data_set()?;
     Ok(())
 }
 

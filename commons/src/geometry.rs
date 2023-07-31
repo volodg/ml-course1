@@ -10,12 +10,10 @@ pub fn euclidean_distance(a: &[i32], b: &[i32]) -> f64 {
         panic!("incompatible points")
     }
 
-    (a.iter()
-        .zip(b)
-        .fold(0, |acc, (a, b)| {
-            let diff = a - b;
-            acc + (diff * diff)
-        }) as f64)
+    (a.iter().zip(b).fold(0, |acc, (a, b)| {
+        let diff = a - b;
+        acc + (diff * diff)
+    }) as f64)
         .sqrt()
 }
 
