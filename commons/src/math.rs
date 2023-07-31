@@ -10,23 +10,31 @@ pub struct Point {
     pub y: f64,
 }
 
-impl Point {
-    pub fn scale(&self, scale: f64) -> Self {
+pub trait PointExt {
+    fn scale(&self, scale: f64) -> Self;
+    fn distance(&self, to: &Self) -> f64;
+    fn get_nearest(&self, pixel_points: &[Point]) -> Vec<usize>;
+    fn get_nearest_k(&self, pixel_points: &[Point], k: usize) -> Vec<usize>;
+    fn remap(&self, from: &Bounds, to: &Bounds) -> Point;
+}
+
+impl PointExt for Point {
+    fn scale(&self, scale: f64) -> Self {
         Self {
             x: self.x * scale,
             y: self.y * scale,
         }
     }
 
-    pub fn distance(&self, to: &Self) -> f64 {
+    fn distance(&self, to: &Self) -> f64 {
         ((self.x - to.x).powf(2.0) + (self.y - to.y).powf(2.0)).sqrt()
     }
 
-    pub fn get_nearest(&self, pixel_points: &[Point]) -> Vec<usize> {
+    fn get_nearest(&self, pixel_points: &[Point]) -> Vec<usize> {
         self.get_nearest_k(pixel_points, 1)
     }
 
-    pub fn get_nearest_k(&self, pixel_points: &[Point], k: usize) -> Vec<usize> {
+    fn get_nearest_k(&self, pixel_points: &[Point], k: usize) -> Vec<usize> {
         let heap_size = 0.max(pixel_points.len() - k);
 
         let mut heap =
@@ -59,7 +67,7 @@ impl Point {
         result
     }
 
-    pub fn remap(&self, from: &Bounds, to: &Bounds) -> Point {
+    fn remap(&self, from: &Bounds, to: &Bounds) -> Point {
         Point {
             x: remap(from.left, from.right, to.left, to.right, self.x),
             y: remap(from.top, from.bottom, to.top, to.bottom, self.y),
@@ -182,7 +190,7 @@ pub fn normalize_points(min: &Vec<f64>, max: &Vec<f64>, points: Vec<Vec<f64>>) -
 
 #[cfg(test)]
 mod tests {
-    use crate::math::Point;
+    use crate::math::{Point, PointExt};
     use binary_heap_plus::BinaryHeap as BinaryHeapExt;
 
     #[test]

@@ -1,6 +1,6 @@
 use crate::array::MostFrequentElement;
 use crate::models::SampleWithFeatures;
-use commons::math::Point;
+use commons::math::{Point, PointExt};
 
 pub struct KNN {
     features: Vec<SampleWithFeatures>,

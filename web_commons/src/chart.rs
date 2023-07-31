@@ -5,7 +5,7 @@ use crate::graphics::{ContextExt, DrawTextParams};
 use crate::subscribers::AddListener;
 use crate::subscribers::HtmlElementExt;
 use commons::math::lerp::lerp;
-use commons::math::{Bounds, Point};
+use commons::math::{Bounds, Point, PointExt};
 use commons::utils::OkExt;
 use js_sys::Array;
 use js_sys::Math::sign;
