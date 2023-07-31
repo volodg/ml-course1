@@ -6,6 +6,7 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_commons::chart_models::{Options, Sample, SampleStyle};
 use web_sys::{Document, Element, HtmlElement};
+use commons::math::{inv_lerp, min_max};
 
 // TODO move it to web commons
 pub struct Confusion {
@@ -166,6 +167,19 @@ impl Confusion {
         cell_size: f64,
         matrix: Vec<Vec<i64>>,
     ) -> Result<(), JsValue> {
+
+        let zero_min_max: Option<i64> = None;
+        let (min, max) = matrix[1..].iter().map(|x| &x[1..]).flatten().fold(
+            (zero_min_max, zero_min_max),
+            |(min, max), el| {
+                let minmax = min_max((min, max), *el);
+                (
+                    Some(minmax.0),
+                    Some(minmax.1),
+                )
+            },
+        );
+
         for i in 0..cells_row_count {
             let row = self.document.create_element("tr")?;
             table.append_child(&row)?;
@@ -215,22 +229,18 @@ impl Confusion {
                     cell.style().set_property("background-position", "50% 20%")?;
                     cell.style().set_property("vertical-align", "bottom")?;
                     cell.style().set_property("font-weight", "bold")?;
+                }
 
-                    if i == 0 && j > 0 {
-                        let proportion = 2.0 * matrix[i][j] as f64 / matrix[j][i] as f64;
-                        let red = if proportion >= 0.0 {
-                            (proportion * 255.0) as i16
-                        } else {
-                            0
-                        };
-                        let blue = if proportion <= 0.0 {
-                            -(proportion * 255.0) as i16
-                        } else {
-                            0
-                        };
+                if i > 0 && j > 0 {
+                    let proportion = inv_lerp(min.expect("") as f64, max.expect("") as f64, matrix[i][j] as f64);
 
-                        cell.style().set_property("color", std::format!("rgb({}, 0, {})", red, blue).as_str())?;
-                    }
+                    let color = if i == j {
+                        std::format!("rgba(0, 0, 255, {})", proportion)
+                    } else {
+                        std::format!("rgba(255, 0, 0, {})", proportion)
+                    };
+
+                    cell.style().set_property("background-color", color.as_str())?;
                 }
 
                 row.append_child(&cell)?;

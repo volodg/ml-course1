@@ -118,10 +118,42 @@ pub fn remap(from_a: f64, from_b: f64, to_a: f64, to_b: f64, v: f64) -> f64 {
     lerp(to_a, to_b, t)
 }
 
-pub fn min_max((acc_min, acc_max): (Option<f64>, Option<f64>), el: f64) -> (f64, f64) {
+pub trait Min {
+    fn min_v(self, other: Self) -> Self;
+}
+
+pub trait Max {
+    fn max_v(self, other: Self) -> Self;
+}
+
+impl Min for f64 {
+    fn min_v(self, other: Self) -> Self {
+        self.min(other)
+    }
+}
+
+impl Max for f64 {
+    fn max_v(self, other: Self) -> Self {
+        self.max(other)
+    }
+}
+
+impl Min for i64 {
+    fn min_v(self, other: Self) -> Self {
+        self.min(other)
+    }
+}
+
+impl Max for i64 {
+    fn max_v(self, other: Self) -> Self {
+        self.max(other)
+    }
+}
+
+pub fn min_max<NUM: Min + Max + Copy>((acc_min, acc_max): (Option<NUM>, Option<NUM>), el: NUM) -> (NUM, NUM) {
     (
-        acc_min.map(|x| x.min(el)).unwrap_or(el),
-        acc_max.map(|x| x.max(el)).unwrap_or(el),
+        acc_min.map(|x| x.min_v(el)).unwrap_or(el),
+        acc_max.map(|x| x.max_v(el)).unwrap_or(el),
     )
 }
 

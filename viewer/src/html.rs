@@ -36,7 +36,7 @@ fn default_chart_options(feature_names: &[String]) -> Result<Options, JsValue> {
     insert_label("bicycle", "🚲");
     insert_label("guitar", "🎸");
     insert_label("pencil", "✏️");
-    insert_label("clock", "⏰");
+    insert_label("clock", "🕒");
     insert_label("?", "❓");
 
     Options::create(
