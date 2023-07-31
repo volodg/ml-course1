@@ -124,36 +124,37 @@ fn sort_points(origin: &[i32; 2], points: &mut [[i32; 2]]) {
     })
 }
 
-/*
 // builds a convex hull (a polygon) using the Graham scan algorithm
 // https://en.wikipedia.org/wiki/Graham_scan
-geometry.grahamScan = (points) => {
-   const lowestPoint = geometry.lowestPoint(points);
-   const sortedPoints = geometry.sortPoints(lowestPoint, points);
+#[allow(dead_code)]
+pub fn graham_scan(points: &Vec<[i32; 2]>) -> Vec<[i32; 2]> {
+    let mut points = points.clone();
 
-   // initialize the stack with the first three points
-   const stack = [sortedPoints[0], sortedPoints[1], sortedPoints[2]];
+    if points.len() < 3 {
+        return points;
+    }
 
-   // iterate over the remaining points
-   for (let i = 3; i < sortedPoints.length; i++) {
-      let top = stack.length - 1;
-      // exclude points from the end
-      // until adding a new point won't cause a concave
-      // so that the resulting polygon will be convex
-      while (
-         top > 0 &&
-         getOrientation(stack[top - 1], stack[top], sortedPoints[i]) <= 0
-      ) {
-         stack.pop();
-         top--;
-      }
-      // add the point
-      stack.push(sortedPoints[i]);
-   }
+    let lowest_point = lowest_point(&points).expect("some for non empty input");
+    sort_points(&lowest_point, &mut points);
 
-   return stack;
-};
- */
+    // initialize the stack with the first three points
+    let mut stack = vec![points[0], points[1], points[2]];
+
+    for i in 3..points.len() {
+        let mut top = stack.len() - 1;
+        // exclude points from the end
+        // until adding a new point won't cause a concave
+        // so that the resulting polygon will be convex
+        while top > 0 && get_orientation(&stack[top - 1], &stack[top], &points[i]).is_le() {
+            stack.pop();
+            top -= 1;
+        }
+        // add the point
+        stack.push(points[i]);
+    }
+
+    stack
+}
 
 #[cfg(test)]
 mod tests {
