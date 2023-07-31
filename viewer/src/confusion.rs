@@ -204,6 +204,27 @@ impl Confusion {
 
                 cell.set_text_content(Some(matrix[i][j].as_str()));
 
+                let img_src = |index: usize| -> String {
+                    let image = self.styles[self.classes[index]].image.as_ref().expect("");
+                    std::format!("url({})", image.src())
+                };
+
+                let image_src = if i == 0 && j > 0 {
+                    Some(img_src(j - 1))
+                } else if j == 0 && i > 0 {
+                    Some(img_src(i - 1))
+                } else {
+                    None
+                };
+
+                if let Some(image_src) = image_src {
+                    cell.style().set_property("background-image", image_src.as_str())?;
+                    cell.style().set_property("background-repeat", "no-repeat")?;
+                    cell.style().set_property("background-position", "50% 20%")?;
+                    cell.style().set_property("vertical-align", "bottom")?;
+                    cell.style().set_property("font-weight", "bold")?;
+                }
+
                 row.append_child(&cell)?;
             }
         }
