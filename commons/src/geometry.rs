@@ -76,7 +76,6 @@ pub fn polygon_roundness(polygon: &PolygonN) -> f64 {
 }
 
 // finds a point with the lowest vertical position (leftmost wins in case of a tie)
-#[allow(dead_code)]
 fn lowest_point(points: &[[i32; 2]]) -> Option<[i32; 2]> {
     points.iter().fold(None, |lowest, point| match lowest {
         Some(lowest) => {
@@ -90,7 +89,7 @@ fn lowest_point(points: &[[i32; 2]]) -> Option<[i32; 2]> {
 
             Some(lowest)
         }
-        None => None,
+        None => Some(point.clone()),
     })
 }
 
@@ -98,7 +97,6 @@ fn lowest_point(points: &[[i32; 2]]) -> Option<[i32; 2]> {
 // to the right then the result is 1,
 // to the left then the result is -1,
 // on the line then the result is 0
-#[allow(dead_code)]
 fn get_orientation(p1: &[i32; 2], p2: &[i32; 2], p3: &[i32; 2]) -> Ordering {
     let val = (p2[1] - p1[1]) * (p3[0] - p2[0]) - (p2[0] - p1[0]) * (p3[1] - p2[1]);
     if val == 0 {
@@ -111,7 +109,6 @@ fn get_orientation(p1: &[i32; 2], p2: &[i32; 2], p3: &[i32; 2]) -> Ordering {
 }
 
 // orders points in a counter-clockwise relative to the given origin
-#[allow(dead_code)]
 fn sort_points(origin: &[i32; 2], points: &mut [[i32; 2]]) {
     points.sort_by(|a, b| {
         let orientation = get_orientation(origin, a, b);
@@ -126,7 +123,6 @@ fn sort_points(origin: &[i32; 2], points: &mut [[i32; 2]]) {
 
 // builds a convex hull (a polygon) using the Graham scan algorithm
 // https://en.wikipedia.org/wiki/Graham_scan
-#[allow(dead_code)]
 pub fn graham_scan(points: &Vec<[i32; 2]>) -> Vec<[i32; 2]> {
     let mut points = points.clone();
 
