@@ -26,10 +26,38 @@ pub fn polygon_length(polygon: &PolygonN) -> f64 {
     result
 }
 
+pub fn triangle_area(point_a: &PointN, point_b: &PointN, point_c: &PointN) -> f64 {
+    let a = euclidean_distance(point_a, point_b);
+    let b = euclidean_distance(point_b, point_c);
+    let c = euclidean_distance(point_c, point_a);
+
+    let p = (a + b + c) / 2.0;
+
+    (p * (p - a) * (p - b) * (p - c)).sqrt()
+}
+
+pub fn polygon_area(polygon: &PolygonN) -> f64 {
+    if polygon.len() == 0 {
+        return 0.0
+    }
+
+    let point_a = &polygon[0];
+
+    let iter_1 = polygon.iter().skip(1);
+    let iter_2 = polygon.iter().skip(2);
+
+    let mut result = 0.0;
+
+    for (point_b, point_c) in iter_1.zip(iter_2) {
+        result += triangle_area(point_a, point_b, point_c)
+    }
+
+    result
+}
 
 #[cfg(test)]
 mod tests {
-    use crate::geometry::{euclidean_distance, polygon_length};
+    use crate::geometry::{euclidean_distance, polygon_area, polygon_length};
 
     #[test]
     fn test_euclidean_distance() {
@@ -56,5 +84,14 @@ mod tests {
         let point3 = vec![1.0, 0.0];
 
         assert_eq!(polygon_length(&vec![point1, point2, point3]), 12.0);
+    }
+
+    #[test]
+    fn test_polygon_area() {
+        let point1 = vec![1.0, 3.0];
+        let point2 = vec![5.0, 0.0];
+        let point3 = vec![1.0, 0.0];
+
+        assert_eq!(polygon_area(&vec![point1, point2, point3]), 6.0);
     }
 }
