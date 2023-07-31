@@ -1,7 +1,7 @@
 use crate::app_state::AppState;
 use crate::canvas::Canvas;
 use crate::draw::DrawWithState;
-use commons::geometry::average;
+use commons::geometry::Point2DView;
 use js_sys::Math::sign;
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, Document};
@@ -60,7 +60,7 @@ impl DrawWithState for CanvasGraphic {
             .draw_line_with_color(&app_state.get_point_b(), &point_t, "magenta");
         self.canvas.context.draw_text_with_color(
             "tan",
-            &average(&app_state.get_point_b(), &point_t),
+            &app_state.get_point_b().average(&point_t),
             "magenta",
         )?;
 
@@ -79,7 +79,7 @@ impl DrawWithState for CanvasGraphic {
             .draw_line(&app_state.get_point_a(), &app_state.get_point_b());
         self.canvas.context.draw_text(
             "1",
-            &average(&app_state.get_point_a(), &app_state.get_point_b()),
+            &app_state.get_point_a().average(&app_state.get_point_b()),
         )?;
         self.canvas.context.draw_line_with_color(
             &app_state.get_point_a(),
@@ -88,7 +88,7 @@ impl DrawWithState for CanvasGraphic {
         );
         self.canvas.context.draw_text_with_color(
             "b",
-            &average(&app_state.get_point_a(), &app_state.get_point_c()),
+            &app_state.get_point_a().average(&app_state.get_point_c()),
             "blue",
         )?;
         self.canvas.context.draw_line_with_color(
@@ -98,7 +98,7 @@ impl DrawWithState for CanvasGraphic {
         );
         self.canvas.context.draw_text_with_color(
             "a",
-            &average(&app_state.get_point_b(), &app_state.get_point_c()),
+            &app_state.get_point_b().average(&app_state.get_point_c()),
             "red",
         )?;
 

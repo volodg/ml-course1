@@ -26,11 +26,7 @@ fn convert_to_save_format(input: &ReadyState<HtmlDom>) -> DrawingData {
             let paths = paths
                 .get_paths()
                 .iter()
-                .map(|path| {
-                    path.iter()
-                        .map(|point| [point.x, point.y])
-                        .collect()
-                })
+                .map(|path| path.iter().map(|point| [point.x, point.y]).collect())
                 .collect();
             (label, paths)
         })

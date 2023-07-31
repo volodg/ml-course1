@@ -1,8 +1,33 @@
 use std::cmp::Ordering;
 use std::f64::consts::{PI, TAU};
 
-pub fn average(a: &[f64; 2], b: &[f64; 2]) -> [f64; 2] {
-    [(a[0] + b[0]) / 2.0, (a[1] + b[1]) / 2.0]
+pub trait Point2DView {
+    type PointT;
+
+    fn create(x: f64, y: f64) -> Self::PointT;
+
+    fn x(&self) -> f64;
+    fn y(&self) -> f64;
+
+    fn average(&self, other: &Self) -> Self::PointT {
+        Self::create((self.x() + other.x()) / 2.0, (self.y() + other.y()) / 2.0)
+    }
+}
+
+impl Point2DView for [f64; 2] {
+    type PointT = [f64; 2];
+
+    fn create(x: f64, y: f64) -> Self::PointT {
+        [x, y]
+    }
+
+    fn x(&self) -> f64 {
+        self[0]
+    }
+
+    fn y(&self) -> f64 {
+        self[1]
+    }
 }
 
 pub fn euclidean_distance(a: &[f64], b: &[f64]) -> f64 {
