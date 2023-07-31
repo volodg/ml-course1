@@ -217,7 +217,7 @@ impl Confusion {
                     cell.style().set_property("font-weight", "bold")?;
 
                     if i == 0 && j > 0 {
-                        let proportion = matrix[i][j] as f64 / matrix[j][i] as f64;
+                        let proportion = 2.0 * matrix[i][j] as f64 / matrix[j][i] as f64;
                         let red = if proportion >= 0.0 {
                             (proportion * 255.0) as i16
                         } else {
