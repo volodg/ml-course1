@@ -13,9 +13,24 @@ pub fn euclidean_distance(a: &[f64], b: &[f64]) -> f64 {
         .sqrt()
 }
 
+pub type PointN = Vec<f64>;
+pub type PolygonN = Vec<PointN>;
+
+pub fn polygon_length(polygon: &PolygonN) -> f64 {
+    let mut result = 0.0;
+
+    for (el, idx) in polygon.iter().zip(0..) {
+        let next_idx = (idx + 1) % polygon.len();
+        result += euclidean_distance(el, &polygon[next_idx])
+    }
+
+    result
+}
+
+
 #[cfg(test)]
 mod tests {
-    use crate::geometry::euclidean_distance;
+    use crate::geometry::{euclidean_distance, polygon_length};
 
     #[test]
     fn test_euclidean_distance() {
@@ -23,5 +38,14 @@ mod tests {
         let point2 = [5.0, 0.0];
 
         assert_eq!(euclidean_distance(&point1, &point2), 5.0);
+    }
+
+    #[test]
+    fn test_polygon_length() {
+        let point1 = vec![1.0, 3.0];
+        let point2 = vec![5.0, 0.0];
+        let point3 = vec![1.0, 0.0];
+
+        assert_eq!(polygon_length(&vec![point1, point2, point3]), 12.0);
     }
 }

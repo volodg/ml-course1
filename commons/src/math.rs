@@ -140,6 +140,7 @@ impl Max for i64 {
     }
 }
 
+// TODO use https://docs.rs/itertools/0.8.2/itertools/trait.Itertools.html#method.minmax
 pub fn min_max<NUM: Min + Max + Copy>(
     (acc_min, acc_max): (Option<NUM>, Option<NUM>),
     el: NUM,
