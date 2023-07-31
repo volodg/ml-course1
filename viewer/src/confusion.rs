@@ -118,8 +118,8 @@ impl Confusion {
         Ok(())
     }
 
-    fn prepare_matrix(&self, cells_row_count: usize) -> Vec<Vec<String>> {
-        let mut matrix = Vec::with_capacity(cells_row_count);
+    fn prepare_matrix(&self, cells_row_count: usize) -> Vec<Vec<i64>> {
+        let mut result = Vec::with_capacity(cells_row_count);
 
         for _ in 0..cells_row_count {
             let mut row = Vec::with_capacity(cells_row_count);
@@ -128,7 +128,7 @@ impl Confusion {
                 row.push(0)
             }
 
-            matrix.push(row)
+            result.push(row)
         }
 
         for sample in &self.samples {
@@ -142,39 +142,18 @@ impl Confusion {
                 .iter()
                 .position(|x| sample.label == *x)
                 .expect("");
-            matrix[row + 1][column + 1] += 1;
+            result[row + 1][column + 1] += 1;
         }
 
         for i in 1..cells_row_count {
             for j in 1..cells_row_count {
-                matrix[0][j] += matrix[i][j];
-                matrix[i][0] += matrix[i][j];
+                result[0][j] += result[i][j];
+                result[i][0] += result[i][j];
             }
         }
 
         for i in 1..cells_row_count {
-            matrix[0][i] -= matrix[i][0];
-        }
-
-        // Build string representation
-        let mut result = vec![];
-
-        for i in 0..cells_row_count {
-            let mut row = vec![];
-
-            for j in 0..cells_row_count {
-                let value = matrix[i][j];
-                let value = if i == 0 && j == 0 {
-                    "".to_string()
-                } else if value > 0 && i == 0 {
-                    std::format!("+{value}")
-                } else {
-                    matrix[i][j].to_string()
-                };
-                row.push(value)
-            }
-
-            result.push(row)
+            result[0][i] -= result[i][0];
         }
 
         result
@@ -185,7 +164,7 @@ impl Confusion {
         table: HtmlElement,
         cells_row_count: usize,
         cell_size: f64,
-        matrix: Vec<Vec<String>>,
+        matrix: Vec<Vec<i64>>,
     ) -> Result<(), JsValue> {
         for i in 0..cells_row_count {
             let row = self.document.create_element("tr")?;
@@ -202,7 +181,20 @@ impl Confusion {
                     .set_property("height", std::format!("{cell_size}px").as_str())?;
                 cell.style().set_property("padding", "0")?;
 
-                cell.set_text_content(Some(matrix[i][j].as_str()));
+                let text = if i == 0 && j == 0 {
+                    "".to_string()
+                } else if i == 0 && j > 0 {
+                    let value = matrix[i][j];
+                    if value > 0 {
+                        std::format!("+{value}")
+                    } else {
+                        value.to_string()
+                    }
+                } else {
+                    matrix[i][j].to_string()
+                };
+
+                cell.set_text_content(Some(text.as_str()));
 
                 let img_src = |index: usize| -> String {
                     let image = self.styles[self.classes[index]].image.as_ref().expect("");
@@ -223,6 +215,22 @@ impl Confusion {
                     cell.style().set_property("background-position", "50% 20%")?;
                     cell.style().set_property("vertical-align", "bottom")?;
                     cell.style().set_property("font-weight", "bold")?;
+
+                    if i == 0 && j > 0 {
+                        let proportion = matrix[i][j] as f64 / matrix[j][i] as f64;
+                        let red = if proportion >= 0.0 {
+                            (proportion * 255.0) as i16
+                        } else {
+                            0
+                        };
+                        let blue = if proportion <= 0.0 {
+                            -(proportion * 255.0) as i16
+                        } else {
+                            0
+                        };
+
+                        cell.style().set_property("color", std::format!("rgb({}, 0, {})", red, blue).as_str())?;
+                    }
                 }
 
                 row.append_child(&cell)?;
