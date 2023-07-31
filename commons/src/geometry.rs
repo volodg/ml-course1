@@ -40,6 +40,16 @@ mod tests {
     }
 
     #[test]
+    fn test_cycle_iter() {
+        let points = vec![1, 2, 3];
+        let pairs = points.iter().zip(points.iter().cycle().skip(1)).map(|(a, b)| {
+            (*a, *b)
+        }).collect::<Vec<(_, _)>>();
+
+        assert_eq!(pairs, vec![(1, 2), (2, 3), (3, 1)]);
+    }
+
+    #[test]
     fn test_polygon_length() {
         let point1 = vec![1.0, 3.0];
         let point2 = vec![5.0, 0.0];
