@@ -71,6 +71,73 @@ pub fn polygon_roundness(polygon: &PolygonN) -> f64 {
     result
 }
 
+#[allow(dead_code)]
+fn lowest_point(points: &[[i32; 2]]) -> Option<[i32; 2]> {
+    points.iter().fold(None, |lowest, point| {
+        match lowest {
+            Some(lowest) => {
+                if point[1] > lowest[1] {
+                    return Some(point.clone());
+                }
+
+                if point[1] == lowest[1] && point[0] < lowest[0] {
+                    return Some(point.clone());
+                }
+
+                Some(lowest)
+            },
+            None => {
+                None
+            }
+        }
+    })
+}
+
+/*
+// finds a point with the lowest vertical position (leftmost wins in case of a tie)
+geometry.lowestPoint = (points) =>
+   points.reduce((lowest, point) => {
+      if (point[1] > lowest[1]) {
+         return point;
+      }
+      if (point[1] === lowest[1] && point[0] < lowest[0]) {
+         return point;
+      }
+      return lowest;
+   });
+ */
+
+/*
+// builds a convex hull (a polygon) using the Graham scan algorithm
+// https://en.wikipedia.org/wiki/Graham_scan
+geometry.grahamScan = (points) => {
+   const lowestPoint = geometry.lowestPoint(points);
+   const sortedPoints = geometry.sortPoints(lowestPoint, points);
+
+   // initialize the stack with the first three points
+   const stack = [sortedPoints[0], sortedPoints[1], sortedPoints[2]];
+
+   // iterate over the remaining points
+   for (let i = 3; i < sortedPoints.length; i++) {
+      let top = stack.length - 1;
+      // exclude points from the end
+      // until adding a new point won't cause a concave
+      // so that the resulting polygon will be convex
+      while (
+         top > 0 &&
+         getOrientation(stack[top - 1], stack[top], sortedPoints[i]) <= 0
+      ) {
+         stack.pop();
+         top--;
+      }
+      // add the point
+      stack.push(sortedPoints[i]);
+   }
+
+   return stack;
+};
+ */
+
 #[cfg(test)]
 mod tests {
     use crate::geometry::{euclidean_distance, polygon_area, polygon_length};
