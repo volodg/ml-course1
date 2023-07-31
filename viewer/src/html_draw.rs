@@ -71,7 +71,7 @@ impl Draw for HtmlDom {
             })?;
 
             _ = sample_container.class_list().add_1("sampleContainer")?;
-            if sample.correct() {
+            if testing && sample.correct() {
                 sample_container
                     .style()
                     .set_property("background-color", "#006")?;
