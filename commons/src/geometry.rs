@@ -1,3 +1,5 @@
+use std::f64::consts::{PI, TAU};
+
 pub fn average(a: &[f64; 2], b: &[f64; 2]) -> [f64; 2] {
     [(a[0] + b[0]) / 2.0, (a[1] + b[1]) / 2.0]
 }
@@ -50,6 +52,20 @@ pub fn polygon_area(polygon: &PolygonN) -> f64 {
 
     for (point_b, point_c) in iter_1.zip(iter_2) {
         result += triangle_area(point_a, point_b, point_c)
+    }
+
+    result
+}
+
+pub fn roundness(polygon: &PolygonN) -> f64 {
+    let length = polygon_length(polygon);
+    let area = polygon_area(polygon);
+    let radius = length / TAU;
+    let cycle_area = (PI * radius).powi(2);
+    let result = area / cycle_area;
+
+    if result.is_nan() {
+        return 0.0
     }
 
     result
