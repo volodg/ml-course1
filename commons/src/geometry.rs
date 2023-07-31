@@ -153,7 +153,7 @@ pub fn graham_scan(points: &Vec<[f64; 2]>) -> Vec<[f64; 2]> {
 // builds a box with one of the edges being coincident with the edge
 // between hull's points i and j (expected to be neighbors)
 #[allow(dead_code)]
-fn coincident_box(hull: &Vec<[f64; 2]>, i: usize, j: usize) {
+fn coincident_box(hull: &Vec<[f64; 2]>, i: usize, j: usize) -> ([[f64; 2]; 4], f64, f64) {
     // a difference between two points (vector that connects them)
     fn diff(a: &[f64; 2], b: &[f64; 2]) -> [f64; 2] {
         [a[0] - b[0], a[1] - b[1]]
@@ -179,55 +179,53 @@ fn coincident_box(hull: &Vec<[f64; 2]>, i: usize, j: usize) {
     fn mult(a: &[f64; 2], n: f64) -> [f64; 2] {
         [a[0] * n, a[1] * n]
     }
-}
 
-/*
-geometry.coincidentBox = (hull, i, j) => {
     // divides a vector by a given magintued
-    const div = (a, n) => [a[0] / n, a[1] / n];
-    // builds a unit vector (one having a length of 1) with the same direction as a given one
-    const unit = (a) => div(a, len(a));
+    fn div(a: &[f64; 2], n: f64) -> [f64; 2] {
+        [a[0] / n, a[1] / n]
+    }
 
-    let origin = hull[i];
+    // builds a unit vector (one having a length of 1) with the same direction as a given one
+    // const unit = (a) => div(a, len(a));
+    fn unit(a: &[f64; 2]) -> [f64; 2] {
+        div(a, len(a))
+    }
+
+    let origin = &hull[i];
     // build base vectors for a new system of coordinates
     // where the x-axis is coincident with the i-j edge
-    let baseX = unit(diff(hull[j], origin));
+    let base_x = unit(&diff(&hull[j], origin));
     // and the y-axis is orthogonal (90 degrees rotation counter-clockwise)
-    let baseY = [baseX[1], -baseX[0]];
+    let base_y = [base_x[1], -base_x[0]];
 
-    let left = 0;
-    let right = 0;
-    let top = 0;
-    let bottom = 0;
+    let mut left = 0.0;
+    let mut right = 0.0;
+    let mut top = 0.0;
+    let mut bottom = 0.0;
     // for every point of a hull
-    for (const p of hull) {
+    for point in hull {
         // calculate position relative to the origin
-        const n = [p[0] - origin[0], p[1] - origin[1]];
+        let n = [point[0] - origin[0], point[1] - origin[1]];
         // calculate position in new axis (rotate)
-        const v = [dot(baseX, n), dot(baseY, n)];
+        let v = [dot(&base_x, &n), dot(&base_y, &n)];
         // apply trivial logic for calculating the bounding box
         // as rotation is out of consideration at this point
-        left = Math.min(v[0], left);
-        top = Math.min(v[1], top);
-        right = Math.max(v[0], right);
-        bottom = Math.max(v[1], bottom);
+        left = v[0].min(left);
+        top = v[1].min(top);
+        right = v[0].max(right);
+        bottom = v[1].max(bottom);
     }
 
     // calculate bounding box vertices back in original screen space
-    const vertices = [
-        add(add(mult(baseX, left), mult(baseY, top)), origin),
-        add(add(mult(baseX, left), mult(baseY, bottom)), origin),
-        add(add(mult(baseX, right), mult(baseY, bottom)), origin),
-        add(add(mult(baseX, right), mult(baseY, top)), origin),
+    let vertices = [
+        add(&add(&mult(&base_x, left), &mult(&base_y, top)), origin),
+        add(&add(&mult(&base_x, left), &mult(&base_y, bottom)), origin),
+        add(&add(&mult(&base_x, right), &mult(&base_y, bottom)), origin),
+        add(&add(&mult(&base_x, right), &mult(&base_y, top)), origin),
     ];
 
-    return {
-        vertices,
-        width: right - left,
-        height: bottom - top,
-    };
+    (vertices, right - left, bottom - top)
 }
- */
 
 #[cfg(test)]
 mod tests {
