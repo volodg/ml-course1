@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::f64::consts::{PI, TAU};
 
 pub fn average(a: &[f64; 2], b: &[f64; 2]) -> [f64; 2] {
@@ -71,6 +72,7 @@ pub fn polygon_roundness(polygon: &PolygonN) -> f64 {
     result
 }
 
+// finds a point with the lowest vertical position (leftmost wins in case of a tie)
 #[allow(dead_code)]
 fn lowest_point(points: &[[i32; 2]]) -> Option<[i32; 2]> {
     points.iter().fold(None, |lowest, point| {
@@ -93,17 +95,32 @@ fn lowest_point(points: &[[i32; 2]]) -> Option<[i32; 2]> {
     })
 }
 
+// determines p2 relative position to p1-p3. If it is:
+// to the right then the result is 1,
+// to the left then the result is -1,
+// on the line then the result is 0
+fn get_orientation(p1: &[i32; 2], p2: &[i32; 2], p3: &[i32; 2]) -> Ordering {
+    let val =
+        (p2[1] - p1[1]) * (p3[0] - p2[0]) - (p2[0] - p1[0]) * (p3[1] - p2[1]);
+    if val == 0 {
+        Ordering::Equal
+    } else if val > 0 {
+        Ordering::Greater
+    } else {
+        Ordering::Less
+    }
+}
+
 /*
-// finds a point with the lowest vertical position (leftmost wins in case of a tie)
-geometry.lowestPoint = (points) =>
-   points.reduce((lowest, point) => {
-      if (point[1] > lowest[1]) {
-         return point;
+// orders points in a counter-clockwise relative to the given origin
+geometry.sortPoints = (origin, points) =>
+   points.slice().sort((a, b) => {
+      const orientation = getOrientation(origin, a, b);
+      if (orientation === 0) {
+         // if two points make the same angle with the lowest point, choose the closer one
+         return distanceSquared(origin, a) - distanceSquared(origin, b);
       }
-      if (point[1] === lowest[1] && point[0] < lowest[0]) {
-         return point;
-      }
-      return lowest;
+      return -orientation;
    });
  */
 
