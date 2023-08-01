@@ -204,7 +204,7 @@ pub fn graham_scan(points: &Vec<[f64; 2]>) -> Vec<[f64; 2]> {
 // builds a box with one of the edges being coincident with the edge
 // between hull's points i and j (expected to be neighbors)
 #[allow(dead_code)]
-fn coincident_box(hull: &Vec<[f64; 2]>, i: usize, j: usize) -> ([[f64; 2]; 4], f64, f64) {
+fn coincident_box(hull: &Vec<[f64; 2]>, origin_from: &[f64; 2], origin_to: &[f64; 2]) -> ([[f64; 2]; 4], f64, f64) {
     // a difference between two points (vector that connects them)
     fn diff(a: &[f64; 2], b: &[f64; 2]) -> [f64; 2] {
         [a[0] - b[0], a[1] - b[1]]
@@ -242,10 +242,9 @@ fn coincident_box(hull: &Vec<[f64; 2]>, i: usize, j: usize) -> ([[f64; 2]; 4], f
         div(a, len(a))
     }
 
-    let origin = &hull[i];
     // build base vectors for a new system of coordinates
     // where the x-axis is coincident with the i-j edge
-    let base_x = unit(&diff(&hull[j], origin));
+    let base_x = unit(&diff(&origin_to, origin_from));
     // and the y-axis is orthogonal (90 degrees rotation counter-clockwise)
     let base_y = [base_x[1], -base_x[0]];
 
@@ -256,7 +255,7 @@ fn coincident_box(hull: &Vec<[f64; 2]>, i: usize, j: usize) -> ([[f64; 2]; 4], f
     // for every point of a hull
     for point in hull {
         // calculate position relative to the origin
-        let n = [point[0] - origin[0], point[1] - origin[1]];
+        let n = [point[0] - origin_from[0], point[1] - origin_from[1]];
         // calculate position in new axis (rotate)
         let v = [dot(&base_x, &n), dot(&base_y, &n)];
         // apply trivial logic for calculating the bounding box
@@ -269,13 +268,37 @@ fn coincident_box(hull: &Vec<[f64; 2]>, i: usize, j: usize) -> ([[f64; 2]; 4], f
 
     // calculate bounding box vertices back in original screen space
     let vertices = [
-        add(&add(&mult(&base_x, left), &mult(&base_y, top)), origin),
-        add(&add(&mult(&base_x, left), &mult(&base_y, bottom)), origin),
-        add(&add(&mult(&base_x, right), &mult(&base_y, bottom)), origin),
-        add(&add(&mult(&base_x, right), &mult(&base_y, top)), origin),
+        add(&add(&mult(&base_x, left), &mult(&base_y, top)), origin_from),
+        add(&add(&mult(&base_x, left), &mult(&base_y, bottom)), origin_from),
+        add(&add(&mult(&base_x, right), &mult(&base_y, bottom)), origin_from),
+        add(&add(&mult(&base_x, right), &mult(&base_y, top)), origin_from),
     ];
 
     (vertices, right - left, bottom - top)
+}
+
+// determines the minimum (area) bounding box for a given hull (or set of points)
+pub fn minimum_bounding_box(hull: &Vec<[f64; 2]>) -> Option<([[f64; 2]; 4], f64, f64)> {
+    hull.iter().zip(hull.iter().cycle().skip(1)).fold(None, |acc, (el, next_el)| {
+        if el[0] == next_el[0] && el[1] == next_el[1] {
+            return acc;
+        }
+
+        let (vertices, width, height) = coincident_box(hull, el, next_el);
+
+        match acc {
+            Some(acc) => {
+                if (width * height) < (acc.1 * acc.2) {
+                    Some((vertices, width, height))
+                } else {
+                    Some(acc)
+                }
+            },
+            None => {
+                Some((vertices, width, height))
+            }
+        }
+    })
 }
 
 #[cfg(test)]
