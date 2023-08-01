@@ -2,6 +2,7 @@ use commons::geometry::{graham_scan, minimum_bounding_box, Point2DView};
 use commons::math::min_max;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use web_commons::log;
 
 #[derive(Clone, Deserialize, Serialize)]
 pub struct Sample {
@@ -55,7 +56,7 @@ pub trait Features {
 
     fn get_elongation(&self) -> f64;
 
-    fn get_feature(&self) -> [f64; 2];
+    fn get_feature(&self) -> Vec<f64>;
 }
 
 impl<T: Point2DView> Features for DrawingPaths<T> {
@@ -94,25 +95,33 @@ impl<T: Point2DView> Features for DrawingPaths<T> {
             .map(|x| [x.x(), x.y()])
             .collect::<Vec<_>>();
 
+        if all_points.is_empty() {
+            return 0.0;
+        }
+
         let hull = graham_scan(&all_points);
         let (_, width, height) = minimum_bounding_box(&hull).expect("non empty input");
 
-        width.max(height) / width.min(height)
+        (width.max(height) + 1.0) / (width.min(height) + 1.0)
     }
 
-    fn get_feature(&self) -> [f64; 2] {
-        [
+    fn get_feature(&self) -> Vec<f64> {
+        vec![
             self.get_width(|x| x.x()),
             self.get_width(|x| x.y()),
+            self.get_elongation(),
             // x: self.path_count() as f64,
             // y: self.point_count() as f64,
         ]
     }
 }
 
-pub fn get_feature_names() -> [String; 2] {
-    // ["Path Count".to_owned(), "Point Count".to_owned()]
-    ["Width".to_owned(), "Height".to_owned()]
+pub fn get_feature_names() -> Vec<String> {
+    vec![
+        "Width".to_owned(),
+        "Height".to_owned(),
+        "Elongation".to_owned(),
+    ]
 }
 
 #[derive(Clone, Deserialize, Serialize)]
