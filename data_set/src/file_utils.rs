@@ -171,7 +171,7 @@ fn build_features_for(
                 })
                 .expect("");
 
-            let feature = draw_paths.get_feature(|x| x[0], |x| x[1]);
+            let feature = draw_paths.get_feature();
             feature.to_vec()
         })
         .collect::<Vec<_>>();

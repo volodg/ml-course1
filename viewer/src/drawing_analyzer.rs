@@ -47,7 +47,7 @@ impl DrawingAnalyzer for HtmlDom {
 
         let html = html.clone();
         let on_update_callback = Rc::new(RefCell::new(move |drawing: &DrawingPaths<Point2D>| {
-            let point = drawing.get_feature(|x| x.x, |x| x.y);
+            let point = drawing.get_feature();
 
             let point = normalize_points(&min_max[0], &min_max[1], vec![point.to_vec()]);
             let point = Point2D {

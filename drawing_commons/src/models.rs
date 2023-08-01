@@ -1,3 +1,4 @@
+use commons::geometry::{graham_scan, minimum_bounding_box, Point2DView};
 use commons::math::min_max;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -52,14 +53,12 @@ pub trait Features {
 
     fn get_width(&self, el_getter: impl Fn(&Self::ElType) -> f64) -> f64;
 
-    fn get_feature(
-        &self,
-        x_getter: impl Fn(&Self::ElType) -> f64,
-        y_getter: impl Fn(&Self::ElType) -> f64,
-    ) -> [f64; 2];
+    fn get_elongation(&self) -> f64;
+
+    fn get_feature(&self) -> [f64; 2];
 }
 
-impl<T> Features for DrawingPaths<T> {
+impl<T: Point2DView> Features for DrawingPaths<T> {
     type ElType = T;
 
     fn path_count(&self) -> usize {
@@ -87,14 +86,24 @@ impl<T> Features for DrawingPaths<T> {
         }
     }
 
-    fn get_feature(
-        &self,
-        x_getter: impl Fn(&Self::ElType) -> f64,
-        y_getter: impl Fn(&Self::ElType) -> f64,
-    ) -> [f64; 2] {
+    fn get_elongation(&self) -> f64 {
+        let all_points = self
+            .clone()
+            .into_iter()
+            .flatten()
+            .map(|x| [x.x(), x.y()])
+            .collect::<Vec<_>>();
+
+        let hull = graham_scan(&all_points);
+        let (_, width, height) = minimum_bounding_box(&hull).expect("non empty input");
+
+        width.max(height) / width.min(height)
+    }
+
+    fn get_feature(&self) -> [f64; 2] {
         [
-            self.get_width(x_getter) as f64,
-            self.get_width(y_getter) as f64,
+            self.get_width(|x| x.x()),
+            self.get_width(|x| x.y()),
             // x: self.path_count() as f64,
             // y: self.point_count() as f64,
         ]
