@@ -73,7 +73,13 @@ pub fn generate_image_file(file: &str, paths: &DrawingPaths<[f64; 2]>) {
     let green = 0;
     let blue = 0;
 
-    let paths = vec![vertices[0], vertices[1], vertices[2], vertices[3], vertices[0]];
+    let paths = vec![
+        vertices[0],
+        vertices[1],
+        vertices[2],
+        vertices[3],
+        vertices[0],
+    ];
     dt.draw_path_with_color(10.0, &vec![paths], (red, green, blue, 255));
 
     // let all_points = paths.clone().into_iter().flatten().collect::<Vec<_>>();

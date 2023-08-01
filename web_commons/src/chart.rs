@@ -171,7 +171,7 @@ impl Chart {
                     chart.drag_info.end = data_loc;
                     chart.drag_info.offset = (chart.drag_info.start.clone()
                         - chart.drag_info.end.clone())
-                    .scale(chart.data_trans.scale * chart.data_trans.scale);
+                    .multiply(chart.data_trans.scale * chart.data_trans.scale);
                     let new_offset =
                         chart.data_trans.offset.clone() + chart.drag_info.offset.clone();
                     let new_scale = chart.data_trans.scale;
