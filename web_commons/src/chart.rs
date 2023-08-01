@@ -4,8 +4,9 @@ use crate::chart_models::{
 use crate::graphics::{ContextExt, DrawTextParams};
 use crate::subscribers::AddListener;
 use crate::subscribers::HtmlElementExt;
+use commons::geometry::Point2D;
 use commons::math::lerp::lerp;
-use commons::math::{Bounds, Point, PointExt};
+use commons::math::{Bounds, PointExt};
 use commons::utils::OkExt;
 use js_sys::Array;
 use js_sys::Math::sign;
@@ -34,7 +35,7 @@ pub struct Chart {
     options: Options,
     hovered_sample: Option<Sample>,
     selected_sample: Option<Sample>,
-    dynamic_point: Option<(Point, String, Vec<Sample>)>,
+    dynamic_point: Option<(Point2D, String, Vec<Sample>)>,
     on_click: Option<Rc<RefCell<dyn FnMut(Option<&Sample>)>>>,
     weak_self: Option<Weak<RefCell<Chart>>>,
 }
@@ -79,7 +80,7 @@ impl Chart {
         container.append_child(&overlay_canvas)?;
 
         let data_trans = DataTransformation {
-            offset: Point::default(),
+            offset: Point2D::default(),
             scale: 1.0,
         };
         let drag_info = DragInto::default();
@@ -129,7 +130,7 @@ impl Chart {
 
     pub fn show_dynamic_point(
         &mut self,
-        point: Option<(Point, String, Vec<Sample>)>,
+        point: Option<(Point2D, String, Vec<Sample>)>,
     ) -> Result<(), JsValue> {
         self.dynamic_point = point;
         self.draw_overlay()
@@ -155,8 +156,8 @@ impl Chart {
                 let data_loc = chart.get_mouse(&event, true);
                 chart.drag_info.start = data_loc;
                 chart.drag_info.dragging = true;
-                chart.drag_info.end = Point::default();
-                chart.drag_info.offset = Point::default();
+                chart.drag_info.end = Point2D::default();
+                chart.drag_info.offset = Point2D::default();
                 Ok(())
             })?;
         let chart_copy = chart.clone();
@@ -246,7 +247,7 @@ impl Chart {
             .borrow()
             .overlay_canvas
             .on_click(move |_event: MouseEvent| {
-                if chart_copy.borrow().drag_info.offset != Point::default() {
+                if chart_copy.borrow().drag_info.offset != Point2D::default() {
                     return Ok(());
                 }
 
@@ -272,13 +273,13 @@ impl Chart {
             })
     }
 
-    fn update_data_bounds(&mut self, offset: Point, scale: f64) {
+    fn update_data_bounds(&mut self, offset: Point2D, scale: f64) {
         self.data_bounds.left = self.default_data_bounds.left + offset.x;
         self.data_bounds.right = self.default_data_bounds.right + offset.x;
         self.data_bounds.top = self.default_data_bounds.top + offset.y;
         self.data_bounds.bottom = self.default_data_bounds.bottom + offset.y;
 
-        let center = Point {
+        let center = Point2D {
             x: lerp(self.data_bounds.left, self.data_bounds.right, 0.5),
             y: lerp(self.data_bounds.top, self.data_bounds.bottom, 0.5),
         };
@@ -289,9 +290,9 @@ impl Chart {
         self.data_bounds.bottom = lerp(center.y, self.data_bounds.bottom, scale * scale);
     }
 
-    fn get_mouse(&self, event: &MouseEvent, is_data_space: bool) -> Point {
+    fn get_mouse(&self, event: &MouseEvent, is_data_space: bool) -> Point2D {
         let rect = self.canvas.get_bounding_client_rect();
-        let pixel_loc = Point {
+        let pixel_loc = Point2D {
             x: event.client_x() as f64 - rect.left(),
             y: event.client_y() as f64 - rect.top(),
         };
@@ -380,7 +381,7 @@ impl Chart {
 
         // Draw background
         if let Some(background) = &self.options.background {
-            let top_left = Point { x: 0.0, y: 1.0 }.remap(&self.data_bounds, &self.pixel_bounds);
+            let top_left = Point2D { x: 0.0, y: 1.0 }.remap(&self.data_bounds, &self.pixel_bounds);
             let size = (self.canvas.width() as f64 - self.margin * 2.0)
                 / (self.data_trans.scale * self.data_trans.scale);
             self.context
@@ -422,7 +423,7 @@ impl Chart {
         {
             context.draw_text_with_params(
                 self.options.axis_labels[0].as_str(),
-                &Point {
+                &Point2D {
                     x: self.canvas.width() as f64 / 2.0,
                     y: self.pixel_bounds.bottom + self.margin / 2.0,
                 },
@@ -444,7 +445,7 @@ impl Chart {
 
             context.draw_text_with_params(
                 self.options.axis_labels[1].as_str(),
-                &Point::default(),
+                &Point2D::default(),
                 DrawTextParams {
                     size: (self.margin * 0.6) as u32,
                     ..DrawTextParams::default()
@@ -470,14 +471,14 @@ impl Chart {
 
         {
             // Draw x0 scale
-            let data_min = Point {
+            let data_min = Point2D {
                 x: self.pixel_bounds.left,
                 y: self.pixel_bounds.bottom,
             }
             .remap(&self.pixel_bounds, &self.data_bounds);
             context.draw_text_with_params(
                 std::format!("{:.2}", data_min.x).as_str(),
-                &Point {
+                &Point2D {
                     x: self.pixel_bounds.left,
                     y: self.pixel_bounds.bottom,
                 },
@@ -495,7 +496,7 @@ impl Chart {
             context.rotate(-FRAC_PI_2)?;
             context.draw_text_with_params(
                 std::format!("{:.2}", data_min.y).as_str(),
-                &Point::default(),
+                &Point2D::default(),
                 DrawTextParams {
                     size: (self.margin * 0.3) as u32,
                     align: "left".to_owned(),
@@ -509,14 +510,14 @@ impl Chart {
 
         {
             // Draw x[-1] scale
-            let data_max = Point {
+            let data_max = Point2D {
                 x: self.pixel_bounds.right,
                 y: self.pixel_bounds.top,
             }
             .remap(&self.pixel_bounds, &self.data_bounds);
             context.draw_text_with_params(
                 std::format!("{:.2}", data_max.x).as_str(),
-                &Point {
+                &Point2D {
                     x: self.pixel_bounds.right,
                     y: self.pixel_bounds.bottom,
                 },
@@ -534,7 +535,7 @@ impl Chart {
             context.rotate(-FRAC_PI_2)?;
             context.draw_text_with_params(
                 std::format!("{:.2}", data_max.y).as_str(),
-                &Point::default(),
+                &Point2D::default(),
                 DrawTextParams {
                     size: (self.margin * 0.3) as u32,
                     align: "right".to_owned(),

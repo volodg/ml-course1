@@ -30,6 +30,28 @@ impl Point2DView for [f64; 2] {
     }
 }
 
+#[derive(Default, Debug, Clone, PartialEq)]
+pub struct Point2D {
+    pub x: f64,
+    pub y: f64,
+}
+
+impl Point2DView for Point2D {
+    type PointT = Point2D;
+
+    fn create(x: f64, y: f64) -> Self::PointT {
+        Point2D { x, y }
+    }
+
+    fn x(&self) -> f64 {
+        self.x
+    }
+
+    fn y(&self) -> f64 {
+        self.y
+    }
+}
+
 pub fn euclidean_distance(a: &[f64], b: &[f64]) -> f64 {
     if a.len() != b.len() {
         panic!("incompatible points")

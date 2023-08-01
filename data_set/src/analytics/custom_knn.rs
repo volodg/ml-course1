@@ -1,5 +1,5 @@
 use crate::file_utils::print_progress;
-use commons::math::Point;
+use commons::geometry::Point2D;
 use drawing_commons::classifiers::knn::KNN;
 use drawing_commons::data::{TESTING_FEATURES, TRAINING_FEATURES};
 use drawing_commons::ui::COLOR_PER_LABEL;
@@ -21,7 +21,7 @@ pub fn run_knn_evaluations() -> Result<(), std::io::Error> {
 
     for sample in training_samples {
         let label = knn
-            .predict(&Point {
+            .predict(&Point2D {
                 x: sample.point[0],
                 y: sample.point[1],
             })
@@ -45,7 +45,7 @@ pub fn run_knn_evaluations() -> Result<(), std::io::Error> {
 
     for x in 0..image.width() {
         for y in 0..image.height() {
-            let point = Point {
+            let point = Point2D {
                 x: x as f64 / image.width() as f64,
                 y: 1.0 - y as f64 / image.height() as f64,
             };

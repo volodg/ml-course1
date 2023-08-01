@@ -1,4 +1,4 @@
-use commons::math::Point;
+use commons::geometry::Point2D;
 use drawing_commons::models::SampleWithFeatures;
 use web_commons::chart_models::Sample;
 
@@ -9,7 +9,7 @@ pub fn feature_to_chart_sample(feature: SampleWithFeatures) -> Sample {
         group_name: feature.sample.student_name,
         truth: None,
         label: feature.sample.label,
-        point: Point {
+        point: Point2D {
             x: feature.point[0],
             y: feature.point[1],
         },

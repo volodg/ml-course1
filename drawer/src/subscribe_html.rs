@@ -2,7 +2,7 @@ use crate::app_state::{AppState, DrawingState, InitialState};
 use crate::handle_advance_btn_click;
 use crate::html::HtmlDom;
 use crate::subscribe_state::StateSubscriber;
-use commons::math::Point;
+use commons::geometry::Point2D;
 use drawing_commons::models::DrawingPaths;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -22,7 +22,7 @@ impl SubscribeDrawings for DrawingState<HtmlDom> {
         &self,
         app_state: Rc<RefCell<AppState<HtmlDom>>>,
     ) -> Result<(), JsValue> {
-        let on_update_callback = Rc::new(RefCell::new(move |drawing: &DrawingPaths<Point>| {
+        let on_update_callback = Rc::new(RefCell::new(move |drawing: &DrawingPaths<Point2D>| {
             let mut app_state = app_state.borrow_mut();
             let app_state = app_state.drawing_expected_mut().expect("");
             *app_state.curr_path_mut() = drawing.clone();

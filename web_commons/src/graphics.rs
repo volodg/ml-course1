@@ -1,5 +1,5 @@
 use crate::chart_models::SampleStyle;
-use commons::math::Point;
+use commons::geometry::Point2D;
 use std::collections::HashMap;
 use std::f64::consts::TAU;
 use wasm_bindgen::JsCast;
@@ -32,31 +32,31 @@ pub enum FillStyle<'a> {
 }
 
 pub trait ContextExt {
-    fn draw_text(&self, text: &str, location: &Point) -> Result<(), JsValue>;
+    fn draw_text(&self, text: &str, location: &Point2D) -> Result<(), JsValue>;
     fn draw_text_with_params(
         &self,
         text: &str,
-        location: &Point,
+        location: &Point2D,
         params: DrawTextParams,
     ) -> Result<(), JsValue>;
 
-    fn draw_point(&self, location: &Point) -> Result<(), JsValue>;
-    fn draw_point_with_color(&self, location: &Point, color: &str) -> Result<(), JsValue>;
+    fn draw_point(&self, location: &Point2D) -> Result<(), JsValue>;
+    fn draw_point_with_color(&self, location: &Point2D, color: &str) -> Result<(), JsValue>;
     fn draw_point_with_color_and_size(
         &self,
-        location: &Point,
+        location: &Point2D,
         color: &str,
         size: f64,
     ) -> Result<(), JsValue>;
     fn draw_point_with_gradient_and_size(
         &self,
-        location: &Point,
+        location: &Point2D,
         gradient: &CanvasGradient,
         size: f64,
     ) -> Result<(), JsValue>;
     fn draw_point_with_color_or_gradient_and_size(
         &self,
-        location: &Point,
+        location: &Point2D,
         fill_style: FillStyle,
         size: f64,
     ) -> Result<(), JsValue>;
@@ -70,25 +70,25 @@ pub trait ContextExt {
     fn draw_image_at_center(
         &self,
         image: &HtmlImageElement,
-        location: &Point,
+        location: &Point2D,
     ) -> Result<(), JsValue>;
     fn draw_image_with_size(
         &self,
         image: &HtmlImageElement,
-        location: &Point,
+        location: &Point2D,
         size: f64,
     ) -> Result<(), JsValue>;
 }
 
 impl ContextExt for CanvasRenderingContext2d {
-    fn draw_text(&self, text: &str, location: &Point) -> Result<(), JsValue> {
+    fn draw_text(&self, text: &str, location: &Point2D) -> Result<(), JsValue> {
         self.draw_text_with_params(text, location, DrawTextParams::default())
     }
 
     fn draw_text_with_params(
         &self,
         text: &str,
-        location: &Point,
+        location: &Point2D,
         params: DrawTextParams,
     ) -> Result<(), JsValue> {
         self.set_text_align(&params.align);
@@ -100,17 +100,17 @@ impl ContextExt for CanvasRenderingContext2d {
         Ok(())
     }
 
-    fn draw_point(&self, location: &Point) -> Result<(), JsValue> {
+    fn draw_point(&self, location: &Point2D) -> Result<(), JsValue> {
         self.draw_point_with_color(location, "black")
     }
 
-    fn draw_point_with_color(&self, location: &Point, color: &str) -> Result<(), JsValue> {
+    fn draw_point_with_color(&self, location: &Point2D, color: &str) -> Result<(), JsValue> {
         self.draw_point_with_color_and_size(location, color, 8.0)
     }
 
     fn draw_point_with_color_and_size(
         &self,
-        location: &Point,
+        location: &Point2D,
         color: &str,
         size: f64,
     ) -> Result<(), JsValue> {
@@ -119,7 +119,7 @@ impl ContextExt for CanvasRenderingContext2d {
 
     fn draw_point_with_gradient_and_size(
         &self,
-        location: &Point,
+        location: &Point2D,
         gradient: &CanvasGradient,
         size: f64,
     ) -> Result<(), JsValue> {
@@ -132,7 +132,7 @@ impl ContextExt for CanvasRenderingContext2d {
 
     fn draw_point_with_color_or_gradient_and_size(
         &self,
-        location: &Point,
+        location: &Point2D,
         fill_style: FillStyle,
         size: f64,
     ) -> Result<(), JsValue> {
@@ -225,7 +225,7 @@ impl ContextExt for CanvasRenderingContext2d {
     fn draw_image_at_center(
         &self,
         image: &HtmlImageElement,
-        location: &Point,
+        location: &Point2D,
     ) -> Result<(), JsValue> {
         self.begin_path();
         self.draw_image_with_html_image_element_and_dw_and_dh(
@@ -243,7 +243,7 @@ impl ContextExt for CanvasRenderingContext2d {
     fn draw_image_with_size(
         &self,
         image: &HtmlImageElement,
-        location: &Point,
+        location: &Point2D,
         size: f64,
     ) -> Result<(), JsValue> {
         self.begin_path();

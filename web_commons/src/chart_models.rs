@@ -1,20 +1,21 @@
 use crate::graphics::ContextExt;
-use commons::math::{min_max, Bounds, Point};
+use commons::geometry::Point2D;
+use commons::math::{min_max, Bounds};
 use commons::utils::OkExt;
 use std::collections::HashMap;
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, HtmlImageElement};
 
 pub struct DataTransformation {
-    pub offset: Point,
+    pub offset: Point2D,
     pub scale: f64,
 }
 
 #[derive(Default)]
 pub struct DragInto {
-    pub start: Point,
-    pub end: Point,
-    pub offset: Point,
+    pub start: Point2D,
+    pub end: Point2D,
+    pub offset: Point2D,
     pub dragging: bool,
 }
 
@@ -25,7 +26,7 @@ pub struct Sample {
     pub group_name: String,
     pub truth: Option<String>,
     pub label: String,
-    pub point: Point,
+    pub point: Point2D,
 }
 
 impl Sample {
@@ -34,7 +35,7 @@ impl Sample {
         group_id: u64,
         group_name: String,
         label: String,
-        point: Point,
+        point: Point2D,
     ) -> Self {
         Self {
             id,
@@ -134,7 +135,8 @@ pub fn get_data_bounds(samples: &[Sample]) -> Bounds {
 
 #[cfg(test)]
 mod tests {
-    use crate::chart_models::{get_data_bounds, Bounds, Point, Sample};
+    use crate::chart_models::{get_data_bounds, Bounds, Sample};
+    use commons::geometry::Point2D;
 
     #[test]
     fn test_data_bounds() {
@@ -145,7 +147,7 @@ mod tests {
                 group_name: 0.to_string(),
                 truth: None,
                 label: "label1".to_owned(),
-                point: Point { x: 1.0, y: 10.0 },
+                point: Point2D { x: 1.0, y: 10.0 },
             },
             Sample {
                 id: 1,
@@ -153,7 +155,7 @@ mod tests {
                 group_name: 0.to_string(),
                 truth: None,
                 label: "label2".to_owned(),
-                point: Point { x: 11.0, y: 2.0 },
+                point: Point2D { x: 11.0, y: 2.0 },
             },
         ];
 

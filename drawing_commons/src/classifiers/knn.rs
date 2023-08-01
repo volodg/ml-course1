@@ -1,6 +1,7 @@
 use crate::array::MostFrequentElement;
 use crate::models::SampleWithFeatures;
-use commons::math::{Point, PointExt};
+use commons::geometry::Point2D;
+use commons::math::PointExt;
 
 pub struct KNN {
     features: Vec<SampleWithFeatures>,
@@ -15,11 +16,11 @@ impl KNN {
         }
     }
 
-    pub fn predict(&self, point: &Point) -> (String, Vec<SampleWithFeatures>) {
+    pub fn predict(&self, point: &Point2D) -> (String, Vec<SampleWithFeatures>) {
         let sample_points = self
             .features
             .iter()
-            .map(|x| Point {
+            .map(|x| Point2D {
                 x: x.point[0],
                 y: x.point[1],
             })

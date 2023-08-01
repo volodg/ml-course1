@@ -1,5 +1,5 @@
 use crate::models::DrawingPaths;
-use commons::math::Point;
+use commons::geometry::Point2D;
 use commons::utils::OkExt;
 use itertools::Itertools;
 use std::cell::RefCell;
@@ -19,8 +19,8 @@ pub struct SketchPad {
     canvas: HtmlCanvasElement,
     context: CanvasRenderingContext2d,
     undo_btn: HtmlButtonElement,
-    on_update: Option<Rc<RefCell<dyn FnMut(&Vec<Vec<Point>>)>>>,
-    paths: Vec<Vec<Point>>,
+    on_update: Option<Rc<RefCell<dyn FnMut(&Vec<Vec<Point2D>>)>>>,
+    paths: Vec<Vec<Point2D>>,
     is_drawing: bool,
 }
 
@@ -89,24 +89,24 @@ impl SketchPad {
         self.container.set_visible(visible)
     }
 
-    pub fn set_on_update(&mut self, on_update: Rc<RefCell<dyn FnMut(&DrawingPaths<Point>)>>) {
+    pub fn set_on_update(&mut self, on_update: Rc<RefCell<dyn FnMut(&DrawingPaths<Point2D>)>>) {
         self.on_update = Some(on_update)
     }
 
-    fn get_mouse(&self, event: MouseEvent) -> Point {
+    fn get_mouse(&self, event: MouseEvent) -> Point2D {
         let rect = self.canvas.get_bounding_client_rect();
-        Point {
+        Point2D {
             x: event.client_x() as f64 - rect.left(),
             y: event.client_y() as f64 - rect.top(),
         }
     }
 
-    fn handle_touch_start(&mut self, point: Point) {
+    fn handle_touch_start(&mut self, point: Point2D) {
         self.paths.push(vec![point]);
         self.is_drawing = true;
     }
 
-    fn handle_touch_move(&mut self, point: Point) {
+    fn handle_touch_move(&mut self, point: Point2D) {
         if self.is_drawing {
             let last_index = self.paths.len() - 1;
             self.paths[last_index].push(point);

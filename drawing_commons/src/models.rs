@@ -1,4 +1,5 @@
-use commons::math::{min_max, Point};
+use commons::geometry::Point2D;
+use commons::math::min_max;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -56,7 +57,7 @@ pub trait Features {
         &self,
         x_getter: impl Fn(&Self::ElType) -> f64,
         y_getter: impl Fn(&Self::ElType) -> f64,
-    ) -> Point;
+    ) -> Point2D;
 }
 
 impl<T> Features for DrawingPaths<T> {
@@ -90,8 +91,8 @@ impl<T> Features for DrawingPaths<T> {
         &self,
         x_getter: impl Fn(&Self::ElType) -> f64,
         y_getter: impl Fn(&Self::ElType) -> f64,
-    ) -> Point {
-        Point {
+    ) -> Point2D {
+        Point2D {
             x: self.get_width(x_getter) as f64,
             y: self.get_width(y_getter) as f64,
             // x: self.path_count() as f64,

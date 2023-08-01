@@ -1,24 +1,19 @@
 pub mod lerp;
 
+use crate::geometry::Point2D;
 use crate::math::lerp::{inv_lerp, remap};
 use binary_heap_plus::BinaryHeap as BinaryHeapExt;
 use std::cmp::Ordering;
 
-#[derive(Default, Debug, Clone, PartialEq)]
-pub struct Point {
-    pub x: f64,
-    pub y: f64,
-}
-
 pub trait PointExt {
     fn scale(&self, scale: f64) -> Self;
     fn distance(&self, to: &Self) -> f64;
-    fn get_nearest(&self, pixel_points: &[Point]) -> Vec<usize>;
-    fn get_nearest_k(&self, pixel_points: &[Point], k: usize) -> Vec<usize>;
-    fn remap(&self, from: &Bounds, to: &Bounds) -> Point;
+    fn get_nearest(&self, pixel_points: &[Point2D]) -> Vec<usize>;
+    fn get_nearest_k(&self, pixel_points: &[Point2D], k: usize) -> Vec<usize>;
+    fn remap(&self, from: &Bounds, to: &Bounds) -> Point2D;
 }
 
-impl PointExt for Point {
+impl PointExt for Point2D {
     fn scale(&self, scale: f64) -> Self {
         Self {
             x: self.x * scale,
@@ -30,11 +25,11 @@ impl PointExt for Point {
         ((self.x - to.x).powf(2.0) + (self.y - to.y).powf(2.0)).sqrt()
     }
 
-    fn get_nearest(&self, pixel_points: &[Point]) -> Vec<usize> {
+    fn get_nearest(&self, pixel_points: &[Point2D]) -> Vec<usize> {
         self.get_nearest_k(pixel_points, 1)
     }
 
-    fn get_nearest_k(&self, pixel_points: &[Point], k: usize) -> Vec<usize> {
+    fn get_nearest_k(&self, pixel_points: &[Point2D], k: usize) -> Vec<usize> {
         let heap_size = 0.max(pixel_points.len() - k);
 
         let mut heap =
@@ -67,30 +62,30 @@ impl PointExt for Point {
         result
     }
 
-    fn remap(&self, from: &Bounds, to: &Bounds) -> Point {
-        Point {
+    fn remap(&self, from: &Bounds, to: &Bounds) -> Point2D {
+        Point2D {
             x: remap(from.left, from.right, to.left, to.right, self.x),
             y: remap(from.top, from.bottom, to.top, to.bottom, self.y),
         }
     }
 }
 
-impl std::ops::Sub<Point> for Point {
-    type Output = Point;
+impl std::ops::Sub<Point2D> for Point2D {
+    type Output = Point2D;
 
-    fn sub(self, other: Point) -> Point {
-        Point {
+    fn sub(self, other: Point2D) -> Point2D {
+        Point2D {
             x: self.x - other.x,
             y: self.y - other.y,
         }
     }
 }
 
-impl std::ops::Add<Point> for Point {
-    type Output = Point;
+impl std::ops::Add<Point2D> for Point2D {
+    type Output = Point2D;
 
-    fn add(self, other: Point) -> Point {
-        Point {
+    fn add(self, other: Point2D) -> Point2D {
+        Point2D {
             x: self.x + other.x,
             y: self.y + other.y,
         }
@@ -190,28 +185,29 @@ pub fn normalize_points(min: &Vec<f64>, max: &Vec<f64>, points: Vec<Vec<f64>>) -
 
 #[cfg(test)]
 mod tests {
-    use crate::math::{Point, PointExt};
+    use crate::geometry::Point2D;
+    use crate::math::PointExt;
     use binary_heap_plus::BinaryHeap as BinaryHeapExt;
 
     #[test]
     fn test_nearest_point() {
         let points = [
-            Point { x: 2.0, y: 2.0 },
-            Point { x: 3.0, y: 3.0 },
-            Point { x: 1.0, y: 1.0 },
+            Point2D { x: 2.0, y: 2.0 },
+            Point2D { x: 3.0, y: 3.0 },
+            Point2D { x: 1.0, y: 1.0 },
         ];
 
-        let point = Point::default();
+        let point = Point2D::default();
         let nearest = point.get_nearest(&points)[0];
-        assert_eq!(points[nearest], Point { x: 1.0, y: 1.0 });
+        assert_eq!(points[nearest], Point2D { x: 1.0, y: 1.0 });
 
-        let point = Point { x: 3.0, y: 3.0 };
+        let point = Point2D { x: 3.0, y: 3.0 };
         let nearest = point.get_nearest(&points)[0];
-        assert_eq!(points[nearest], Point { x: 3.0, y: 3.0 });
+        assert_eq!(points[nearest], Point2D { x: 3.0, y: 3.0 });
 
-        let point = Point { x: 2.0, y: 2.0 };
+        let point = Point2D { x: 2.0, y: 2.0 };
         let nearest = point.get_nearest(&points)[0];
-        assert_eq!(points[nearest], Point { x: 2.0, y: 2.0 })
+        assert_eq!(points[nearest], Point2D { x: 2.0, y: 2.0 })
     }
 
     #[test]

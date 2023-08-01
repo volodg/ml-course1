@@ -1,6 +1,7 @@
 use crate::html::HtmlDom;
 use crate::html_draw::Draw;
-use commons::math::{normalize_points, Point};
+use commons::geometry::Point2D;
+use commons::math::normalize_points;
 use drawing_commons::models::{DrawingPaths, Features};
 use drawing_commons::sketch_pad::SketchPad;
 use std::cell::RefCell;
@@ -45,11 +46,11 @@ impl DrawingAnalyzer for HtmlDom {
         let mut sketch_pad = self.sketch_pad.borrow_mut();
 
         let html = html.clone();
-        let on_update_callback = Rc::new(RefCell::new(move |drawing: &DrawingPaths<Point>| {
+        let on_update_callback = Rc::new(RefCell::new(move |drawing: &DrawingPaths<Point2D>| {
             let point = drawing.get_feature(|x| x.x, |x| x.y);
 
             let point = normalize_points(&min_max[0], &min_max[1], vec![vec![point.x, point.y]]);
-            let point = Point {
+            let point = Point2D {
                 x: point[0][0],
                 y: point[0][1],
             };

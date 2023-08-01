@@ -1,4 +1,4 @@
-use commons::math::Point;
+use commons::geometry::Point2D;
 use commons::utils::SomeExt;
 use js_sys::Date;
 
@@ -7,7 +7,7 @@ const DRAWING_SIZE: usize = 8;
 #[derive(Clone)]
 pub struct Drawing {
     label: &'static str,
-    paths: Vec<Vec<Point>>,
+    paths: Vec<Vec<Point2D>>,
 }
 
 impl Drawing {
@@ -22,7 +22,7 @@ impl Drawing {
         self.label
     }
 
-    pub fn get_paths(&self) -> &Vec<Vec<Point>> {
+    pub fn get_paths(&self) -> &Vec<Vec<Point2D>> {
         &self.paths
     }
 }
@@ -88,11 +88,11 @@ impl<View: Clone + WithStudent> DrawingState<View> {
         &self.view
     }
 
-    pub fn curr_path(&self) -> &Vec<Vec<Point>> {
+    pub fn curr_path(&self) -> &Vec<Vec<Point2D>> {
         &self.drawings[self.label_index].paths
     }
 
-    pub fn curr_path_mut(&mut self) -> &mut Vec<Vec<Point>> {
+    pub fn curr_path_mut(&mut self) -> &mut Vec<Vec<Point2D>> {
         &mut self.drawings[self.label_index].paths
     }
 
