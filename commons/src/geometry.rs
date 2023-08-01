@@ -12,6 +12,10 @@ pub trait Point2DView {
     fn average(&self, other: &Self) -> Self::PointT {
         Self::create((self.x() + other.x()) / 2.0, (self.y() + other.y()) / 2.0)
     }
+
+    fn scale(&self, scale: f64) -> Self::PointT {
+        Self::create(self.x() * scale, self.y() * scale)
+    }
 }
 
 impl Point2DView for [f64; 2] {

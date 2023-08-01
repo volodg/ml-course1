@@ -4,7 +4,7 @@ use crate::chart_models::{
 use crate::graphics::{ContextExt, DrawTextParams};
 use crate::subscribers::AddListener;
 use crate::subscribers::HtmlElementExt;
-use commons::geometry::Point2D;
+use commons::geometry::{Point2D, Point2DView};
 use commons::math::lerp::lerp;
 use commons::math::{Bounds, PointExt};
 use commons::utils::OkExt;

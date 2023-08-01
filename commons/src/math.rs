@@ -6,7 +6,6 @@ use binary_heap_plus::BinaryHeap as BinaryHeapExt;
 use std::cmp::Ordering;
 
 pub trait PointExt {
-    fn scale(&self, scale: f64) -> Self;
     fn distance(&self, to: &Self) -> f64;
     fn get_nearest(&self, pixel_points: &[Point2D]) -> Vec<usize>;
     fn get_nearest_k(&self, pixel_points: &[Point2D], k: usize) -> Vec<usize>;
@@ -14,13 +13,6 @@ pub trait PointExt {
 }
 
 impl PointExt for Point2D {
-    fn scale(&self, scale: f64) -> Self {
-        Self {
-            x: self.x * scale,
-            y: self.y * scale,
-        }
-    }
-
     fn distance(&self, to: &Self) -> f64 {
         ((self.x - to.x).powf(2.0) + (self.y - to.y).powf(2.0)).sqrt()
     }
