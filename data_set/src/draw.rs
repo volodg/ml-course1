@@ -66,7 +66,7 @@ pub fn generate_image_file(file: &str, paths: &DrawingPaths<[f64; 2]>) {
     dt.draw_path(3.0, paths);
 
     let all_points = paths.clone().into_iter().flatten().collect::<Vec<_>>();
-    let hull = graham_scan(&all_points);
+    let mut hull = graham_scan(&all_points);
     let (vertices, _, _) = minimum_bounding_box(&hull).expect("");
 
     let red = 255;
@@ -81,6 +81,13 @@ pub fn generate_image_file(file: &str, paths: &DrawingPaths<[f64; 2]>) {
         vertices[0],
     ];
     dt.draw_path_with_color(10.0, &vec![paths], (red, green, blue, 255));
+
+    let red = 0;
+    let green = 0;
+    let blue = 255;
+
+    hull.push(hull[0]);
+    dt.draw_path_with_color(10.0, &vec![hull], (red, green, blue, 255));
 
     // let all_points = paths.clone().into_iter().flatten().collect::<Vec<_>>();
     // let mut hull = graham_scan(&all_points);

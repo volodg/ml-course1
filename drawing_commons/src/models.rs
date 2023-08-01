@@ -1,4 +1,3 @@
-use commons::geometry::Point2D;
 use commons::math::min_max;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -51,13 +50,13 @@ pub trait Features {
 
     fn point_count(&self) -> usize;
 
-    fn get_width(&self, el_getter: impl Fn(&Self::ElType) -> f64) -> usize;
+    fn get_width(&self, el_getter: impl Fn(&Self::ElType) -> f64) -> f64;
 
     fn get_feature(
         &self,
         x_getter: impl Fn(&Self::ElType) -> f64,
         y_getter: impl Fn(&Self::ElType) -> f64,
-    ) -> Point2D;
+    ) -> [f64; 2];
 }
 
 impl<T> Features for DrawingPaths<T> {
@@ -71,7 +70,8 @@ impl<T> Features for DrawingPaths<T> {
         self.iter().fold(0, |acc, drawing| acc + drawing.len())
     }
 
-    fn get_width(&self, el_getter: impl Fn(&Self::ElType) -> f64) -> usize {
+    fn get_width(&self, el_getter: impl Fn(&Self::ElType) -> f64) -> f64 {
+        // TODO use min max
         let zero_min_max: Option<f64> = None;
         let (min_x, max_x) =
             self.iter()
@@ -82,8 +82,8 @@ impl<T> Features for DrawingPaths<T> {
                 });
 
         match (max_x, min_x) {
-            (Some(max_x), Some(min_x)) => (max_x.round() as i32 - min_x.round() as i32) as usize,
-            (_, _) => 0,
+            (Some(max_x), Some(min_x)) => max_x.round() - min_x.round(),
+            (_, _) => 0.0,
         }
     }
 
@@ -91,13 +91,13 @@ impl<T> Features for DrawingPaths<T> {
         &self,
         x_getter: impl Fn(&Self::ElType) -> f64,
         y_getter: impl Fn(&Self::ElType) -> f64,
-    ) -> Point2D {
-        Point2D {
-            x: self.get_width(x_getter) as f64,
-            y: self.get_width(y_getter) as f64,
+    ) -> [f64; 2] {
+        [
+            self.get_width(x_getter) as f64,
+            self.get_width(y_getter) as f64,
             // x: self.path_count() as f64,
             // y: self.point_count() as f64,
-        }
+        ]
     }
 }
 
