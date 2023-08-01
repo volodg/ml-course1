@@ -50,10 +50,7 @@ impl DrawingAnalyzer for HtmlDom {
             let point = drawing.get_feature();
 
             let point = normalize_points(&min_max[0], &min_max[1], vec![point.to_vec()]);
-            let point = Point2D {
-                x: point[0][0],
-                y: point[0][1],
-            };
+            let point = point[0].clone();
 
             html.borrow().show_classified_point(Some(point)).expect("");
         }));

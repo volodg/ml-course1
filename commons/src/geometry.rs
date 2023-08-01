@@ -1,3 +1,6 @@
+use crate::math::lerp::remap;
+use crate::math::Bounds;
+use binary_heap_plus::BinaryHeap as BinaryHeapExt;
 use std::cmp::Ordering;
 use std::f64::consts::{PI, TAU};
 
@@ -72,6 +75,50 @@ pub fn euclidean_distance(a: &[f64], b: &[f64]) -> f64 {
 
 pub type PointN = Vec<f64>;
 pub type PolygonN = Vec<PointN>;
+
+pub fn remap_2d_point(point: &PointN, from: &Bounds, to: &Bounds) -> Point2D {
+    Point2D {
+        x: remap(from.left, from.right, to.left, to.right, point[0]),
+        y: remap(from.top, from.bottom, to.top, to.bottom, point[1]),
+    }
+}
+
+pub fn get_nearest(point: &PointN, pixel_points: &[PointN]) -> Vec<usize> {
+    get_nearest_k(point, pixel_points, 1)
+}
+
+pub fn get_nearest_k(point: &[f64], pixel_points: &[PointN], k: usize) -> Vec<usize> {
+    let heap_size = 0.max(pixel_points.len() - k);
+
+    let mut heap =
+        BinaryHeapExt::with_capacity_by(heap_size, |a: &(usize, f64), b: &(usize, f64)| {
+            b.1.partial_cmp(&a.1).unwrap_or(Ordering::Equal)
+        });
+
+    let mut result = vec![];
+
+    for (pixel, index) in pixel_points.iter().zip(0..) {
+        if heap.len() == heap_size {
+            if heap_size == 0 {
+                result.push(index)
+            } else {
+                let distance = euclidean_distance(point, pixel);
+                if distance < heap.peek().expect("").1 {
+                    result.push(index)
+                } else {
+                    heap.push((index, distance));
+                    let min = heap.pop().expect("");
+                    result.push(min.0)
+                }
+            }
+        } else {
+            let distance = euclidean_distance(point, pixel);
+            heap.push((index, distance))
+        }
+    }
+
+    result
+}
 
 pub fn polygon_length(polygon: &PolygonN) -> f64 {
     let mut result = 0.0;
@@ -210,7 +257,11 @@ fn coincident_box(
     hull: &Vec<[f64; 2]>,
     origin_from: &[f64; 2],
     origin_to: &[f64; 2],
-) -> ([[f64; 2]; 4], f64, f64) {
+) -> (Vec<[f64; 2]>, f64, f64) {
+    if hull.len() < 3 {
+        return (hull.clone(), 0.0, 0.0);
+    }
+
     // a difference between two points (vector that connects them)
     fn diff(a: &[f64; 2], b: &[f64; 2]) -> [f64; 2] {
         [a[0] - b[0], a[1] - b[1]]
@@ -267,7 +318,7 @@ fn coincident_box(
     }
 
     // calculate bounding box vertices back in original screen space
-    let vertices = [
+    let vertices = vec![
         add(
             &add(&base_x.multiply(left), &base_y.multiply(top)),
             origin_from,
@@ -290,7 +341,7 @@ fn coincident_box(
 }
 
 // determines the minimum (area) bounding box for a given hull (or set of points)
-pub fn minimum_bounding_box(hull: &Vec<[f64; 2]>) -> Option<([[f64; 2]; 4], f64, f64)> {
+pub fn minimum_bounding_box(hull: &Vec<[f64; 2]>) -> Option<(Vec<[f64; 2]>, f64, f64)> {
     hull.iter()
         .zip(hull.iter().cycle().skip(1))
         .fold(None, |acc, (el, next_el)| {
@@ -315,7 +366,7 @@ pub fn minimum_bounding_box(hull: &Vec<[f64; 2]>) -> Option<([[f64; 2]; 4], f64,
 
 #[cfg(test)]
 mod tests {
-    use crate::geometry::{euclidean_distance, polygon_area, polygon_length};
+    use crate::geometry::{coincident_box, euclidean_distance, polygon_area, polygon_length};
 
     #[test]
     fn test_euclidean_distance() {
@@ -353,5 +404,18 @@ mod tests {
         let point3 = vec![1.0, 0.0];
 
         assert_eq!(polygon_area(&vec![point1, point2, point3]), 6.0);
+    }
+
+    #[test]
+    fn test_coincident_box() {
+        let (vertices, width, height) = coincident_box(
+            &vec![[0.0, 0.0], [0.0, 1.0]],
+            &[0.0, 0.0],
+            &[0.0, 1.0],
+        );
+
+        assert_eq!(vertices.len(), 2);
+        assert_eq!(width, 0.0);
+        assert_eq!(height, 0.0);
     }
 }

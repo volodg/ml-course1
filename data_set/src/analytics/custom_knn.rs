@@ -1,5 +1,4 @@
 use crate::file_utils::print_progress;
-use commons::geometry::Point2D;
 use drawing_commons::classifiers::knn::KNN;
 use drawing_commons::data::{TESTING_FEATURES, TRAINING_FEATURES};
 use drawing_commons::ui::COLOR_PER_LABEL;
@@ -20,12 +19,7 @@ pub fn run_knn_evaluations() -> Result<(), std::io::Error> {
     let mut total_count = 0;
 
     for sample in training_samples {
-        let label = knn
-            .predict(&Point2D {
-                x: sample.point[0],
-                y: sample.point[1],
-            })
-            .0;
+        let label = knn.predict(&sample.point).0;
         if label == sample.sample.label {
             correct_count += 1;
         }
@@ -39,16 +33,18 @@ pub fn run_knn_evaluations() -> Result<(), std::io::Error> {
 
     println!("GENERATING DECISION BOUNDARY");
 
-    let mut image = ImageBuffer::new(5000, 5000);
+    // let mut image = ImageBuffer::new(5000, 5000);
+    let mut image = ImageBuffer::new(100, 100);
     let total = (image.width() * image.height()) as usize;
     let mut current = 0 as usize;
 
     for x in 0..image.width() {
         for y in 0..image.height() {
-            let point = Point2D {
-                x: x as f64 / image.width() as f64,
-                y: 1.0 - y as f64 / image.height() as f64,
-            };
+            // TODO how to draw 3D?
+            let point = [
+                x as f64 / image.width() as f64,
+                1.0 - y as f64 / image.height() as f64,
+            ];
             let label = knn.predict(&point).0;
             let (r, g, b) = COLOR_PER_LABEL.get(label.as_str()).expect("").1;
 

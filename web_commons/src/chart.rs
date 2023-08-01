@@ -4,7 +4,7 @@ use crate::chart_models::{
 use crate::graphics::{ContextExt, DrawTextParams};
 use crate::subscribers::AddListener;
 use crate::subscribers::HtmlElementExt;
-use commons::geometry::{Point2D, Point2DView};
+use commons::geometry::{get_nearest, remap_2d_point, Point2D, Point2DView, PointN};
 use commons::math::lerp::lerp;
 use commons::math::{Bounds, PointExt};
 use commons::utils::OkExt;
@@ -35,7 +35,7 @@ pub struct Chart {
     options: Options,
     hovered_sample: Option<Sample>,
     selected_sample: Option<Sample>,
-    dynamic_point: Option<(Point2D, String, Vec<Sample>)>,
+    dynamic_point: Option<(PointN, String, Vec<Sample>)>,
     on_click: Option<Rc<RefCell<dyn FnMut(Option<&Sample>)>>>,
     weak_self: Option<Weak<RefCell<Chart>>>,
 }
@@ -130,7 +130,7 @@ impl Chart {
 
     pub fn show_dynamic_point(
         &mut self,
-        point: Option<(Point2D, String, Vec<Sample>)>,
+        point: Option<(PointN, String, Vec<Sample>)>,
     ) -> Result<(), JsValue> {
         self.dynamic_point = point;
         self.draw_overlay()
@@ -182,18 +182,23 @@ impl Chart {
                 let pixel_points = chart
                     .samples
                     .iter()
-                    .map(|sample| sample.point.remap(&chart.data_bounds, &chart.pixel_bounds))
+                    .map(|sample| {
+                        remap_2d_point(&sample.point, &chart.data_bounds, &chart.pixel_bounds)
+                    })
+                    .map(|point| vec![point.x, point.y])
                     .collect::<Vec<_>>();
 
-                let nearest_sample = pixel_location
-                    .get_nearest(&pixel_points)
-                    .first()
-                    .map(|x| chart.samples[*x].clone());
+                let nearest_sample =
+                    get_nearest(&vec![pixel_location.x, pixel_location.y], &pixel_points)
+                        .first()
+                        .map(|x| chart.samples[*x].clone());
                 chart.hovered_sample = if let Some(nearest_sample) = nearest_sample {
-                    let distance = nearest_sample
-                        .point
-                        .remap(&chart.data_bounds, &chart.pixel_bounds)
-                        .distance(&pixel_location);
+                    let distance = remap_2d_point(
+                        &nearest_sample.point,
+                        &chart.data_bounds,
+                        &chart.pixel_bounds,
+                    )
+                    .distance(&pixel_location);
                     if distance < (chart.margin / 2.0) {
                         Some(nearest_sample)
                     } else {
@@ -298,7 +303,11 @@ impl Chart {
         };
 
         if is_data_space {
-            return pixel_loc.remap(&self.pixel_bounds, &self.default_data_bounds);
+            return remap_2d_point(
+                &vec![pixel_loc.x, pixel_loc.y],
+                &self.pixel_bounds,
+                &self.default_data_bounds,
+            );
         }
 
         pixel_loc
@@ -338,7 +347,8 @@ impl Chart {
 
     fn show_nearest(&self, context: &CanvasRenderingContext2d) -> Result<(), JsValue> {
         if let Some((dynamic_point, label, samples)) = self.dynamic_point.as_ref() {
-            let pixel_location = dynamic_point.remap(&self.data_bounds, &self.pixel_bounds);
+            let pixel_location =
+                remap_2d_point(&dynamic_point, &self.data_bounds, &self.pixel_bounds);
             context.draw_point_with_color_and_size(
                 &pixel_location,
                 "rgba(255,255,255,0.7)",
@@ -350,7 +360,7 @@ impl Chart {
             context.begin_path();
             for sample in samples {
                 context.move_to(pixel_location.x, pixel_location.y);
-                let line_to = sample.point.remap(&self.data_bounds, &self.pixel_bounds);
+                let line_to = remap_2d_point(&sample.point, &self.data_bounds, &self.pixel_bounds);
                 context.line_to(line_to.x, line_to.y);
             }
             context.stroke();
@@ -381,7 +391,7 @@ impl Chart {
 
         // Draw background
         if let Some(background) = &self.options.background {
-            let top_left = Point2D { x: 0.0, y: 1.0 }.remap(&self.data_bounds, &self.pixel_bounds);
+            let top_left = remap_2d_point(&vec![0.0, 1.0], &self.data_bounds, &self.pixel_bounds);
             let size = (self.canvas.width() as f64 - self.margin * 2.0)
                 / (self.data_trans.scale * self.data_trans.scale);
             self.context
@@ -471,11 +481,11 @@ impl Chart {
 
         {
             // Draw x0 scale
-            let data_min = Point2D {
-                x: self.pixel_bounds.left,
-                y: self.pixel_bounds.bottom,
-            }
-            .remap(&self.pixel_bounds, &self.data_bounds);
+            let data_min = remap_2d_point(
+                &vec![self.pixel_bounds.left, self.pixel_bounds.bottom],
+                &self.pixel_bounds,
+                &self.data_bounds,
+            );
             context.draw_text_with_params(
                 std::format!("{:.2}", data_min.x).as_str(),
                 &Point2D {
@@ -510,11 +520,11 @@ impl Chart {
 
         {
             // Draw x[-1] scale
-            let data_max = Point2D {
-                x: self.pixel_bounds.right,
-                y: self.pixel_bounds.top,
-            }
-            .remap(&self.pixel_bounds, &self.data_bounds);
+            let data_max = remap_2d_point(
+                &vec![self.pixel_bounds.right, self.pixel_bounds.top],
+                &self.pixel_bounds,
+                &self.data_bounds,
+            );
             context.draw_text_with_params(
                 std::format!("{:.2}", data_max.x).as_str(),
                 &Point2D {
@@ -551,7 +561,7 @@ impl Chart {
     }
 
     fn emphasize_samples(&self, sample: &Sample, color: &str) -> Result<(), JsValue> {
-        let pixel_location = sample.point.remap(&self.data_bounds, &self.pixel_bounds);
+        let pixel_location = remap_2d_point(&sample.point, &self.data_bounds, &self.pixel_bounds);
         let gradient = self.overlay_context.create_radial_gradient(
             pixel_location.x,
             pixel_location.y,
@@ -580,7 +590,8 @@ impl Chart {
         context: &CanvasRenderingContext2d,
     ) -> Result<(), JsValue> {
         for sample in samples {
-            let pixel_location = sample.point.remap(&self.data_bounds, &self.pixel_bounds);
+            let pixel_location =
+                remap_2d_point(&sample.point, &self.data_bounds, &self.pixel_bounds);
             let style = self.options.styles.get(&sample.label).expect("");
             match self.options.icon {
                 SampleStyleType::Text => context.draw_text_with_params(

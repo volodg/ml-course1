@@ -1,7 +1,6 @@
 use crate::array::MostFrequentElement;
 use crate::models::SampleWithFeatures;
-use commons::geometry::Point2D;
-use commons::math::PointExt;
+use commons::geometry::get_nearest_k;
 
 pub struct KNN {
     features: Vec<SampleWithFeatures>,
@@ -16,17 +15,15 @@ impl KNN {
         }
     }
 
-    pub fn predict(&self, point: &Point2D) -> (String, Vec<SampleWithFeatures>) {
+    pub fn predict(&self, point: &[f64]) -> (String, Vec<SampleWithFeatures>) {
         let sample_points = self
             .features
-            .iter()
-            .map(|x| Point2D {
-                x: x.point[0],
-                y: x.point[1],
-            })
+            .clone()
+            .into_iter()
+            .map(|x| x.point)
             .collect::<Vec<_>>();
 
-        let indices = point.get_nearest_k(&sample_points, self.k);
+        let indices = get_nearest_k(point, &sample_points, self.k);
 
         let nearest_samples = indices
             .iter()

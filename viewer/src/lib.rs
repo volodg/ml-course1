@@ -115,7 +115,7 @@ fn features_to_chart_samples(
             let (truth, label) = match classifier {
                 Some(classifier) => {
                     let truth = feature.sample.label.clone();
-                    let (label, _) = classifier.predict(&sample.point);
+                    let (label, _) = classifier.predict(&feature.point);
                     (Some(truth), label)
                 }
                 None => (None, feature.sample.label.clone()),

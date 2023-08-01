@@ -1,5 +1,5 @@
 use crate::graphics::ContextExt;
-use commons::geometry::Point2D;
+use commons::geometry::{Point2D, PointN};
 use commons::math::{min_max, Bounds};
 use commons::utils::OkExt;
 use std::collections::HashMap;
@@ -26,7 +26,7 @@ pub struct Sample {
     pub group_name: String,
     pub truth: Option<String>,
     pub label: String,
-    pub point: Point2D,
+    pub point: PointN,
 }
 
 impl Sample {
@@ -35,7 +35,7 @@ impl Sample {
         group_id: u64,
         group_name: String,
         label: String,
-        point: Point2D,
+        point: PointN,
     ) -> Self {
         Self {
             id,
@@ -110,8 +110,8 @@ pub fn get_data_bounds(samples: &[Sample]) -> Bounds {
     let (min_x, max_x, min_y, max_y) = samples.iter().fold(
         (zero_min_max, zero_min_max, zero_min_max, zero_min_max),
         |(min_x, max_x, min_y, max_y), el| {
-            let x_minmax = min_max((min_x, max_x), el.point.x);
-            let y_minmax = min_max((min_y, max_y), el.point.y);
+            let x_minmax = min_max((min_x, max_x), el.point[0]);
+            let y_minmax = min_max((min_y, max_y), el.point[1]);
             (
                 Some(x_minmax.0),
                 Some(x_minmax.1),
@@ -136,7 +136,6 @@ pub fn get_data_bounds(samples: &[Sample]) -> Bounds {
 #[cfg(test)]
 mod tests {
     use crate::chart_models::{get_data_bounds, Bounds, Sample};
-    use commons::geometry::Point2D;
 
     #[test]
     fn test_data_bounds() {
@@ -147,7 +146,7 @@ mod tests {
                 group_name: 0.to_string(),
                 truth: None,
                 label: "label1".to_owned(),
-                point: Point2D { x: 1.0, y: 10.0 },
+                point: vec![1.0, 10.0],
             },
             Sample {
                 id: 1,
@@ -155,7 +154,7 @@ mod tests {
                 group_name: 0.to_string(),
                 truth: None,
                 label: "label2".to_owned(),
-                point: Point2D { x: 11.0, y: 2.0 },
+                point: vec![11.0, 2.0],
             },
         ];
 

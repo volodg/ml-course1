@@ -2,7 +2,6 @@ use commons::geometry::{graham_scan, minimum_bounding_box, Point2DView};
 use commons::math::min_max;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use web_commons::log;
 
 #[derive(Clone, Deserialize, Serialize)]
 pub struct Sample {

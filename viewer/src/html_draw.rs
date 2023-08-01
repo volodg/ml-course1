@@ -1,7 +1,7 @@
 use crate::data_cleaner::toggle_flagged_sample;
 use crate::html::HtmlDom;
 use crate::models::feature_to_chart_sample;
-use commons::geometry::Point2D;
+use commons::geometry::PointN;
 use drawing_commons::utils::{FLAGGED_USERS, IMG_DIR};
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -28,7 +28,7 @@ pub trait Draw {
         html: &Rc<RefCell<HtmlDom>>,
         samples: &[Sample],
     ) -> Result<(), JsValue>;
-    fn show_classified_point(&self, point: Option<Point2D>) -> Result<(), JsValue>;
+    fn show_classified_point(&self, point: Option<PointN>) -> Result<(), JsValue>;
 }
 
 impl Draw for HtmlDom {
@@ -114,7 +114,7 @@ impl Draw for HtmlDom {
         chart.draw()
     }
 
-    fn show_classified_point(&self, point: Option<Point2D>) -> Result<(), JsValue> {
+    fn show_classified_point(&self, point: Option<PointN>) -> Result<(), JsValue> {
         let selection = match point {
             Some(point) => {
                 let predicted_label_container = self.predicted_label_container.clone();
@@ -146,7 +146,7 @@ fn handle_click(
     let de_emphasize =
         || -> Result<(), JsValue> { document.remove_all_classes(emphasize_class_name) };
 
-    let (sample, point): (_, Option<Point2D>) = match sample {
+    let (sample, point): (_, Option<PointN>) = match sample {
         Some(sample) => {
             let element = document
                 .get_element_by_id(std::format!("sample_{}", sample.id).as_str())

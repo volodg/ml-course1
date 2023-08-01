@@ -1,5 +1,4 @@
 use crate::html::HtmlDom;
-use commons::geometry::Point2D;
 use commons::math::lerp::remap;
 use rand::Rng;
 use std::fmt;
@@ -39,10 +38,7 @@ impl From<Car> for Sample {
             0,
             "".to_string(),
             value.car_type.to_string(),
-            Point2D {
-                x: value.km,
-                y: value.price,
-            },
+            vec![value.km, value.price],
         )
     }
 }

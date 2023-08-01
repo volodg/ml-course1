@@ -45,7 +45,6 @@ pub fn toggle_flagged_sample(sample: &Sample) -> Result<(), JsValue> {
 #[cfg(test)]
 mod tests {
     use crate::data_cleaner::{toggle_flagged_sample_model, FLAGGED_SAMPLES};
-    use commons::geometry::Point2D;
     use web_commons::chart_models::Sample;
 
     #[test]
@@ -56,7 +55,7 @@ mod tests {
             group_name: "Name".to_owned(),
             truth: None,
             label: "".to_owned(),
-            point: Point2D::default(),
+            point: vec![0.0, 0.0],
         };
 
         let original_count = FLAGGED_SAMPLES.read().expect("").len();

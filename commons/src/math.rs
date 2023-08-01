@@ -1,64 +1,15 @@
 pub mod lerp;
 
 use crate::geometry::Point2D;
-use crate::math::lerp::{inv_lerp, remap};
-use binary_heap_plus::BinaryHeap as BinaryHeapExt;
-use std::cmp::Ordering;
+use crate::math::lerp::inv_lerp;
 
 pub trait PointExt {
     fn distance(&self, to: &Self) -> f64;
-    fn get_nearest(&self, pixel_points: &[Point2D]) -> Vec<usize>;
-    fn get_nearest_k(&self, pixel_points: &[Point2D], k: usize) -> Vec<usize>;
-    fn remap(&self, from: &Bounds, to: &Bounds) -> Point2D;
 }
 
 impl PointExt for Point2D {
     fn distance(&self, to: &Self) -> f64 {
         ((self.x - to.x).powf(2.0) + (self.y - to.y).powf(2.0)).sqrt()
-    }
-
-    fn get_nearest(&self, pixel_points: &[Point2D]) -> Vec<usize> {
-        self.get_nearest_k(pixel_points, 1)
-    }
-
-    fn get_nearest_k(&self, pixel_points: &[Point2D], k: usize) -> Vec<usize> {
-        let heap_size = 0.max(pixel_points.len() - k);
-
-        let mut heap =
-            BinaryHeapExt::with_capacity_by(heap_size, |a: &(usize, f64), b: &(usize, f64)| {
-                b.1.partial_cmp(&a.1).unwrap_or(Ordering::Equal)
-            });
-
-        let mut result = vec![];
-
-        for (pixel, index) in pixel_points.iter().zip(0..) {
-            if heap.len() == heap_size {
-                if heap_size == 0 {
-                    result.push(index)
-                } else {
-                    let distance = self.distance(pixel);
-                    if distance < heap.peek().expect("").1 {
-                        result.push(index)
-                    } else {
-                        heap.push((index, distance));
-                        let min = heap.pop().expect("");
-                        result.push(min.0)
-                    }
-                }
-            } else {
-                let distance = self.distance(pixel);
-                heap.push((index, distance))
-            }
-        }
-
-        result
-    }
-
-    fn remap(&self, from: &Bounds, to: &Bounds) -> Point2D {
-        Point2D {
-            x: remap(from.left, from.right, to.left, to.right, self.x),
-            y: remap(from.top, from.bottom, to.top, to.bottom, self.y),
-        }
     }
 }
 
@@ -177,29 +128,24 @@ pub fn normalize_points(min: &Vec<f64>, max: &Vec<f64>, points: Vec<Vec<f64>>) -
 
 #[cfg(test)]
 mod tests {
-    use crate::geometry::Point2D;
-    use crate::math::PointExt;
+    use crate::geometry::get_nearest;
     use binary_heap_plus::BinaryHeap as BinaryHeapExt;
 
     #[test]
     fn test_nearest_point() {
-        let points = [
-            Point2D { x: 2.0, y: 2.0 },
-            Point2D { x: 3.0, y: 3.0 },
-            Point2D { x: 1.0, y: 1.0 },
-        ];
+        let points = [vec![2.0, 2.0], vec![3.0, 3.0], vec![1.0, 1.0]];
 
-        let point = Point2D::default();
-        let nearest = point.get_nearest(&points)[0];
-        assert_eq!(points[nearest], Point2D { x: 1.0, y: 1.0 });
+        let point = vec![0.0, 0.0];
+        let nearest = get_nearest(&point, &points)[0];
+        assert_eq!(points[nearest], vec![1.0, 1.0]);
 
-        let point = Point2D { x: 3.0, y: 3.0 };
-        let nearest = point.get_nearest(&points)[0];
-        assert_eq!(points[nearest], Point2D { x: 3.0, y: 3.0 });
+        let point = vec![3.0, 3.0];
+        let nearest = get_nearest(&point, &points)[0];
+        assert_eq!(points[nearest], vec![3.0, 3.0]);
 
-        let point = Point2D { x: 2.0, y: 2.0 };
-        let nearest = point.get_nearest(&points)[0];
-        assert_eq!(points[nearest], Point2D { x: 2.0, y: 2.0 })
+        let point = vec![2.0, 2.0];
+        let nearest = get_nearest(&point, &points)[0];
+        assert_eq!(points[nearest], vec![2.0, 2.0])
     }
 
     #[test]
