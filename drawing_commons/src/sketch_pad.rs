@@ -171,6 +171,7 @@ impl SketchPad {
             .on_click(move |_event: MouseEvent| {
                 let mut sketch_pad = sketch_pad_copy.borrow_mut();
                 sketch_pad.paths.pop();
+                sketch_pad.trigger_update();
                 sketch_pad.draw();
                 Ok(())
             })?;
