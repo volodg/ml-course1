@@ -620,6 +620,12 @@ dependencies = [
 [[package]]
 name = "image_recognition"
 version = "0.1.0"
+dependencies = [
+ "commons",
+ "js-sys",
+ "wasm-bindgen",
+ "web-sys",
+]
 
 [[package]]
 name = "imageproc"
