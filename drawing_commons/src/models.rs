@@ -1,4 +1,4 @@
-use commons::geometry::{graham_scan, minimum_bounding_box, Point2DView, polygon_roundness};
+use commons::geometry::{graham_scan, minimum_bounding_box, polygon_roundness, Point2DView};
 use commons::math::min_max;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
