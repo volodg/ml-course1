@@ -48,6 +48,8 @@ pub fn generate_decision_boundary(knn: &KNN) -> Result<(), std::io::Error> {
             let point = [
                 x as f64 / image.width() as f64,
                 1.0 - y as f64 / image.height() as f64,
+                0.0,
+                0.0
             ];
             let label = knn.predict(&point).0;
             let (r, g, b) = COLOR_PER_LABEL.get(label.as_str()).expect("").1;
