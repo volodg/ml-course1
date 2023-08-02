@@ -53,9 +53,7 @@ pub trait Features {
 
     fn get_width(&self, el_getter: impl Fn(&Self::ElType) -> f64) -> f64;
 
-    fn get_elongation(&self) -> f64;
-
-    fn get_roundness(&self) -> f64;
+    fn get_hull(&self) -> Vec<[f64; 2]>;
 
     fn get_feature(&self) -> Vec<f64>;
 }
@@ -88,7 +86,7 @@ impl<T: Point2DView> Features for DrawingPaths<T> {
         }
     }
 
-    fn get_elongation(&self) -> f64 {
+    fn get_hull(&self) -> Vec<[f64; 2]> {
         let all_points = self
             .clone()
             .into_iter()
@@ -96,33 +94,20 @@ impl<T: Point2DView> Features for DrawingPaths<T> {
             .map(|x| [x.x(), x.y()])
             .collect::<Vec<_>>();
 
-        if all_points.is_empty() {
-            return 0.0;
-        }
-
-        let hull = graham_scan(&all_points);
-        let (_, width, height) = minimum_bounding_box(&hull).expect("non empty input");
-
-        (width.max(height) + 1.0) / (width.min(height) + 1.0)
-    }
-
-    fn get_roundness(&self) -> f64 {
-        let all_points = self
-            .clone()
-            .into_iter()
-            .flatten()
-            .map(|x| vec![x.x(), x.y()])
-            .collect::<Vec<_>>();
-
-        polygon_roundness(&all_points)
+        graham_scan(&all_points)
     }
 
     fn get_feature(&self) -> Vec<f64> {
+        let hull = self.get_hull();
+
+        let (_, width, height) = minimum_bounding_box(&hull).expect("non empty input");
+        let elongation = (width.max(height) + 1.0) / (width.min(height) + 1.0);
+
         vec![
             self.get_width(|x| x.x()),
             self.get_width(|x| x.y()),
-            self.get_elongation(),
-            self.get_roundness(),
+            elongation,
+            polygon_roundness(&hull),
             // x: self.path_count() as f64,
             // y: self.point_count() as f64,
         ]

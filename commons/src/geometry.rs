@@ -120,7 +120,7 @@ pub fn get_nearest_k(point: &[f64], pixel_points: &[PointN], k: usize) -> Vec<us
     result
 }
 
-pub fn polygon_length(polygon: &PolygonN) -> f64 {
+pub fn polygon_length(polygon: &Vec<[f64; 2]>) -> f64 {
     let mut result = 0.0;
 
     for (el, next_el) in polygon.iter().zip(polygon.iter().cycle().skip(1)) {
@@ -140,7 +140,7 @@ pub fn triangle_area(point_a: &PointN, point_b: &PointN, point_c: &PointN) -> f6
     (p * (p - a) * (p - b) * (p - c)).sqrt()
 }
 
-pub fn polygon_area(polygon: &PolygonN) -> f64 {
+pub fn polygon_area(polygon: &Vec<[f64; 2]>) -> f64 {
     if polygon.len() == 0 {
         return 0.0;
     }
@@ -153,13 +153,13 @@ pub fn polygon_area(polygon: &PolygonN) -> f64 {
     let mut result = 0.0;
 
     for (point_b, point_c) in iter_1.zip(iter_2) {
-        result += triangle_area(point_a, point_b, point_c)
+        result += triangle_area(&point_a.to_vec(), &point_b.to_vec(), &point_c.to_vec())
     }
 
     result
 }
 
-pub fn polygon_roundness(polygon: &PolygonN) -> f64 {
+pub fn polygon_roundness(polygon: &Vec<[f64; 2]>) -> f64 {
     let length = polygon_length(polygon);
     let area = polygon_area(polygon);
     let radius = length / TAU;
@@ -399,18 +399,18 @@ mod tests {
 
     #[test]
     fn test_polygon_length() {
-        let point1 = vec![1.0, 3.0];
-        let point2 = vec![5.0, 0.0];
-        let point3 = vec![1.0, 0.0];
+        let point1 = [1.0, 3.0];
+        let point2 = [5.0, 0.0];
+        let point3 = [1.0, 0.0];
 
         assert_eq!(polygon_length(&vec![point1, point2, point3]), 12.0);
     }
 
     #[test]
     fn test_polygon_area() {
-        let point1 = vec![1.0, 3.0];
-        let point2 = vec![5.0, 0.0];
-        let point3 = vec![1.0, 0.0];
+        let point1 = [1.0, 3.0];
+        let point2 = [5.0, 0.0];
+        let point3 = [1.0, 0.0];
 
         assert_eq!(polygon_area(&vec![point1, point2, point3]), 6.0);
     }
