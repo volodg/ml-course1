@@ -88,7 +88,7 @@ pub fn get_nearest(point: &PointN, pixel_points: &[PointN]) -> Vec<usize> {
 }
 
 pub fn get_nearest_k(point: &[f64], pixel_points: &[PointN], k: usize) -> Vec<usize> {
-    let heap_size = 0.max(pixel_points.len() - k);
+    let heap_size = 0.max(pixel_points.len() as i64 - k as i64) as usize;
 
     let mut heap =
         BinaryHeapExt::with_capacity_by(heap_size, |a: &(usize, f64), b: &(usize, f64)| {
@@ -366,7 +366,14 @@ pub fn minimum_bounding_box(hull: &Vec<[f64; 2]>) -> Option<(Vec<[f64; 2]>, f64,
 
 #[cfg(test)]
 mod tests {
-    use crate::geometry::{coincident_box, euclidean_distance, polygon_area, polygon_length};
+    use crate::geometry::{coincident_box, euclidean_distance, get_nearest, polygon_area, polygon_length};
+
+    #[test]
+    fn test_get_nearest() {
+        let point1 = vec![1.0, 3.0];
+
+        assert_eq!(get_nearest(&point1, &[]), vec![]);
+    }
 
     #[test]
     fn test_euclidean_distance() {
@@ -408,11 +415,8 @@ mod tests {
 
     #[test]
     fn test_coincident_box() {
-        let (vertices, width, height) = coincident_box(
-            &vec![[0.0, 0.0], [0.0, 1.0]],
-            &[0.0, 0.0],
-            &[0.0, 1.0],
-        );
+        let (vertices, width, height) =
+            coincident_box(&vec![[0.0, 0.0], [0.0, 1.0]], &[0.0, 0.0], &[0.0, 1.0]);
 
         assert_eq!(vertices.len(), 2);
         assert_eq!(width, 0.0);

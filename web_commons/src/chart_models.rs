@@ -122,22 +122,21 @@ pub fn get_data_bounds(samples: &[Sample]) -> Option<Bounds> {
     );
 
     match (min_x, max_x, max_y, min_y) {
-        (Some(min_x), Some(max_x), Some(max_y), Some(min_y)) => {
-            Bounds {
-                left: min_x,
-                right: max_x,
-                top: max_y,
-                bottom: min_y,
-            }.some()
-        },
-        (_, _, _, _) => None
+        (Some(min_x), Some(max_x), Some(max_y), Some(min_y)) => Bounds {
+            left: min_x,
+            right: max_x,
+            top: max_y,
+            bottom: min_y,
+        }
+        .some(),
+        (_, _, _, _) => None,
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use commons::utils::SomeExt;
     use crate::chart_models::{get_data_bounds, Bounds, Sample};
+    use commons::utils::SomeExt;
 
     #[test]
     fn test_data_bounds() {
@@ -168,7 +167,8 @@ mod tests {
                 right: 11.0,
                 top: 10.0,
                 bottom: 2.0,
-            }.some()
+            }
+            .some()
         );
 
         let result = get_data_bounds(&[]);
@@ -179,7 +179,8 @@ mod tests {
                 right: 0.0,
                 top: 0.0,
                 bottom: 0.0,
-            }.some()
+            }
+            .some()
         );
     }
 }
