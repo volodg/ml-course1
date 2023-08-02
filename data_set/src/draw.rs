@@ -1,4 +1,4 @@
-use commons::geometry::{graham_scan, minimum_bounding_box};
+use commons::geometry::{graham_scan, minimum_bounding_box, polygon_roundness};
 use drawing_commons::models::DrawingPaths;
 use raqote::{
     DrawOptions, DrawTarget, LineCap, LineJoin, PathBuilder, SolidSource, Source, StrokeStyle,
@@ -87,19 +87,16 @@ pub fn generate_image_file(file: &str, paths: &DrawingPaths<[f64; 2]>) {
     let blue = 255;
 
     hull.push(hull[0]);
-    dt.draw_path_with_color(10.0, &vec![hull], (red, green, blue, 255));
+    dt.draw_path_with_color(10.0, &vec![hull.clone()], (red, green, blue, 255));
 
-    // let all_points = paths.clone().into_iter().flatten().collect::<Vec<_>>();
-    // let mut hull = graham_scan(&all_points);
-    // let roundness =
-    //     polygon_roundness(&hull.clone().into_iter().map(|x| vec![x[0], x[1]]).collect());
-    //
-    // let red = (255.0 * roundness).floor() as u8;
-    // let green = 0;
-    // let blue = (255.0 * (1.0 - roundness)).floor() as u8;
-    //
-    // hull.push(hull[0]);
-    // dt.draw_path_with_color(10.0, &vec![hull], (red, green, blue, 255));
+    let roundness = polygon_roundness(&hull);
+
+    let red = (255.0 - (255.0 * roundness).floor()) as u8;
+    let green = 255;
+    let blue = (255.0 - (255.0 * (1.0 - roundness)).floor()) as u8;
+
+    hull.push(hull[0]);
+    dt.draw_path_with_color(10.0, &vec![hull], (red, green, blue, 255));
 
     dt.write_png(file).unwrap()
 }
