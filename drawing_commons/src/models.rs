@@ -119,6 +119,7 @@ pub fn get_feature_names() -> Vec<String> {
         "Width".to_owned(),
         "Height".to_owned(),
         "Elongation".to_owned(),
+        "Roundness".to_owned(),
     ]
 }
 
