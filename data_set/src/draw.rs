@@ -91,9 +91,9 @@ pub fn generate_image_file(file: &str, paths: &DrawingPaths<[f64; 2]>) {
 
     let roundness = polygon_roundness(&hull);
 
-    let red = (255.0 - (255.0 * roundness).floor()) as u8;
+    let red = (255.0 - (255.0 * roundness.powi(5)).floor()) as u8;
     let green = 255;
-    let blue = (255.0 - (255.0 * (1.0 - roundness)).floor()) as u8;
+    let blue = (255.0 - (255.0 * (1.0 - roundness.powi(5))).floor()) as u8;
 
     hull.push(hull[0]);
     dt.draw_path_with_color(10.0, &vec![hull], (red, green, blue, 255));
