@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Custom Chart</title>
-    <meta charset="UTF-8"/>
-    <link rel="stylesheet" href="/css/styles.css">
+    <title> Learn Machine Learning </title>
+    <style>
+        canvas {
+            border: solid 2px;
+        }
+    </style>
 </head>
 <body>
-<h1>Custom Chart</h1>
-<div id="chartContainer"></div>
-<table id="dataTable"></table>
+    <div style="text-align: center;">
+        <canvas id="canvas"></canvas>
+        <div id="output"> ? </div>
+        <br>
+        <input id="objectName" type="text" placeholder="What is this"/>
+        <button class="button"> Learn </button>
+    </div>
 </body>
 </html>

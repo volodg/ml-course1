@@ -625,6 +625,7 @@ dependencies = [
  "js-sys",
  "wasm-bindgen",
  "web-sys",
+ "web_commons",
 ]
 
 [[package]]
