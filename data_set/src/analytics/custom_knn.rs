@@ -31,6 +31,10 @@ pub fn run_knn_evaluations() -> Result<(), std::io::Error> {
         correct_count as f64 / total_count as f64 * 100.0
     );
 
+    generate_decision_boundary(&knn)
+}
+
+pub fn generate_decision_boundary(knn: &KNN) -> Result<(), std::io::Error> {
     println!("GENERATING DECISION BOUNDARY");
 
     // let mut image = ImageBuffer::new(5000, 5000);
@@ -57,7 +61,5 @@ pub fn run_knn_evaluations() -> Result<(), std::io::Error> {
 
     image
         .save("./data/dataset/decision_boundary.png")
-        .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))?;
-
-    Ok(())
+        .map_err(|err| std::io::Error::new(ErrorKind::InvalidData, err))
 }
