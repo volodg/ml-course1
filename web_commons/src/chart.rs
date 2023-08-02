@@ -123,7 +123,12 @@ impl Chart {
     }
 
     pub fn set_samples(&mut self, samples: Vec<Sample>) {
-        self.data_bounds = get_data_bounds(&samples).unwrap_or(Bounds::default());
+        self.data_bounds = get_data_bounds(&samples).unwrap_or(Bounds {
+            left: 0.0,
+            right: 1.0,
+            top: 1.0,
+            bottom: 0.0,
+        });
         self.default_data_bounds = self.data_bounds.clone();
         self.samples = samples;
     }
