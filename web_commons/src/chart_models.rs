@@ -1,7 +1,7 @@
 use crate::graphics::ContextExt;
 use commons::geometry::{Point2D, PointN};
 use commons::math::{min_max, Bounds};
-use commons::utils::OkExt;
+use commons::utils::{OkExt, SomeExt};
 use std::collections::HashMap;
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, HtmlImageElement};
@@ -105,7 +105,7 @@ impl Options {
     }
 }
 
-pub fn get_data_bounds(samples: &[Sample]) -> Bounds {
+pub fn get_data_bounds(samples: &[Sample]) -> Option<Bounds> {
     let zero_min_max: Option<f64> = None;
     let (min_x, max_x, min_y, max_y) = samples.iter().fold(
         (zero_min_max, zero_min_max, zero_min_max, zero_min_max),
@@ -121,20 +121,22 @@ pub fn get_data_bounds(samples: &[Sample]) -> Bounds {
         },
     );
 
-    let delta_x = max_x.expect("") - min_x.expect("");
-    let delta_y = max_y.expect("") - min_y.expect("");
-    let _max_delta = delta_x.max(delta_y);
-
-    Bounds {
-        left: min_x.expect(""),
-        right: max_x.expect(""), // min_x.expect("") + max_delta,
-        top: max_y.expect(""),   // min_y.expect("") + max_delta,
-        bottom: min_y.expect(""),
+    match (min_x, max_x, max_y, min_y) {
+        (Some(min_x), Some(max_x), Some(max_y), Some(min_y)) => {
+            Bounds {
+                left: min_x,
+                right: max_x,
+                top: max_y,
+                bottom: min_y,
+            }.some()
+        },
+        (_, _, _, _) => None
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use commons::utils::SomeExt;
     use crate::chart_models::{get_data_bounds, Bounds, Sample};
 
     #[test]
@@ -166,7 +168,18 @@ mod tests {
                 right: 11.0,
                 top: 10.0,
                 bottom: 2.0,
-            }
+            }.some()
+        );
+
+        let result = get_data_bounds(&[]);
+        assert_eq!(
+            result,
+            Bounds {
+                left: 0.0,
+                right: 0.0,
+                top: 0.0,
+                bottom: 0.0,
+            }.some()
         );
     }
 }

@@ -100,8 +100,8 @@ impl Chart {
             data_trans,
             drag_info,
             pixel_bounds,
-            data_bounds: Bounds::zero(),
-            default_data_bounds: Bounds::zero(),
+            data_bounds: Bounds::default(),
+            default_data_bounds: Bounds::default(),
             options,
             hovered_sample: None,
             selected_sample: None,
@@ -123,7 +123,7 @@ impl Chart {
     }
 
     pub fn set_samples(&mut self, samples: Vec<Sample>) {
-        self.data_bounds = get_data_bounds(&samples);
+        self.data_bounds = get_data_bounds(&samples).unwrap_or(Bounds::default());
         self.default_data_bounds = self.data_bounds.clone();
         self.samples = samples;
     }

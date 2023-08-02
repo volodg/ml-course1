@@ -43,8 +43,8 @@ pub struct Bounds {
     pub bottom: f64,
 }
 
-impl Bounds {
-    pub fn zero() -> Self {
+impl Default for Bounds {
+    fn default() -> Self {
         Self {
             left: 0.0,
             right: 0.0,
