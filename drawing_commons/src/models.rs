@@ -1,4 +1,4 @@
-use commons::geometry::{graham_scan, minimum_bounding_box, Point2DView};
+use commons::geometry::{graham_scan, minimum_bounding_box, Point2DView, polygon_roundness};
 use commons::math::min_max;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -55,6 +55,8 @@ pub trait Features {
 
     fn get_elongation(&self) -> f64;
 
+    fn get_roundness(&self) -> f64;
+
     fn get_feature(&self) -> Vec<f64>;
 }
 
@@ -104,11 +106,23 @@ impl<T: Point2DView> Features for DrawingPaths<T> {
         (width.max(height) + 1.0) / (width.min(height) + 1.0)
     }
 
+    fn get_roundness(&self) -> f64 {
+        let all_points = self
+            .clone()
+            .into_iter()
+            .flatten()
+            .map(|x| vec![x.x(), x.y()])
+            .collect::<Vec<_>>();
+
+        polygon_roundness(&all_points)
+    }
+
     fn get_feature(&self) -> Vec<f64> {
         vec![
             self.get_width(|x| x.x()),
             self.get_width(|x| x.y()),
             self.get_elongation(),
+            self.get_roundness(),
             // x: self.path_count() as f64,
             // y: self.point_count() as f64,
         ]
