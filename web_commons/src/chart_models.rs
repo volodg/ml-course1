@@ -172,15 +172,6 @@ mod tests {
         );
 
         let result = get_data_bounds(&[]);
-        assert_eq!(
-            result,
-            Bounds {
-                left: 0.0,
-                right: 0.0,
-                top: 0.0,
-                bottom: 0.0,
-            }
-            .some()
-        );
+        assert_eq!(result, None);
     }
 }

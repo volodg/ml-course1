@@ -366,7 +366,9 @@ pub fn minimum_bounding_box(hull: &Vec<[f64; 2]>) -> Option<(Vec<[f64; 2]>, f64,
 
 #[cfg(test)]
 mod tests {
-    use crate::geometry::{coincident_box, euclidean_distance, get_nearest, polygon_area, polygon_length};
+    use crate::geometry::{
+        coincident_box, euclidean_distance, get_nearest, polygon_area, polygon_length,
+    };
 
     #[test]
     fn test_get_nearest() {
