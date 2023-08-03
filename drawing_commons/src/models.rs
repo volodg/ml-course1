@@ -97,13 +97,19 @@ impl<T: Point2DView> Features for DrawingPaths<T> {
 
         dt.draw_path(3.0, self);
 
-        dt.get_data().iter().map(|x| (*x >> 24) as u8).collect()
+        dt.get_data()
+            .iter()
+            .map(|x| (*x >> 24) as u8)
+            .filter(|x| *x != 0)
+            .collect()
     }
 
     #[cfg(target_arch = "wasm32")]
     fn get_pixels(&self) -> Vec<u8> {
+        use crate::canvas_ext::CanvasRenderingContext2dExt;
         use wasm_bindgen::JsCast;
         use web_sys::window;
+        use web_sys::CanvasRenderingContext2d;
         use web_sys::HtmlCanvasElement;
 
         let document = window().expect("").document().expect("");
@@ -117,8 +123,27 @@ impl<T: Point2DView> Features for DrawingPaths<T> {
         canvas.set_width(size);
         canvas.set_height(size);
 
-        // println!("with document")
-        vec![]
+        let context = canvas
+            .get_context("2d")
+            .expect("")
+            .unwrap()
+            .dyn_into::<CanvasRenderingContext2d>()
+            .expect("");
+
+        context.draw_path(&self, 3.0);
+
+        let image_data = context
+            .get_image_data(0.0, 0.0, size.into(), size.into())
+            .expect("");
+        let result = image_data
+            .data()
+            .iter()
+            .zip(0..)
+            .filter(|(_, index)| index % 4 == 0)
+            .map(|x| *x.0)
+            .collect::<Vec<_>>();
+
+        result
     }
 
     fn get_hull(&self) -> Vec<[f64; 2]> {
