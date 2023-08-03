@@ -97,11 +97,7 @@ impl<T: Point2DView> Features for DrawingPaths<T> {
 
         dt.draw_path(3.0, self);
 
-        dt.get_data()
-            .iter()
-            .map(|x| (*x >> 24) as u8)
-            .filter(|x| *x != 0)
-            .collect()
+        dt.get_data().iter().map(|x| (*x >> 24) as u8).collect()
     }
 
     #[cfg(target_arch = "wasm32")]

@@ -1,7 +1,11 @@
 use crate::models::DrawingPaths;
 use commons::geometry::Point2DView;
+use font_kit::family_name::FamilyName;
+use font_kit::properties::{Properties, Weight};
+use font_kit::source::SystemSource;
 use raqote::{
-    DrawOptions, DrawTarget, LineCap, LineJoin, PathBuilder, SolidSource, Source, StrokeStyle,
+    DrawOptions, DrawTarget, LineCap, LineJoin, PathBuilder, Point, SolidSource, Source,
+    StrokeStyle,
 };
 
 const STROKE_STYLE: StrokeStyle = StrokeStyle {
@@ -21,6 +25,8 @@ pub trait DrawTargetExt {
         paths: &DrawingPaths<T>,
         color: (u8, u8, u8, u8),
     );
+
+    fn draw_text_simplified(&mut self, text: &str);
 }
 
 impl DrawTargetExt for DrawTarget {
@@ -57,5 +63,35 @@ impl DrawTargetExt for DrawTarget {
 
             self.stroke(&path, &source, &STROKE_STYLE, &DrawOptions::new());
         }
+    }
+
+    fn draw_text_simplified(&mut self, text: &str) {
+        let source = Source::Solid(SolidSource {
+            r: 0,
+            g: 0,
+            b: 255,
+            a: 255,
+        });
+
+        let mut properties = Properties::new();
+        properties.weight = Weight::BOLD;
+
+        let font = SystemSource::new()
+            .select_best_match(
+                &[FamilyName::Title("Arial".to_string())],
+                &Properties::new(),
+            )
+            .unwrap()
+            .load()
+            .unwrap();
+
+        self.draw_text(
+            &font,
+            100.0,
+            text,
+            Point::new(10.0, 110.0),
+            &source,
+            &DrawOptions::new(),
+        )
     }
 }

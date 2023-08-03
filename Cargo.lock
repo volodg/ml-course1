@@ -379,6 +379,7 @@ version = "0.1.0"
 dependencies = [
  "commons",
  "const_format",
+ "font-kit",
  "itertools",
  "js-sys",
  "lazy_static",
