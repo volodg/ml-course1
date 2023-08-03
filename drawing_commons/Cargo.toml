@@ -8,7 +8,6 @@ edition = "2021"
 [dependencies]
 commons = { path = "../commons" }
 const_format = "0.2.26"
-font-kit = "0.11.0"
 js-sys = "0.3.64"
 itertools = "0.10.5"
 lazy_static = "1.4.0"
@@ -18,6 +17,7 @@ wasm-bindgen = "0.2.87"
 web_commons = { path = "../web_commons" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+font-kit = "0.11.0"
 raqote = "0.8.2"
 
 [dependencies.web-sys]

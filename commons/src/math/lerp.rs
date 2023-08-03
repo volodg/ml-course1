@@ -3,6 +3,10 @@ pub fn lerp(a: f64, b: f64, t: f64) -> f64 {
 }
 
 pub fn inv_lerp(a: f64, b: f64, v: f64) -> f64 {
+    if b == a && v == a {
+        return v;
+    }
+
     (v - a) / (b - a)
 }
 

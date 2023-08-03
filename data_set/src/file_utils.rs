@@ -159,9 +159,11 @@ fn build_features_for(
     samples: &[Sample],
     min_max: Option<(Vec<f64>, Vec<f64>)>,
 ) -> (FeaturesData, Vec<f64>, Vec<f64>) {
+    let count = samples.len();
     let points = samples
         .iter()
-        .map(|sample| {
+        .zip(0..)
+        .map(|(sample, index)| {
             let path = std::format!("{}/{}.json", JSON_DIR, sample.id);
 
             let draw_paths = std::fs::read_to_string(path)
@@ -171,7 +173,9 @@ fn build_features_for(
                 })
                 .expect("");
 
-            draw_paths.get_feature()
+            let feature = draw_paths.get_feature();
+            print_progress("Extracting feature jsons", index, count);
+            feature
         })
         .collect::<Vec<_>>();
 

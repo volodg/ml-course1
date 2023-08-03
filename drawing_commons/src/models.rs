@@ -164,6 +164,7 @@ impl<T: Point2DView> Features for DrawingPaths<T> {
             self.get_width(|x| x.y()),
             elongation,
             polygon_roundness(&hull),
+            self.get_pixels().into_iter().filter(|x| *x != 0).count() as f64,
             // x: self.path_count() as f64,
             // y: self.point_count() as f64,
         ]
@@ -176,6 +177,7 @@ pub fn get_feature_names() -> Vec<String> {
         "Height".to_owned(),
         "Elongation".to_owned(),
         "Roundness".to_owned(),
+        "Complexity".to_owned(),
     ]
 }
 
