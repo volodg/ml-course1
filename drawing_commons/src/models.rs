@@ -100,7 +100,7 @@ impl<T: Point2DView> Features for DrawingPaths<T> {
     fn get_feature(&self) -> Vec<f64> {
         let hull = self.get_hull();
 
-        let (_, width, height) = minimum_bounding_box(&hull).expect("non empty input");
+        let (_, width, height) = minimum_bounding_box(&hull).unwrap_or((vec![], 0.0, 0.0));
         let elongation = (width.max(height) + 1.0) / (width.min(height) + 1.0);
 
         vec![

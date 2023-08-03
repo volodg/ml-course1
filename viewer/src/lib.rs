@@ -87,8 +87,7 @@ fn start() -> Result<(), JsValue> {
     add_rows(&html, &testing_chart_samples, true)?;
 
     {
-        // html_ref.plot_statistic(&html, &testing_chart_samples)?;
-        html_ref.plot_statistic(&html, &vec![])?;
+        html_ref.plot_statistic(&html, &testing_chart_samples)?;
         html_ref
             .confusion
             .borrow_mut()
