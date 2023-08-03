@@ -1,64 +1,7 @@
 use commons::geometry::{graham_scan, minimum_bounding_box, polygon_roundness};
 use drawing_commons::models::DrawingPaths;
-use raqote::{
-    DrawOptions, DrawTarget, LineCap, LineJoin, PathBuilder, SolidSource, Source, StrokeStyle,
-};
-
-const STROKE_STYLE: StrokeStyle = StrokeStyle {
-    cap: LineCap::Round,
-    join: LineJoin::Round,
-    width: 3.,
-    miter_limit: 10.,
-    dash_array: vec![],
-    dash_offset: 0.,
-};
-
-trait DrawTargetExt {
-    fn draw_path(&mut self, width: f32, paths: &DrawingPaths<[f64; 2]>);
-    fn draw_path_with_color(
-        &mut self,
-        width: f32,
-        paths: &DrawingPaths<[f64; 2]>,
-        color: (u8, u8, u8, u8),
-    );
-}
-
-impl DrawTargetExt for DrawTarget {
-    fn draw_path(&mut self, width: f32, paths: &DrawingPaths<[f64; 2]>) {
-        self.draw_path_with_color(width, paths, (0, 0, 0, 255))
-    }
-
-    fn draw_path_with_color(
-        &mut self,
-        width: f32,
-        paths: &DrawingPaths<[f64; 2]>,
-        color: (u8, u8, u8, u8),
-    ) {
-        for path in paths {
-            let mut pb = PathBuilder::new();
-
-            pb.move_to(path[0][0] as f32, path[0][1] as f32);
-
-            for point in &path[1..] {
-                pb.line_to(point[0] as f32, point[1] as f32);
-            }
-
-            let path = pb.finish();
-
-            let source = Source::Solid(SolidSource {
-                r: color.0,
-                g: color.1,
-                b: color.2,
-                a: color.3,
-            });
-
-            let mut style = STROKE_STYLE.clone();
-            style.width = width;
-
-            self.stroke(&path, &source, &STROKE_STYLE, &DrawOptions::new());
-        }
-    }
-}
+use raqote::DrawTarget;
+use drawing_commons::draw_images::DrawTargetExt;
 
 pub fn generate_image_file(file: &str, paths: &DrawingPaths<[f64; 2]>) {
     let mut dt = DrawTarget::new(400, 400);

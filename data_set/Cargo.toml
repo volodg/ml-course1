@@ -9,13 +9,13 @@ edition = "2021"
 commons = { path = "../commons" }
 csv = "1.1"
 drawing_commons = { path = "../drawing_commons" }
-linfa-nn = "0.6.1"
-ndarray = "0.15.6"
-image = "0.24.1"
-imageproc = "0.23.0"
+linfa-nn = "0.6.1" # TODO delete?
+ndarray = "0.15.6" # TODO delete?
+image = "0.24.1" # TODO delete?
+imageproc = "0.23.0" # TODO delete?
 lazy_static = "1.4.0"
 raqote = "0.8.2"
 serde = { version = "1.0.164", features = ["derive"] }
 serde_json = "1.0.97"
-termion = "2.0.1"
+termion = "2.0.1" # TODO delete?
 wasm-bindgen = "0.2.87"

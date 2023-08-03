@@ -2,6 +2,8 @@ use commons::geometry::{graham_scan, minimum_bounding_box, polygon_roundness, Po
 use commons::math::min_max;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use raqote::DrawTarget;
+use crate::draw_images::DrawTargetExt;
 
 #[derive(Clone, Deserialize, Serialize)]
 pub struct Sample {
@@ -53,6 +55,8 @@ pub trait Features {
 
     fn get_width(&self, el_getter: impl Fn(&Self::ElType) -> f64) -> f64;
 
+    fn get_pixels(&self) -> Vec<u8>;
+
     fn get_hull(&self) -> Vec<[f64; 2]>;
 
     fn get_feature(&self) -> Vec<f64>;
@@ -84,6 +88,22 @@ impl<T: Point2DView> Features for DrawingPaths<T> {
             (Some(max_x), Some(min_x)) => max_x.round() - min_x.round(),
             (_, _) => 0.0,
         }
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn get_pixels(&self) -> Vec<u8> {
+        let mut dt = DrawTarget::new(400, 400);
+
+        dt.draw_path(3.0, self);
+
+        dt.get_data().iter().map(|x| (*x >> 24) as u8).collect()
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    fn get_pixels(&self) {
+        let document = window().expect("").document().expect("");
+
+        println!("with document")
     }
 
     fn get_hull(&self) -> Vec<[f64; 2]> {

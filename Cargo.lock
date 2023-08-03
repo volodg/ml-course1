@@ -382,6 +382,7 @@ dependencies = [
  "itertools",
  "js-sys",
  "lazy_static",
+ "raqote",
  "serde",
  "serde_json",
  "wasm-bindgen",
