@@ -18,11 +18,11 @@ const STROKE_STYLE: StrokeStyle = StrokeStyle {
 };
 
 pub trait DrawTargetExt {
-    fn draw_path<T: Point2DView>(&mut self, width: f32, paths: &DrawingPaths<T>);
+    fn draw_path<T: Point2DView>(&mut self, paths: &DrawingPaths<T>, width: f32);
     fn draw_path_with_color<T: Point2DView>(
         &mut self,
-        width: f32,
         paths: &DrawingPaths<T>,
+        width: f32,
         color: (u8, u8, u8, u8),
     );
 
@@ -30,14 +30,14 @@ pub trait DrawTargetExt {
 }
 
 impl DrawTargetExt for DrawTarget {
-    fn draw_path<T: Point2DView>(&mut self, width: f32, paths: &DrawingPaths<T>) {
-        self.draw_path_with_color(width, paths, (0, 0, 0, 255))
+    fn draw_path<T: Point2DView>(&mut self, paths: &DrawingPaths<T>, width: f32) {
+        self.draw_path_with_color(paths, width, (0, 0, 0, 255))
     }
 
     fn draw_path_with_color<T: Point2DView>(
         &mut self,
-        width: f32,
         paths: &DrawingPaths<T>,
+        width: f32,
         color: (u8, u8, u8, u8),
     ) {
         for path in paths {

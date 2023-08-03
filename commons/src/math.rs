@@ -97,7 +97,7 @@ pub fn min_max<NUM: Min + Max + Copy>(
     )
 }
 
-pub fn normalize_points_to_min_max(points: Vec<Vec<f64>>) -> ((Vec<f64>, Vec<f64>), Vec<Vec<f64>>) {
+pub fn min_max_n_points(points: &Vec<Vec<f64>>) -> (Vec<f64>, Vec<f64>) {
     let mut min = points[0].clone();
     let mut max = points[0].clone();
 
@@ -109,6 +109,12 @@ pub fn normalize_points_to_min_max(points: Vec<Vec<f64>>) -> ((Vec<f64>, Vec<f64
             max[j] = max[j].max(value);
         }
     }
+
+    (min, max)
+}
+
+pub fn normalize_points_to_min_max(points: Vec<Vec<f64>>) -> ((Vec<f64>, Vec<f64>), Vec<Vec<f64>>) {
+    let (min, max) = min_max_n_points(&points);
 
     let points = normalize_points(&min, &max, points);
     ((min, max), points)

@@ -1,7 +1,8 @@
 use commons::geometry::{graham_scan, minimum_bounding_box, polygon_roundness, Point2DView};
-use commons::math::min_max;
+use commons::math::{Bounds, min_max, min_max_n_points};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use commons::math::lerp::inv_lerp;
 
 #[derive(Clone, Deserialize, Serialize)]
 pub struct Sample {
@@ -53,7 +54,7 @@ pub trait Features {
 
     fn get_width(&self, el_getter: impl Fn(&Self::ElType) -> f64) -> f64;
 
-    fn get_pixels(&self) -> Vec<u8>;
+    fn get_pixels(&self, expand: bool) -> Vec<u8>;
 
     fn get_hull(&self) -> Vec<[f64; 2]>;
 
@@ -89,19 +90,25 @@ impl<T: Point2DView> Features for DrawingPaths<T> {
     }
 
     #[cfg(not(target_arch = "wasm32"))]
-    fn get_pixels(&self) -> Vec<u8> {
+    fn get_pixels(&self, expand: bool) -> Vec<u8> {
         use crate::draw_images::DrawTargetExt;
         use raqote::DrawTarget;
 
-        let mut dt = DrawTarget::new(400, 400);
+        let size = 400;
+        let mut dt = DrawTarget::new(size, size);
 
-        dt.draw_path(3.0, self);
+        if expand {
+            let res = expand_path(self, size);
+            dt.draw_path(&res, 3.0);
+        } else {
+            dt.draw_path(self, 3.0);
+        }
 
         dt.get_data().iter().map(|x| (*x >> 24) as u8).collect()
     }
 
     #[cfg(target_arch = "wasm32")]
-    fn get_pixels(&self) -> Vec<u8> {
+    fn get_pixels(&self, expand: bool) -> Vec<u8> {
         use crate::canvas_ext::CanvasRenderingContext2dExt;
         use wasm_bindgen::JsCast;
         use web_sys::window;
@@ -126,7 +133,12 @@ impl<T: Point2DView> Features for DrawingPaths<T> {
             .dyn_into::<CanvasRenderingContext2d>()
             .expect("");
 
-        context.draw_path(&self, 3.0);
+        if expand {
+            let res = expand_path(self, size as i32);
+            context.draw_path(&res, 3.0);
+        } else {
+            context.draw_path(self, 3.0);
+        }
 
         let image_data = context
             .get_image_data(0.0, 0.0, size.into(), size.into())
@@ -164,11 +176,39 @@ impl<T: Point2DView> Features for DrawingPaths<T> {
             self.get_width(|x| x.y()),
             elongation,
             polygon_roundness(&hull),
-            self.get_pixels().into_iter().filter(|x| *x != 0).count() as f64,
+            self.get_pixels(true).into_iter().filter(|x| *x != 0).count() as f64,
             // x: self.path_count() as f64,
             // y: self.point_count() as f64,
         ]
     }
+}
+
+fn expand_path<T: Point2DView>(path: &DrawingPaths<T>, size: i32) -> DrawingPaths<[f64; 2]> {
+    let points = path
+        .clone()
+        .into_iter()
+        .flatten()
+        .map(|x| vec![x.x(), x.y()])
+        .collect::<Vec<_>>();
+
+    let (min, max) = min_max_n_points(&points);
+
+    let bounds = Bounds {
+        left: min[0],
+        right: max[0],
+        top: min[1],
+        bottom: max[1],
+    };
+
+    path
+        .iter()
+        .map(|x| {
+            x.iter().map(|x| {
+                let new_x = inv_lerp(bounds.left, bounds.right, x.x()) * size as f64;
+                let new_y = inv_lerp(bounds.top, bounds.bottom, x.y()) * size as f64;
+                [new_x, new_y]
+            }).collect::<Vec<_>>()
+        }).collect::<Vec<_>>()
 }
 
 pub fn get_feature_names() -> Vec<String> {
