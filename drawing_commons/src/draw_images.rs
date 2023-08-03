@@ -1,6 +1,8 @@
-use raqote::{DrawOptions, DrawTarget, LineCap, LineJoin, PathBuilder, SolidSource, Source, StrokeStyle};
-use commons::geometry::Point2DView;
 use crate::models::DrawingPaths;
+use commons::geometry::Point2DView;
+use raqote::{
+    DrawOptions, DrawTarget, LineCap, LineJoin, PathBuilder, SolidSource, Source, StrokeStyle,
+};
 
 const STROKE_STYLE: StrokeStyle = StrokeStyle {
     cap: LineCap::Round,

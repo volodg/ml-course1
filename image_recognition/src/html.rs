@@ -1,6 +1,6 @@
 use commons::utils::OkExt;
-use wasm_bindgen::JsValue;
 use wasm_bindgen::JsCast;
+use wasm_bindgen::JsValue;
 use web_sys::{window, Document, HtmlCanvasElement};
 
 pub struct HtmlDom {

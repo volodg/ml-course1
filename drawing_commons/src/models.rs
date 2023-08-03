@@ -2,8 +2,6 @@ use commons::geometry::{graham_scan, minimum_bounding_box, polygon_roundness, Po
 use commons::math::min_max;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use raqote::DrawTarget;
-use crate::draw_images::DrawTargetExt;
 
 #[derive(Clone, Deserialize, Serialize)]
 pub struct Sample {
@@ -92,6 +90,9 @@ impl<T: Point2DView> Features for DrawingPaths<T> {
 
     #[cfg(not(target_arch = "wasm32"))]
     fn get_pixels(&self) -> Vec<u8> {
+        use crate::draw_images::DrawTargetExt;
+        use raqote::DrawTarget;
+
         let mut dt = DrawTarget::new(400, 400);
 
         dt.draw_path(3.0, self);
@@ -100,10 +101,24 @@ impl<T: Point2DView> Features for DrawingPaths<T> {
     }
 
     #[cfg(target_arch = "wasm32")]
-    fn get_pixels(&self) {
+    fn get_pixels(&self) -> Vec<u8> {
+        use wasm_bindgen::JsCast;
+        use web_sys::window;
+        use web_sys::HtmlCanvasElement;
+
         let document = window().expect("").document().expect("");
 
-        println!("with document")
+        let canvas = document
+            .create_element("canvas")
+            .expect("")
+            .dyn_into::<HtmlCanvasElement>()
+            .expect("");
+        let size = 400;
+        canvas.set_width(size);
+        canvas.set_height(size);
+
+        // println!("with document")
+        vec![]
     }
 
     fn get_hull(&self) -> Vec<[f64; 2]> {
