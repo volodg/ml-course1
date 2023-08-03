@@ -11,11 +11,13 @@ const_format = "0.2.26"
 js-sys = "0.3.64"
 itertools = "0.10.5"
 lazy_static = "1.4.0"
-raqote = "0.8.2"
 serde = { version = "1.0.164", features = ["derive"] }
 serde_json = "1.0.97"
 wasm-bindgen = "0.2.87"
 web_commons = { path = "../web_commons" }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+raqote = "0.8.2"
 
 [dependencies.web-sys]
 version = "0.3.4"

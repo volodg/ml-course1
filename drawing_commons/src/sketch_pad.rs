@@ -1,7 +1,7 @@
+use crate::canvas_ext::CanvasRenderingContext2dExt;
 use crate::models::DrawingPaths;
 use commons::geometry::Point2D;
 use commons::utils::OkExt;
-use itertools::Itertools;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
@@ -185,27 +185,6 @@ impl SketchPad {
         }
     }
 
-    fn draw_path(&self) {
-        for path in &self.paths {
-            if path.is_empty() {
-                continue;
-            }
-
-            for (from, to) in path.iter().tuple_windows() {
-                self.context.begin_path();
-                self.context.set_line_width(3.0);
-                self.context.set_stroke_style(&JsValue::from_str("white"));
-                self.context.set_line_cap("round");
-                self.context.set_line_join("round");
-
-                self.context.move_to(from.x as f64, from.y as f64);
-                self.context.line_to(to.x as f64, to.y as f64);
-
-                self.context.stroke();
-            }
-        }
-    }
-
     pub fn reset(&mut self) {
         self.paths.clear();
         self.draw();
@@ -219,7 +198,7 @@ impl SketchPad {
             self.canvas.height().into(),
         );
 
-        self.draw_path();
+        self.context.draw_path(&self.paths, 3.0);
 
         self.undo_btn.set_disabled(self.paths.is_empty());
     }
