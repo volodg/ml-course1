@@ -1,8 +1,8 @@
+use crate::car::Car;
 use commons::utils::OkExt;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{window, CanvasRenderingContext2d, Document, HtmlCanvasElement, Window};
-use crate::car::Car;
 
 pub struct HtmlDom {
     pub window: Window,
@@ -25,7 +25,7 @@ impl HtmlDom {
             .unwrap()
             .dyn_into::<CanvasRenderingContext2d>()?;
 
-        let car = Car::create(context.clone(), 0.0, 0.0, 100.0, 100.0);
+        let car = Car::create(context.clone(), 100.0, 100.0, 100.0, 100.0)?;
 
         Self {
             window,

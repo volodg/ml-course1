@@ -37,7 +37,7 @@ pub struct Chart {
     selected_sample: Option<Sample>,
     dynamic_point: Option<(PointN, String, Vec<Sample>)>,
     on_click: Option<Rc<RefCell<dyn FnMut(Option<&Sample>)>>>,
-    weak_self: Option<Weak<RefCell<Chart>>>,
+    weak_self: Weak<RefCell<Chart>>,
 }
 
 impl Chart {
@@ -107,12 +107,12 @@ impl Chart {
             selected_sample: None,
             dynamic_point: None,
             on_click: None,
-            weak_self: None,
+            weak_self: Weak::new(),
         };
 
         let result = Rc::new(RefCell::new(result));
 
-        result.borrow_mut().weak_self = Some(Rc::downgrade(&result));
+        result.borrow_mut().weak_self = Rc::downgrade(&result);
         Self::subscribe(&result)?;
 
         result.ok()
@@ -402,7 +402,7 @@ impl Chart {
             self.context
                 .draw_image_with_size(background, &top_left, size)?;
 
-            let weak_self = self.weak_self.clone().expect("");
+            let weak_self = self.weak_self.clone();
             background.on_load(move || {
                 let chart = weak_self.upgrade().expect("");
                 chart.borrow().draw().expect("");
