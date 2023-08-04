@@ -1,4 +1,4 @@
-use wasm_bindgen::closure::Closure;
+use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{EventTarget, HtmlElement, MouseEvent};
 

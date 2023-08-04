@@ -1,5 +1,7 @@
 use crate::car::Car;
 use commons::utils::OkExt;
+use std::cell::RefCell;
+use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{window, CanvasRenderingContext2d, Document, HtmlCanvasElement, Window};
@@ -9,7 +11,7 @@ pub struct HtmlDom {
     pub document: Document,
     pub canvas: HtmlCanvasElement,
     pub context: CanvasRenderingContext2d,
-    pub car: Car,
+    pub car: Rc<RefCell<Car>>,
 }
 
 impl HtmlDom {
@@ -25,7 +27,7 @@ impl HtmlDom {
             .unwrap()
             .dyn_into::<CanvasRenderingContext2d>()?;
 
-        let car = Car::create(context.clone(), 100.0, 100.0, 100.0, 100.0)?;
+        let car = Car::create(context.clone(), 100.0, 100.0, 30.0, 50.0)?;
 
         Self {
             window,

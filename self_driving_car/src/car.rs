@@ -6,17 +6,11 @@ use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
 
 pub struct Car {
-    #[allow(dead_code)]
     context: CanvasRenderingContext2d,
-    #[allow(dead_code)]
     x: f64,
-    #[allow(dead_code)]
     y: f64,
-    #[allow(dead_code)]
     width: f64,
-    #[allow(dead_code)]
     height: f64,
-    #[allow(dead_code)]
     controls: Rc<RefCell<Controls>>,
 }
 
@@ -27,18 +21,18 @@ impl Car {
         y: f64,
         width: f64,
         height: f64,
-    ) -> Result<Self, JsValue> {
+    ) -> Result<Rc<RefCell<Self>>, JsValue> {
         let controls = Controls::create()?;
 
-        Self {
+        Rc::new(RefCell::new(Self {
             context,
             x,
             y,
             width,
             height,
             controls,
-        }
-        .ok()
+        }))
+            .ok()
     }
 
     pub fn draw(&self) {
@@ -52,7 +46,7 @@ impl Car {
         self.context.fill();
     }
 
-    fn update(&mut self) {
+    pub fn update(&mut self) {
         let controls = self.controls.borrow();
 
         if controls.forward {

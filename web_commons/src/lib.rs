@@ -1,3 +1,4 @@
+pub mod animations;
 pub mod chart;
 pub mod chart_models;
 pub mod document;

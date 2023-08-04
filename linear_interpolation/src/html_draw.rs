@@ -7,8 +7,9 @@ use std::cell::RefCell;
 use std::f64::consts::{PI, TAU};
 use std::rc::Rc;
 use wasm_bindgen::prelude::Closure;
-use wasm_bindgen::{JsCast, JsValue};
-use web_sys::{window, CanvasRenderingContext2d};
+use wasm_bindgen::JsValue;
+use web_commons::animations::request_animation_frame;
+use web_sys::CanvasRenderingContext2d;
 
 fn v_lerp(a: [f64; 2], b: [f64; 2], t: f64) -> [f64; 2] {
     [lerp(a[0], b[0], t), lerp(a[1], b[1], t)]
@@ -20,13 +21,6 @@ fn v_lerp_3d(a: [f64; 3], b: [f64; 3], t: f64) -> [f64; 3] {
         lerp(a[1], b[1], t),
         lerp(a[2], b[2], t),
     ]
-}
-
-fn request_animation_frame(f: &Closure<dyn FnMut()>) {
-    window()
-        .expect("no global `window` exists")
-        .request_animation_frame(f.as_ref().unchecked_ref())
-        .expect("should register `requestAnimationFrame` OK");
 }
 
 trait HtmlDomExt {
