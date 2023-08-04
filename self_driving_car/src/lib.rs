@@ -1,5 +1,6 @@
 mod app_state;
 mod app_state_draw;
+mod car;
 mod draw;
 mod html;
 mod html_draw;

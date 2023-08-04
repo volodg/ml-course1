@@ -10,10 +10,11 @@ impl DrawWithState for HtmlDom {
     fn draw(&self, _app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
         log("draw me");
 
-        let size = 300;
+        self.canvas.set_width(200);
+        self.canvas
+            .set_height(self.window.inner_height()?.as_f64().expect("") as u32);
 
-        self.canvas.set_width(size);
-        self.canvas.set_height(size);
+        self.car.draw();
 
         Ok(())
     }

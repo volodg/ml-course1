@@ -1,8 +1,8 @@
 use commons::geometry::{graham_scan, minimum_bounding_box, polygon_roundness, Point2DView};
-use commons::math::{Bounds, min_max, min_max_n_points};
+use commons::math::lerp::inv_lerp;
+use commons::math::{min_max, min_max_n_points, Bounds};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use commons::math::lerp::inv_lerp;
 
 #[derive(Clone, Deserialize, Serialize)]
 pub struct Sample {
@@ -176,7 +176,10 @@ impl<T: Point2DView> Features for DrawingPaths<T> {
             self.get_width(|x| x.y()),
             elongation,
             polygon_roundness(&hull),
-            self.get_pixels(true).into_iter().filter(|x| *x != 0).count() as f64,
+            self.get_pixels(true)
+                .into_iter()
+                .filter(|x| *x != 0)
+                .count() as f64,
             // x: self.path_count() as f64,
             // y: self.point_count() as f64,
         ]
@@ -191,29 +194,31 @@ fn expand_path<T: Point2DView>(path: &DrawingPaths<T>, size: i32) -> DrawingPath
         .map(|x| vec![x.x(), x.y()])
         .collect::<Vec<_>>();
 
-    let bounds = min_max_n_points(&points).map(|(min, max)| {
-        Bounds {
+    let bounds = min_max_n_points(&points)
+        .map(|(min, max)| Bounds {
             left: min[0],
             right: max[0],
             top: min[1],
             bottom: max[1],
-        }
-    }).unwrap_or(Bounds {
-        left: 0.0,
-        right: 0.0,
-        top: 0.0,
-        bottom: 0.0,
-    });
+        })
+        .unwrap_or(Bounds {
+            left: 0.0,
+            right: 0.0,
+            top: 0.0,
+            bottom: 0.0,
+        });
 
-    path
-        .iter()
+    path.iter()
         .map(|x| {
-            x.iter().map(|x| {
-                let new_x = inv_lerp(bounds.left, bounds.right, x.x()) * size as f64;
-                let new_y = inv_lerp(bounds.top, bounds.bottom, x.y()) * size as f64;
-                [new_x, new_y]
-            }).collect::<Vec<_>>()
-        }).collect::<Vec<_>>()
+            x.iter()
+                .map(|x| {
+                    let new_x = inv_lerp(bounds.left, bounds.right, x.x()) * size as f64;
+                    let new_y = inv_lerp(bounds.top, bounds.bottom, x.y()) * size as f64;
+                    [new_x, new_y]
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>()
 }
 
 pub fn get_feature_names() -> Vec<String> {

@@ -122,7 +122,7 @@ pub fn normalize_points_to_min_max(points: Vec<Vec<f64>>) -> ((Vec<f64>, Vec<f64
         Some((min, max)) => {
             let points = normalize_points(&min, &max, points);
             ((min, max), points)
-        },
+        }
         None => {
             panic!("empty input")
         }
