@@ -13,7 +13,7 @@ pub fn generate_image_file(file: &str, paths: &DrawingPaths<[f64; 2]>) {
 
         dt.get_data_mut()[index] = (0 as u32) << 16;
         dt.get_data_mut()[index] = (0 as u32) << 8;
-        dt.get_data_mut()[index] = (0 as u32);
+        dt.get_data_mut()[index] = 0;
         dt.get_data_mut()[index] = (alpha as u32) << 24;
     }
 

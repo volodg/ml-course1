@@ -191,14 +191,19 @@ fn expand_path<T: Point2DView>(path: &DrawingPaths<T>, size: i32) -> DrawingPath
         .map(|x| vec![x.x(), x.y()])
         .collect::<Vec<_>>();
 
-    let (min, max) = min_max_n_points(&points);
-
-    let bounds = Bounds {
-        left: min[0],
-        right: max[0],
-        top: min[1],
-        bottom: max[1],
-    };
+    let bounds = min_max_n_points(&points).map(|(min, max)| {
+        Bounds {
+            left: min[0],
+            right: max[0],
+            top: min[1],
+            bottom: max[1],
+        }
+    }).unwrap_or(Bounds {
+        left: 0.0,
+        right: 0.0,
+        top: 0.0,
+        bottom: 0.0,
+    });
 
     path
         .iter()
