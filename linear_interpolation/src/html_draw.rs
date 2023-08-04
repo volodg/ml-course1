@@ -6,9 +6,8 @@ use js_sys::{Array, Date};
 use std::cell::RefCell;
 use std::f64::consts::{PI, TAU};
 use std::rc::Rc;
-use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsValue;
-use web_commons::animations::request_animation_frame;
+use web_commons::animations::animate_with_callback;
 use web_sys::CanvasRenderingContext2d;
 
 fn v_lerp(a: [f64; 2], b: [f64; 2], t: f64) -> [f64; 2] {
@@ -96,19 +95,11 @@ impl DrawWithState for HtmlDom {
         let point_a = [100.0, 300.0];
         let point_b = [400.0, 100.0];
 
-        let animation_f = Rc::new(RefCell::new(None));
-        let animation_f_copy = animation_f.clone();
-
         let html = self.clone();
 
-        *animation_f_copy.borrow_mut() = Some(Closure::new(move || {
+        animate_with_callback(move || {
             html.animation(app_state.clone(), point_a.clone(), point_b.clone())
-                .expect("");
-
-            request_animation_frame(animation_f.borrow().as_ref().unwrap());
-        }));
-
-        request_animation_frame(animation_f_copy.borrow().as_ref().unwrap());
+        });
 
         Ok(())
     }

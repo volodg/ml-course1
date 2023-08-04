@@ -32,7 +32,7 @@ impl Car {
             height,
             controls,
         }))
-            .ok()
+        .ok()
     }
 
     pub fn draw(&self) {
