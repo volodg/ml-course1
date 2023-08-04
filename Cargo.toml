@@ -9,6 +9,7 @@ members = [
     "data_set",
     "image_recognition",
     "linear_interpolation",
+    "self_driving_car",
     "trigonometry",
     "vectors",
     "viewer",
