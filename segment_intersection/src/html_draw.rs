@@ -5,10 +5,10 @@ use commons::geometry::{Line2D, Point2D, Point2DView};
 use std::cell::RefCell;
 use std::f64::consts::TAU;
 use std::rc::Rc;
-use web_commons::subscribers::AddListener;
 use wasm_bindgen::JsValue;
 use web_commons::animations::animate_with_callback;
 use web_commons::log;
+use web_commons::subscribers::AddListener;
 use web_sys::{CanvasRenderingContext2d, MouseEvent};
 
 impl DrawWithState for HtmlDom {
@@ -19,10 +19,7 @@ impl DrawWithState for HtmlDom {
         self.canvas
             .set_height(self.window.inner_height().expect("").as_f64().unwrap() as u32);
 
-        let mouse = Rc::new(RefCell::new(Point2D {
-            x: 0.0,
-            y: 0.0,
-        }));
+        let mouse = Rc::new(RefCell::new(Point2D { x: 0.0, y: 0.0 }));
 
         let doc_mouse = mouse.clone();
         self.document
@@ -46,8 +43,14 @@ impl DrawWithState for HtmlDom {
 
             let (a, b) = {
                 let angle: f64 = *angle.borrow();
-                let a = Point2D::create(mouse.x + angle.cos() * radius, mouse.y - angle.sin() * radius);
-                let b = Point2D::create(mouse.x - angle.cos() * radius, mouse.y + angle.sin() * radius);
+                let a = Point2D::create(
+                    mouse.x + angle.cos() * radius,
+                    mouse.y - angle.sin() * radius,
+                );
+                let b = Point2D::create(
+                    mouse.x - angle.cos() * radius,
+                    mouse.y + angle.sin() * radius,
+                );
                 (a, b)
             };
             let c = Point2D::create(50.0, 100.0);

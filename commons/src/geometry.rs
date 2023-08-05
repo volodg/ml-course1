@@ -107,10 +107,13 @@ impl Line2D {
         let bottom = (d.y - c.y) * (b.x - a.x) - (d.x - c.x) * (b.y - a.y);
 
         let t = t_top / bottom;
-        return (Intersection {
-            point: Point2D::create(lerp(a.x, b.x, t), lerp(a.y, b.y, t)),
-            offset: t,
-        }, bottom)
+        return (
+            Intersection {
+                point: Point2D::create(lerp(a.x, b.x, t), lerp(a.y, b.y, t)),
+                offset: t,
+            },
+            bottom,
+        );
     }
 }
 
