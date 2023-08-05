@@ -3,7 +3,6 @@ use commons::utils::OkExt;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
-use web_commons::log;
 use web_sys::CanvasRenderingContext2d;
 
 pub struct Car {
@@ -85,7 +84,6 @@ impl Car {
             self.angle -= 0.03 * flip;
         }
 
-        log(std::format!("speed: {:?}", self.speed).as_str());
         self.x -= self.angle.sin() * self.speed;
         self.y -= self.angle.cos() * self.speed;
     }
