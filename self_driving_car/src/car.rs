@@ -72,6 +72,16 @@ impl Car {
             self.speed += self.friction;
         }
 
+        if self.speed.abs() < self.speed {
+            self.speed = 0.0
+        }
+
+        if controls.left {
+            self.x -= 2.0;
+        } else if controls.right {
+            self.x += 2.0;
+        }
+
         log(std::format!("speed: {:?}", self.speed).as_str());
         self.y -= self.speed;
     }
