@@ -8,7 +8,6 @@ use std::f64::consts::PI;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
-use web_commons::log;
 
 pub struct Car {
     context: CanvasRenderingContext2d,
@@ -56,10 +55,12 @@ impl Car {
     }
 
     pub fn update(&mut self, borders: &Vec<Line2D>) {
-        self.move_by_controls();
-        self.polygon = self.create_polygon();
-        self.damaged = self.assess_damage(borders);
-        log(std::format!("damaged: {}", self.damaged).as_str());
+        if !self.damaged {
+            self.move_by_controls();
+            self.polygon = self.create_polygon();
+            self.damaged = self.assess_damage(borders);
+        }
+
         self.sensor.borrow_mut().update(self, borders);
     }
 
@@ -75,8 +76,8 @@ impl Car {
 
         vec![
             Point2D {
-                x: self.position.x - (self.angle - alpha).sin() * radius * 3.0,
-                y: self.position.y - (self.angle - alpha).cos() * radius * 3.0,
+                x: self.position.x - (self.angle - alpha).sin() * radius,
+                y: self.position.y - (self.angle - alpha).cos() * radius,
             },
             Point2D {
                 x: self.position.x - (self.angle + alpha).sin() * radius,
