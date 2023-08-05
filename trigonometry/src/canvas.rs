@@ -24,7 +24,7 @@ impl Canvas {
             .dyn_into::<CanvasRenderingContext2d>()?;
 
         let offset = [canvas.width() as f64 / 2.0, canvas.height() as f64 / 2.0];
-        _ = context.translate(offset[0].into(), offset[1].into())?;
+        context.translate(offset[0].into(), offset[1].into())?;
 
         Ok(Self {
             canvas,

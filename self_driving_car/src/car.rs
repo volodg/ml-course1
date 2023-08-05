@@ -8,7 +8,7 @@ use web_sys::CanvasRenderingContext2d;
 pub struct Car {
     context: CanvasRenderingContext2d,
     x: f64,
-    y: f64,
+    pub y: f64,
     width: f64,
     height: f64,
     speed: f64,
