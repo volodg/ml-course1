@@ -3,13 +3,12 @@ use commons::geometry::{Line2D, Point2D, Point2DView};
 use commons::math::lerp::lerp;
 use std::cell::RefCell;
 use std::f64::consts::FRAC_PI_4;
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
 
 pub struct Sensor {
     context: CanvasRenderingContext2d,
-    car: Rc<RefCell<Car>>,
     ray_count: usize,
     ray_length: f64,
     ray_spread: f64,
@@ -17,27 +16,25 @@ pub struct Sensor {
 }
 
 impl Sensor {
-    pub fn create(context: CanvasRenderingContext2d, car: Rc<RefCell<Car>>) -> Self {
-        Self::create_with_ray_count(context, car, 3)
+    pub fn create(context: CanvasRenderingContext2d) -> Rc<RefCell<Self>> {
+        Self::create_with_ray_count(context, 3)
     }
 
     fn create_with_ray_count(
         context: CanvasRenderingContext2d,
-        car: Rc<RefCell<Car>>,
         ray_count: usize,
-    ) -> Self {
-        Self {
+    ) -> Rc<RefCell<Self>> {
+        let result = Self {
             context,
-            car,
             ray_count,
             ray_length: 100.0,
             ray_spread: FRAC_PI_4,
             rays: vec![],
-        }
+        };
+        Rc::new(RefCell::new(result))
     }
 
-    pub fn update(&mut self) {
-        let car = self.car.borrow();
+    pub fn update(&mut self, car: &Car) {
         let start = &car.position;
 
         self.rays = (0..self.ray_count)

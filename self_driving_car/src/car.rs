@@ -5,6 +5,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
+use crate::sensor::Sensor;
 
 pub struct Car {
     context: CanvasRenderingContext2d,
@@ -17,6 +18,7 @@ pub struct Car {
     acceleration: f64,
     angle: f64,
     controls: Rc<RefCell<Controls>>,
+    sensor: Rc<RefCell<Sensor>>,
 }
 
 impl Car {
@@ -27,8 +29,9 @@ impl Car {
         height: f64,
     ) -> Result<Rc<RefCell<Self>>, JsValue> {
         let controls = Controls::create()?;
+        let sensor = Sensor::create(context.clone());
 
-        Rc::new(RefCell::new(Self {
+        let car = Rc::new(RefCell::new(Self {
             context,
             position,
             width,
@@ -39,12 +42,15 @@ impl Car {
             acceleration: 0.2,
             angle: 0.0,
             controls,
-        }))
-        .ok()
+            sensor: sensor.clone()
+        }));
+
+        car.ok()
     }
 
     pub fn update(&mut self) {
-        self.move_by_controls()
+        self.move_by_controls();
+        self.sensor.borrow_mut().update(self);
     }
 
     fn move_by_controls(&mut self) {
@@ -101,6 +107,8 @@ impl Car {
 
         self.context.fill();
         self.context.restore();
+
+        self.sensor.borrow().draw();
 
         Ok(())
     }
