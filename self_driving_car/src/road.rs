@@ -3,6 +3,7 @@ use commons::math::Bounds;
 use js_sys::Array;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
+use commons::geometry::{Point2D, Point2DView};
 
 #[derive(Clone)]
 pub struct Road {
@@ -34,7 +35,13 @@ impl Road {
         let right = x + width / 2.0;
         let infinity = 1_000_000.0;
 
-        // let top_left = Point2D;
+        let top = -infinity;
+        let bottom = infinity;
+
+        let top_left = Point2D::create(left, top);
+        let top_right = Point2D::create(right, right);
+        let bottom_left = Point2D::create(left, bottom);
+        let bottom_right = Point2D::create(right, bottom);
 
         Self {
             context,
@@ -43,11 +50,11 @@ impl Road {
             lane_count,
             left,
             right,
-            top: -infinity,
-            bottom: infinity,
+            top,
+            bottom,
             borders: vec![
-                // [top_left, bottom_left],
-                // [tpo_right, bottom_right],
+                Bounds { top_left, bottom_right: bottom_left },
+                Bounds { top_left: top_right, bottom_right },
             ],
         }
     }
