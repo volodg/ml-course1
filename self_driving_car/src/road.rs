@@ -16,7 +16,6 @@ pub struct Road {
     right: f64,
     top: f64,
     bottom: f64,
-    #[allow(dead_code)]
     borders: Vec<Bounds>,
 }
 
@@ -39,7 +38,7 @@ impl Road {
         let bottom = infinity;
 
         let top_left = Point2D::create(left, top);
-        let top_right = Point2D::create(right, right);
+        let top_right = Point2D::create(right, top);
         let bottom_left = Point2D::create(left, bottom);
         let bottom_right = Point2D::create(right, bottom);
 
@@ -63,19 +62,24 @@ impl Road {
         self.context.set_line_width(5.0);
         self.context.set_stroke_style(&JsValue::from_str("white"));
 
-        for i in 0..=self.lane_count {
+        for i in 1..self.lane_count {
             let x = lerp(self.left, self.right, i as f64 / self.lane_count as f64);
 
-            if i > 0 && i < self.lane_count {
-                let array = Array::of2(&JsValue::from(20.0), &JsValue::from(20.0));
-                self.context.set_line_dash(&array)?;
-            } else {
-                self.context.set_line_dash(&Array::new())?;
-            }
+            let array = Array::of2(&JsValue::from(20.0), &JsValue::from(20.0));
+            self.context.set_line_dash(&array)?;
 
             self.context.begin_path();
             self.context.move_to(x, self.top);
             self.context.line_to(x, self.bottom);
+            self.context.stroke();
+        }
+
+        self.context.set_line_dash(&Array::new())?;
+
+        for border in &self.borders {
+            self.context.begin_path();
+            self.context.move_to(border.top_left.x, border.top_left.y);
+            self.context.line_to(border.bottom_right.x, border.bottom_right.y);
             self.context.stroke();
         }
 
