@@ -8,6 +8,7 @@ use std::f64::consts::PI;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
+use web_commons::log;
 
 pub struct Car {
     context: CanvasRenderingContext2d,
@@ -22,6 +23,7 @@ pub struct Car {
     controls: Rc<RefCell<Controls>>,
     sensor: Rc<RefCell<Sensor>>,
     polygon: Vec<Point2D>,
+    damaged: bool,
 }
 
 impl Car {
@@ -47,6 +49,7 @@ impl Car {
             controls,
             sensor: sensor.clone(),
             polygon: vec![],
+            damaged: false,
         }));
 
         car.ok()
@@ -55,7 +58,15 @@ impl Car {
     pub fn update(&mut self, borders: &Vec<Line2D>) {
         self.move_by_controls();
         self.polygon = self.create_polygon();
+        self.damaged = self.assess_damage(borders);
+        log(std::format!("damaged: {}", self.damaged).as_str());
         self.sensor.borrow_mut().update(self, borders);
+    }
+
+    fn assess_damage(&self, borders: &Vec<Line2D>) -> bool {
+        borders.iter().find(|x| {
+            x.intersect_polygon(&self.polygon)
+        }).is_some()
     }
 
     fn create_polygon(&self) -> Vec<Point2D> {
@@ -64,8 +75,8 @@ impl Car {
 
         vec![
             Point2D {
-                x: self.position.x - (self.angle - alpha).sin() * radius,
-                y: self.position.y - (self.angle - alpha).cos() * radius,
+                x: self.position.x - (self.angle - alpha).sin() * radius * 3.0,
+                y: self.position.y - (self.angle - alpha).cos() * radius * 3.0,
             },
             Point2D {
                 x: self.position.x - (self.angle + alpha).sin() * radius,
@@ -122,10 +133,17 @@ impl Car {
     }
 
     pub fn draw(&self) -> Result<(), JsValue> {
+        let color = if self.damaged {
+            "gray"
+        } else {
+            "black"
+        };
+        self.context.set_fill_style(&JsValue::from_str(color));
+
         self.context.begin_path();
 
         self.context.move_to(self.polygon[0].x, self.polygon[0].y);
-        for point in self.polygon.iter().cycle().skip(1).take(self.polygon.len()) {
+        for point in &self.polygon {
             self.context.line_to(point.x, point.y);
         }
         self.context.fill();
