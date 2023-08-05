@@ -1,4 +1,5 @@
 use crate::controls::Controls;
+use commons::geometry::Point2D;
 use commons::utils::OkExt;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -7,8 +8,7 @@ use web_sys::CanvasRenderingContext2d;
 
 pub struct Car {
     context: CanvasRenderingContext2d,
-    x: f64,
-    pub y: f64,
+    pub position: Point2D,
     width: f64,
     height: f64,
     speed: f64,
@@ -22,8 +22,7 @@ pub struct Car {
 impl Car {
     pub fn create(
         context: CanvasRenderingContext2d,
-        x: f64,
-        y: f64,
+        position: Point2D,
         width: f64,
         height: f64,
     ) -> Result<Rc<RefCell<Self>>, JsValue> {
@@ -31,8 +30,7 @@ impl Car {
 
         Rc::new(RefCell::new(Self {
             context,
-            x,
-            y,
+            position,
             width,
             height,
             speed: 0.0,
@@ -84,13 +82,13 @@ impl Car {
             self.angle -= 0.03 * flip;
         }
 
-        self.x -= self.angle.sin() * self.speed;
-        self.y -= self.angle.cos() * self.speed;
+        self.position.x -= self.angle.sin() * self.speed;
+        self.position.y -= self.angle.cos() * self.speed;
     }
 
     pub fn draw(&self) -> Result<(), JsValue> {
         self.context.save();
-        self.context.translate(self.x, self.y)?;
+        self.context.translate(self.position.x, self.position.y)?;
         self.context.rotate(-self.angle)?;
 
         self.context.begin_path();

@@ -1,9 +1,9 @@
+use commons::geometry::{Point2D, Point2DView};
 use commons::math::lerp::lerp;
 use commons::math::Bounds;
 use js_sys::Array;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
-use commons::geometry::{Point2D, Point2DView};
 
 #[derive(Clone)]
 pub struct Road {
@@ -52,8 +52,14 @@ impl Road {
             top,
             bottom,
             borders: vec![
-                Bounds { top_left, bottom_right: bottom_left },
-                Bounds { top_left: top_right, bottom_right },
+                Bounds {
+                    top_left,
+                    bottom_right: bottom_left,
+                },
+                Bounds {
+                    top_left: top_right,
+                    bottom_right,
+                },
             ],
         }
     }
@@ -79,7 +85,8 @@ impl Road {
         for border in &self.borders {
             self.context.begin_path();
             self.context.move_to(border.top_left.x, border.top_left.y);
-            self.context.line_to(border.bottom_right.x, border.bottom_right.y);
+            self.context
+                .line_to(border.bottom_right.x, border.bottom_right.y);
             self.context.stroke();
         }
 

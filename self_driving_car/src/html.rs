@@ -1,5 +1,6 @@
 use crate::car::Car;
 use crate::road::Road;
+use commons::geometry::{Point2D, Point2DView};
 use commons::utils::OkExt;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -36,7 +37,12 @@ impl HtmlDom {
             canvas.width() as f64 * 0.9,
         );
 
-        let car = Car::create(context.clone(), road.get_lane_center(1), 100.0, 30.0, 50.0)?;
+        let car = Car::create(
+            context.clone(),
+            Point2D::create(road.get_lane_center(1), 100.0),
+            30.0,
+            50.0,
+        )?;
 
         Self {
             window,
