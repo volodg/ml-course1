@@ -2,7 +2,6 @@ use crate::app_state::AppState;
 use crate::draw::DrawWithState;
 use crate::html::HtmlDom;
 use commons::geometry::{Line2D, Point2D, Point2DView};
-use commons::math::lerp::lerp;
 use std::cell::RefCell;
 use std::f64::consts::TAU;
 use std::rc::Rc;
@@ -18,8 +17,6 @@ impl DrawWithState for HtmlDom {
             .set_width(self.window.inner_width().expect("").as_f64().unwrap() as u32);
         self.canvas
             .set_height(self.window.inner_height().expect("").as_f64().unwrap() as u32);
-
-        let t = Box::new(RefCell::new(-1.0));
 
         let canvas = self.canvas.clone();
         let context = self.context.clone();
@@ -44,29 +41,10 @@ impl DrawWithState for HtmlDom {
             context.draw_dot(&c, "C", false)?;
             context.draw_dot(&d, "D", false)?;
 
-            let t_val = *t.borrow();
-            log(std::format!("t_val: {}", t_val).as_str());
-
-            let m = Point2D {
-                x: lerp(a.x, b.x, t_val),
-                y: lerp(a.y, b.y, t_val),
-            };
-
-            let n = Point2D {
-                x: lerp(c.x, d.x, t_val),
-                y: lerp(c.y, d.y, t_val),
-            };
-
-            let is_red = t_val < 0.0 || t_val > 1.0;
-            context.draw_dot(&m, "M", is_red)?;
-            context.draw_dot(&n, "N", is_red)?;
-
             let i = Line2D { start: a, end: b }.get_intersection(&Line2D { start: c, end: d });
             if let Some(i) = i {
-                context.draw_dot(&i.point, "I", true)?;
+                context.draw_dot(&i.point, "I", false)?;
             }
-
-            *t.borrow_mut() += 0.005;
 
             Ok(())
         });
