@@ -65,10 +65,20 @@ impl Car {
             self.speed = self.speed.min(0.0);
         }
 
+        let flip = if self.speed != 0.0 {
+            if self.speed > 0.0 {
+                1.0
+            } else {
+                -1.0
+            }
+        } else {
+            0.0
+        };
+
         if controls.left {
-            self.angle += 0.03;
+            self.angle += 0.03 * flip;
         } else if controls.right {
-            self.angle -= 0.03;
+            self.angle -= 0.03 * flip;
         }
 
         log(std::format!("speed: {:?}", self.speed).as_str());
