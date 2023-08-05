@@ -1,5 +1,7 @@
+use js_sys::Array;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
+use commons::math::lerp::lerp;
 use web_commons::log;
 
 #[derive(Clone)]
@@ -23,7 +25,7 @@ pub struct Road {
 
 impl Road {
     pub fn create(context: CanvasRenderingContext2d, x: f64, width: f64) -> Self {
-        Self::create_with_lane_count(context, x, width, 3)
+        Self::create_with_lane_count(context, x, width, 4)
     }
 
     pub fn create_with_lane_count(context: CanvasRenderingContext2d, x: f64, width: f64, lane_count: usize,) -> Self {
@@ -43,18 +45,26 @@ impl Road {
         }
     }
 
-    pub fn draw(&self) {
+    pub fn draw(&self) -> Result<(), JsValue> {
         self.context.set_line_width(5.0);
         self.context.set_stroke_style(&JsValue::from_str("white"));
 
-        self.context.begin_path();
-        self.context.move_to(self.left, self.top);
-        self.context.line_to(self.left, self.bottom);
-        self.context.stroke();
+        for i in 0..=self.lane_count {
+            let x = lerp(self.left, self.right, i as f64 / self.lane_count as f64);
 
-        self.context.begin_path();
-        self.context.move_to(self.right, self.top);
-        self.context.line_to(self.right, self.bottom);
-        self.context.stroke();
+            if i > 0 && i < self.lane_count {
+                let array = Array::of2(&JsValue::from(20.0), &JsValue::from(20.0));
+                self.context.set_line_dash(&array)?;
+            } else {
+                self.context.set_line_dash(&Array::new())?;
+            }
+
+            self.context.begin_path();
+            self.context.move_to(x, self.top);
+            self.context.line_to(x, self.bottom);
+            self.context.stroke();
+        }
+
+        Ok(())
     }
 }

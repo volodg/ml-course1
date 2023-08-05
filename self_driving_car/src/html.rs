@@ -30,7 +30,7 @@ impl HtmlDom {
             .unwrap()
             .dyn_into::<CanvasRenderingContext2d>()?;
 
-        let road = Road::create(context.clone(), canvas.width() as f64 / 2.0, canvas.width() as f64);
+        let road = Road::create(context.clone(), canvas.width() as f64 / 2.0, canvas.width() as f64 * 0.9);
 
         let car = Car::create(context.clone(), 100.0, 100.0, 30.0, 50.0)?;
 
