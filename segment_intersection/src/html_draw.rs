@@ -1,21 +1,23 @@
 use crate::app_state::AppState;
 use crate::draw::DrawWithState;
 use crate::html::HtmlDom;
+use commons::geometry::{Point2D, Point2DView};
+use commons::math::lerp::lerp;
 use std::cell::RefCell;
 use std::f64::consts::TAU;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
-use web_sys::CanvasRenderingContext2d;
-use commons::geometry::{Point2D, Point2DView};
-use commons::math::lerp::lerp;
 use web_commons::animations::animate_with_callback;
 use web_commons::log;
+use web_sys::CanvasRenderingContext2d;
 
 impl DrawWithState for HtmlDom {
     fn draw(&self, _app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
         log("draw me");
-        self.canvas.set_width(self.window.inner_width().expect("").as_f64().unwrap() as u32);
-        self.canvas.set_height(self.window.inner_height().expect("").as_f64().unwrap() as u32);
+        self.canvas
+            .set_width(self.window.inner_width().expect("").as_f64().unwrap() as u32);
+        self.canvas
+            .set_height(self.window.inner_height().expect("").as_f64().unwrap() as u32);
 
         let t = Box::new(RefCell::new(-1.0));
 
@@ -45,7 +47,7 @@ impl DrawWithState for HtmlDom {
             let t_val = *t.borrow();
             log(std::format!("t_val: {}", t_val).as_str());
 
-            let m = Point2D  {
+            let m = Point2D {
                 x: lerp(a.x, b.x, t_val),
                 y: lerp(a.y, b.y, t_val),
             };
