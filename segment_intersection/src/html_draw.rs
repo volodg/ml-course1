@@ -66,8 +66,17 @@ impl DrawWithState for HtmlDom {
             context.draw_dot(&c, "C", false)?;
             context.draw_dot(&d, "D", false)?;
 
-            let i = Line2D { start: a, end: b }.get_intersection_unlimited(&Line2D { start: c, end: d });
+            let (i, bottom) = Line2D { start: a, end: b }.get_intersection_unlimited(&Line2D { start: c, end: d });
             context.draw_dot(&i.point, "I", false)?;
+
+            context.begin_path();
+            context.rect(
+                canvas.width() as f64 / 2.0,
+                0.0,
+                bottom / 100.0,
+                10.0
+            );
+            context.fill();
 
             *angle.borrow_mut() += 0.01;
 

@@ -97,7 +97,7 @@ impl Line2D {
         return None;
     }
 
-    pub fn get_intersection_unlimited(&self, line: &Line2D) -> Intersection {
+    pub fn get_intersection_unlimited(&self, line: &Line2D) -> (Intersection, f64) {
         let a = &self.start;
         let b = &self.end;
         let c = &line.start;
@@ -107,10 +107,10 @@ impl Line2D {
         let bottom = (d.y - c.y) * (b.x - a.x) - (d.x - c.x) * (b.y - a.y);
 
         let t = t_top / bottom;
-        return Intersection {
+        return (Intersection {
             point: Point2D::create(lerp(a.x, b.x, t), lerp(a.y, b.y, t)),
             offset: t,
-        }
+        }, bottom)
     }
 }
 
