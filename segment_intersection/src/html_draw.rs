@@ -34,6 +34,8 @@ impl DrawWithState for HtmlDom {
                 Ok(())
             })?;
 
+        let angle = Box::new(RefCell::new(0.0));
+
         let canvas = self.canvas.clone();
         let context = self.context.clone();
         animate_with_callback(move || {
@@ -42,8 +44,12 @@ impl DrawWithState for HtmlDom {
             let radius = 50.0;
             let mouse = mouse.borrow();
 
-            let a = Point2D::create(mouse.x, mouse.y - radius);
-            let b = Point2D::create(mouse.x, mouse.y + radius);
+            let (a, b) = {
+                let angle: f64 = *angle.borrow();
+                let a = Point2D::create(mouse.x + angle.cos() * radius, mouse.y - angle.sin() * radius);
+                let b = Point2D::create(mouse.x - angle.cos() * radius, mouse.y + angle.sin() * radius);
+                (a, b)
+            };
             let c = Point2D::create(50.0, 100.0);
             let d = Point2D::create(250.0, 200.0);
 
@@ -60,10 +66,10 @@ impl DrawWithState for HtmlDom {
             context.draw_dot(&c, "C", false)?;
             context.draw_dot(&d, "D", false)?;
 
-            let i = Line2D { start: a, end: b }.get_intersection(&Line2D { start: c, end: d });
-            if let Some(i) = i {
-                context.draw_dot(&i.point, "I", false)?;
-            }
+            let i = Line2D { start: a, end: b }.get_intersection_unlimited(&Line2D { start: c, end: d });
+            context.draw_dot(&i.point, "I", false)?;
+
+            *angle.borrow_mut() += 0.01;
 
             Ok(())
         });

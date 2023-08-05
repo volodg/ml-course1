@@ -96,6 +96,22 @@ impl Line2D {
 
         return None;
     }
+
+    pub fn get_intersection_unlimited(&self, line: &Line2D) -> Intersection {
+        let a = &self.start;
+        let b = &self.end;
+        let c = &line.start;
+        let d = &line.end;
+
+        let t_top = (d.x - c.x) * (a.y - c.y) - (d.y - c.y) * (a.x - c.x);
+        let bottom = (d.y - c.y) * (b.x - a.x) - (d.x - c.x) * (b.y - a.y);
+
+        let t = t_top / bottom;
+        return Intersection {
+            point: Point2D::create(lerp(a.x, b.x, t), lerp(a.y, b.y, t)),
+            offset: t,
+        }
+    }
 }
 
 pub fn euclidean_distance(a: &[f64], b: &[f64]) -> f64 {
