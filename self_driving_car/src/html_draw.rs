@@ -13,13 +13,17 @@ impl DrawWithState for HtmlDom {
         let window = self.window.clone();
         let canvas = self.canvas.clone();
         let car = self.car.clone();
+        let road = self.road.clone();
 
         animate_with_callback(move || {
             let mut car = car.borrow_mut();
             car.update();
             canvas.set_height(window.inner_height()?.as_f64().expect("") as u32);
 
-            car.draw()
+            car.draw()?;
+            road.draw();
+
+            Ok(())
         });
 
         Ok(())

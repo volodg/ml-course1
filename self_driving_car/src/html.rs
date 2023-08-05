@@ -5,6 +5,7 @@ use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{window, CanvasRenderingContext2d, Document, HtmlCanvasElement, Window};
+use crate::road::Road;
 
 pub struct HtmlDom {
     pub window: Window,
@@ -12,6 +13,7 @@ pub struct HtmlDom {
     pub canvas: HtmlCanvasElement,
     pub context: CanvasRenderingContext2d,
     pub car: Rc<RefCell<Car>>,
+    pub road: Road,
 }
 
 impl HtmlDom {
@@ -29,12 +31,15 @@ impl HtmlDom {
 
         let car = Car::create(context.clone(), 100.0, 100.0, 30.0, 50.0)?;
 
+        let road = Road::create(context.clone(), 100.0, 100.0);
+
         Self {
             window,
             document,
             canvas,
             context,
             car,
+            road,
         }
         .ok()
     }
