@@ -16,6 +16,7 @@ pub struct Car {
     max_speed: f64,
     friction: f64,
     acceleration: f64,
+    angle: f64,
     controls: Rc<RefCell<Controls>>,
 }
 
@@ -39,20 +40,10 @@ impl Car {
             max_speed: 3.0,
             friction: 0.05,
             acceleration: 0.2,
+            angle: 0.0,
             controls,
         }))
         .ok()
-    }
-
-    pub fn draw(&self) {
-        self.context.begin_path();
-        self.context.rect(
-            self.x - self.width / 2.0,
-            self.y - self.height / 2.0,
-            self.width,
-            self.height,
-        );
-        self.context.fill();
     }
 
     pub fn update(&mut self) {
@@ -68,21 +59,39 @@ impl Car {
 
         if self.speed > 0.0 {
             self.speed -= self.friction;
+            self.speed = self.speed.max(0.0);
         } else if self.speed < 0.0 {
             self.speed += self.friction;
-        }
-
-        if self.speed.abs() < self.speed {
-            self.speed = 0.0
+            self.speed = self.speed.min(0.0);
         }
 
         if controls.left {
-            self.x -= 2.0;
+            self.angle += 0.03;
         } else if controls.right {
-            self.x += 2.0;
+            self.angle -= 0.03;
         }
 
         log(std::format!("speed: {:?}", self.speed).as_str());
-        self.y -= self.speed;
+        self.x -= self.angle.sin() * self.speed;
+        self.y -= self.angle.cos() * self.speed;
+    }
+
+    pub fn draw(&self) -> Result<(), JsValue> {
+        self.context.save();
+        self.context.translate(self.x, self.y)?;
+        self.context.rotate(-self.angle)?;
+
+        self.context.begin_path();
+        self.context.rect(
+            -self.width / 2.0,
+            -self.height / 2.0,
+            self.width,
+            self.height,
+        );
+
+        self.context.fill();
+        self.context.restore();
+
+        Ok(())
     }
 }
