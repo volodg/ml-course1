@@ -2,8 +2,8 @@ use crate::car::Car;
 use commons::geometry::{Line2D, Point2D, Point2DView};
 use commons::math::lerp::lerp;
 use std::cell::RefCell;
-use std::f64::consts::FRAC_PI_4;
-use std::rc::{Rc, Weak};
+use std::f64::consts::FRAC_PI_2;
+use std::rc::Rc;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
 
@@ -17,7 +17,7 @@ pub struct Sensor {
 
 impl Sensor {
     pub fn create(context: CanvasRenderingContext2d) -> Rc<RefCell<Self>> {
-        Self::create_with_ray_count(context, 3)
+        Self::create_with_ray_count(context, 5)
     }
 
     fn create_with_ray_count(
@@ -27,8 +27,8 @@ impl Sensor {
         let result = Self {
             context,
             ray_count,
-            ray_length: 100.0,
-            ray_spread: FRAC_PI_4,
+            ray_length: 150.0,
+            ray_spread: FRAC_PI_2,
             rays: vec![],
         };
         Rc::new(RefCell::new(result))
@@ -42,8 +42,12 @@ impl Sensor {
                 let ray_angle = lerp(
                     self.ray_spread / 2.0,
                     -self.ray_spread / 2.0,
-                    i as f64 / (self.ray_count - 1) as f64,
-                );
+                    if self.ray_count == 1 {
+                        0.5
+                    } else {
+                        i as f64 / (self.ray_count - 1) as f64
+                    },
+                ) + car.angle;
 
                 let end = Point2D::create(
                     car.position.x - ray_angle.sin() * self.ray_length,

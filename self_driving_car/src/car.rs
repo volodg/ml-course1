@@ -16,7 +16,7 @@ pub struct Car {
     max_speed: f64,
     friction: f64,
     acceleration: f64,
-    angle: f64,
+    pub angle: f64,
     controls: Rc<RefCell<Controls>>,
     sensor: Rc<RefCell<Sensor>>,
 }
