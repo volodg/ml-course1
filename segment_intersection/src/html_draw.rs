@@ -1,7 +1,7 @@
 use crate::app_state::AppState;
 use crate::draw::DrawWithState;
 use crate::html::HtmlDom;
-use commons::geometry::{Point2D, Point2DView};
+use commons::geometry::{Line2D, Point2D, Point2DView};
 use commons::math::lerp::lerp;
 use std::cell::RefCell;
 use std::f64::consts::TAU;
@@ -52,8 +52,19 @@ impl DrawWithState for HtmlDom {
                 y: lerp(a.y, b.y, t_val),
             };
 
+            let n = Point2D {
+                x: lerp(c.x, d.x, t_val),
+                y: lerp(c.y, d.y, t_val),
+            };
+
             let is_red = t_val < 0.0 || t_val > 1.0;
             context.draw_dot(&m, "M", is_red)?;
+            context.draw_dot(&n, "N", is_red)?;
+
+            let i = Line2D { start: a, end: b }.get_intersection(&Line2D { start: c, end: d });
+            if let Some(i) = i {
+                context.draw_dot(&i.point, "I", true)?;
+            }
 
             *t.borrow_mut() += 0.005;
 
