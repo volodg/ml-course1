@@ -125,11 +125,9 @@ impl Car {
         self.context.begin_path();
 
         self.context.move_to(self.polygon[0].x, self.polygon[0].y);
-        for point in &self.polygon[1..] {
+        for point in self.polygon.iter().cycle().skip(1).take(self.polygon.len()) {
             self.context.line_to(point.x, point.y);
         }
-        let last = self.polygon.last().expect("");
-        self.context.line_to(last.x, last.y);
         self.context.fill();
 
         self.sensor.borrow().draw();
