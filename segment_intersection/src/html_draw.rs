@@ -17,13 +17,11 @@ impl DrawWithState for HtmlDom {
         self.canvas.set_width(self.window.inner_width().expect("").as_f64().unwrap() as u32);
         self.canvas.set_height(self.window.inner_height().expect("").as_f64().unwrap() as u32);
 
-        let t = Box::new(RefCell::new(0.0));
+        let t = Box::new(RefCell::new(-1.0));
 
         let canvas = self.canvas.clone();
         let context = self.context.clone();
         animate_with_callback(move || {
-            // log("annimation");
-
             context.clear_rect(0.0, 0.0, canvas.width().into(), canvas.height().into());
 
             let a = Point2D::create(200.0, 150.0);
@@ -39,10 +37,10 @@ impl DrawWithState for HtmlDom {
             context.line_to(d.x, d.y);
             context.stroke();
 
-            context.draw_dot(&a, "A")?;
-            context.draw_dot(&b, "B")?;
-            context.draw_dot(&c, "C")?;
-            context.draw_dot(&d, "D")?;
+            context.draw_dot(&a, "A", false)?;
+            context.draw_dot(&b, "B", false)?;
+            context.draw_dot(&c, "C", false)?;
+            context.draw_dot(&d, "D", false)?;
 
             let t_val = *t.borrow();
             log(std::format!("t_val: {}", t_val).as_str());
@@ -51,7 +49,9 @@ impl DrawWithState for HtmlDom {
                 x: lerp(a.x, b.x, t_val),
                 y: lerp(a.y, b.y, t_val),
             };
-            context.draw_dot(&m, "M")?;
+
+            let is_red = t_val < 0.0 || t_val > 1.0;
+            context.draw_dot(&m, "M", is_red)?;
 
             *t.borrow_mut() += 0.005;
 
@@ -63,13 +63,13 @@ impl DrawWithState for HtmlDom {
 }
 
 trait ContextExt {
-    fn draw_dot(&self, point: &Point2D, text: &str) -> Result<(), JsValue>;
+    fn draw_dot(&self, point: &Point2D, text: &str, is_red: bool) -> Result<(), JsValue>;
 }
 
 impl ContextExt for CanvasRenderingContext2d {
-    fn draw_dot(&self, point: &Point2D, text: &str) -> Result<(), JsValue> {
+    fn draw_dot(&self, point: &Point2D, text: &str, is_red: bool) -> Result<(), JsValue> {
         self.begin_path();
-        self.set_fill_style(&JsValue::from_str("white"));
+        self.set_fill_style(&JsValue::from_str(if is_red { "red" } else { "white" }));
         self.arc(point.x, point.y, 10.0, 0.0, TAU)?;
         self.fill();
         self.stroke();
