@@ -102,6 +102,13 @@ impl Sensor {
             self.context.move_to(ray.start.x, ray.start.y);
             self.context.line_to(end.x, end.y);
             self.context.stroke();
+
+            self.context.begin_path();
+            self.context.set_line_width(2.0);
+            self.context.set_stroke_style(&JsValue::from_str("black"));
+            self.context.move_to(ray.end.x, ray.end.y);
+            self.context.line_to(end.x, end.y);
+            self.context.stroke();
         }
     }
 }

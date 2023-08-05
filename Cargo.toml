@@ -13,7 +13,8 @@ members = [
     "trigonometry",
     "vectors",
     "viewer",
-    "web_commons"
+    "web_commons",
+    "segment_intersection"
 ]
 
 [profile.release]
