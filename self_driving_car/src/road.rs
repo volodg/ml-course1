@@ -24,7 +24,7 @@ pub struct Road {
 
 impl Road {
     pub fn create(context: CanvasRenderingContext2d, x: f64, width: f64) -> Self {
-        Self::create_with_lane_count(context, x, width, 4)
+        Self::create_with_lane_count(context, x, width, 3)
     }
 
     pub fn create_with_lane_count(
@@ -74,6 +74,6 @@ impl Road {
 
     pub fn get_lane_center(&self, index: usize) -> f64 {
         let lane_width = self.width / self.lane_count as f64;
-        self.left + lane_width / 2.0 + index as f64 * lane_width
+        self.left + lane_width / 2.0 + index.min(self.lane_count - 1) as f64 * lane_width
     }
 }

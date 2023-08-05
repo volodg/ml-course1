@@ -36,7 +36,7 @@ impl HtmlDom {
             canvas.width() as f64 * 0.9,
         );
 
-        let car = Car::create(context.clone(), road.get_lane_center(3), 100.0, 30.0, 50.0)?;
+        let car = Car::create(context.clone(), road.get_lane_center(1), 100.0, 30.0, 50.0)?;
 
         Self {
             window,
