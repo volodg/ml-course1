@@ -18,7 +18,7 @@ impl DrawWithState for HtmlDom {
             car.update();
             canvas.set_height(window.inner_height()?.as_f64().expect("") as u32);
 
-            road.draw();
+            road.draw()?;
             car.draw()
         });
 

@@ -1,11 +1,11 @@
 use crate::car::Car;
+use crate::road::Road;
 use commons::utils::OkExt;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use web_sys::{window, CanvasRenderingContext2d, Document, HtmlCanvasElement, Window};
-use crate::road::Road;
 
 pub struct HtmlDom {
     pub window: Window,
@@ -30,9 +30,13 @@ impl HtmlDom {
             .unwrap()
             .dyn_into::<CanvasRenderingContext2d>()?;
 
-        let road = Road::create(context.clone(), canvas.width() as f64 / 2.0, canvas.width() as f64 * 0.9);
+        let road = Road::create(
+            context.clone(),
+            canvas.width() as f64 / 2.0,
+            canvas.width() as f64 * 0.9,
+        );
 
-        let car = Car::create(context.clone(), 100.0, 100.0, 30.0, 50.0)?;
+        let car = Car::create(context.clone(), road.get_lane_center(3), 100.0, 30.0, 50.0)?;
 
         Self {
             window,
