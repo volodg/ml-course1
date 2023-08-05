@@ -1,5 +1,5 @@
 use crate::car::Car;
-use commons::geometry::{Line2D, Point2D, Point2DView};
+use commons::geometry::{Intersection, Line2D, Point2D, Point2DView};
 use commons::math::lerp::lerp;
 use std::cell::RefCell;
 use std::f64::consts::FRAC_PI_2;
@@ -13,7 +13,7 @@ pub struct Sensor {
     ray_length: f64,
     ray_spread: f64,
     rays: Vec<Line2D>,
-    readings: Vec<Point2D>,
+    readings: Vec<Intersection>,
 }
 
 impl Sensor {
@@ -38,15 +38,22 @@ impl Sensor {
 
     pub fn update(&mut self, car: &Car, borders: &Vec<Line2D>) {
         self.cast_rays(car);
+
         self.readings = self.rays.iter().flat_map(|x| {
             Self::get_reading(x, borders)
-        }).collect();
+        }).collect::<Vec<_>>();
     }
 
-    fn get_reading(ray: &Line2D, borders: &Vec<Line2D>) -> Vec<Point2D> {
-        borders.iter().map(|border| {
+    fn get_reading(ray: &Line2D, borders: &Vec<Line2D>) -> Option<Intersection> {
+        borders.iter().flat_map(|border| {
             ray.get_intersection(border)
-        }).flatten().collect()
+        }).fold((f64::MAX, None), |acc, el| {
+            if el.offset < acc.0 {
+                (el.offset, Some(el))
+            } else {
+                acc
+            }
+        }).1
     }
 
     pub fn cast_rays(&mut self, car: &Car) {

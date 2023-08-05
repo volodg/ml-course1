@@ -66,9 +66,17 @@ pub struct Line2D {
     pub end: Point2D,
 }
 
+pub struct Intersection {
+    pub point: Point2D,
+    pub offset: f64,
+}
+
 impl Line2D {
-    pub fn get_intersection(&self, line: &Line2D) -> Option<Point2D> {
-        Point2D::create(0.0, 0.0).some()
+    pub fn get_intersection(&self, _line: &Line2D) -> Option<Intersection> {
+        Intersection {
+            point: Point2D::create(0.0, 0.0),
+            offset: 0.0,
+        }.some()
     }
 }
 
