@@ -13,6 +13,7 @@ pub struct Sensor {
     ray_length: f64,
     ray_spread: f64,
     rays: Vec<Line2D>,
+    readings: Vec<Point2D>,
 }
 
 impl Sensor {
@@ -30,12 +31,22 @@ impl Sensor {
             ray_length: 150.0,
             ray_spread: FRAC_PI_2,
             rays: vec![],
+            readings: vec![],
         };
         Rc::new(RefCell::new(result))
     }
 
-    pub fn update(&mut self, car: &Car, _borders: &Vec<Line2D>) {
+    pub fn update(&mut self, car: &Car, borders: &Vec<Line2D>) {
         self.cast_rays(car);
+        self.readings = self.rays.iter().flat_map(|x| {
+            Self::get_reading(x, borders)
+        }).collect();
+    }
+
+    fn get_reading(ray: &Line2D, borders: &Vec<Line2D>) -> Vec<Point2D> {
+        borders.iter().map(|border| {
+            ray.get_intersection(border)
+        }).flatten().collect()
     }
 
     pub fn cast_rays(&mut self, car: &Car) {

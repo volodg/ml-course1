@@ -3,6 +3,7 @@ use crate::math::Bounds;
 use binary_heap_plus::BinaryHeap as BinaryHeapExt;
 use std::cmp::Ordering;
 use std::f64::consts::{PI, TAU};
+use crate::utils::SomeExt;
 
 pub trait Point2DView {
     type PointT;
@@ -63,6 +64,12 @@ impl Point2DView for Point2D {
 pub struct Line2D {
     pub start: Point2D,
     pub end: Point2D,
+}
+
+impl Line2D {
+    pub fn get_intersection(&self, line: &Line2D) -> Option<Point2D> {
+        Point2D::create(0.0, 0.0).some()
+    }
 }
 
 pub fn euclidean_distance(a: &[f64], b: &[f64]) -> f64 {
