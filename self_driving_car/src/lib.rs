@@ -6,6 +6,7 @@ mod draw;
 mod html;
 mod html_draw;
 mod subscribe_state;
+mod road;
 
 use crate::app_state::AppState;
 use crate::draw::DrawWithState;
