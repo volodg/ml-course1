@@ -13,6 +13,8 @@ pub struct Car {
     width: f64,
     height: f64,
     speed: f64,
+    max_speed: f64,
+    friction: f64,
     acceleration: f64,
     controls: Rc<RefCell<Controls>>,
 }
@@ -34,6 +36,8 @@ impl Car {
             width,
             height,
             speed: 0.0,
+            max_speed: 3.0,
+            friction: 0.05,
             acceleration: 0.2,
             controls,
         }))
@@ -56,9 +60,18 @@ impl Car {
 
         if controls.forward {
             self.speed += self.acceleration;
+            self.speed = self.speed.min(self.max_speed);
         } else if controls.reverse {
             self.speed -= self.acceleration;
+            self.speed = self.speed.max(-self.max_speed / 2.0);
         }
+
+        if self.speed > 0.0 {
+            self.speed -= self.friction;
+        } else if self.speed < 0.0 {
+            self.speed += self.friction;
+        }
+
         log(std::format!("speed: {:?}", self.speed).as_str());
         self.y -= self.speed;
     }
