@@ -78,8 +78,8 @@ pub type PolygonN = Vec<PointN>;
 
 pub fn remap_2d_point(point: &PointN, from: &Bounds, to: &Bounds) -> Point2D {
     Point2D {
-        x: remap(from.left, from.right, to.left, to.right, point[0]),
-        y: remap(from.top, from.bottom, to.top, to.bottom, point[1]),
+        x: remap(from.left(), from.right(), to.left(), to.right(), point[0]),
+        y: remap(from.top(), from.bottom(), to.top(), to.bottom(), point[1]),
     }
 }
 

@@ -122,13 +122,9 @@ pub fn get_data_bounds(samples: &[Sample]) -> Option<Bounds> {
     );
 
     match (min_x, max_x, max_y, min_y) {
-        (Some(min_x), Some(max_x), Some(max_y), Some(min_y)) => Bounds {
-            left: min_x,
-            right: max_x,
-            top: max_y,
-            bottom: min_y,
+        (Some(min_x), Some(max_x), Some(max_y), Some(min_y)) => {
+            Bounds::create(min_x, max_x, max_y, min_y).some()
         }
-        .some(),
         (_, _, _, _) => None,
     }
 }
@@ -160,16 +156,7 @@ mod tests {
         ];
 
         let result = get_data_bounds(&samples);
-        assert_eq!(
-            result,
-            Bounds {
-                left: 1.0,
-                right: 11.0,
-                top: 10.0,
-                bottom: 2.0,
-            }
-            .some()
-        );
+        assert_eq!(result, Bounds::create(1.0, 11.0, 10.0, 2.0,).some());
 
         let result = get_data_bounds(&[]);
         assert_eq!(result, None);

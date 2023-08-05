@@ -1,4 +1,5 @@
 use commons::math::lerp::lerp;
+use commons::math::Bounds;
 use js_sys::Array;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
@@ -8,18 +9,14 @@ pub struct Road {
     context: CanvasRenderingContext2d,
     #[allow(dead_code)]
     x: f64,
-    #[allow(dead_code)]
     width: f64,
-    #[allow(dead_code)]
     lane_count: usize,
-    #[allow(dead_code)]
     left: f64,
-    #[allow(dead_code)]
     right: f64,
-    #[allow(dead_code)]
     top: f64,
-    #[allow(dead_code)]
     bottom: f64,
+    #[allow(dead_code)]
+    borders: Vec<Bounds>,
 }
 
 impl Road {
@@ -37,6 +34,8 @@ impl Road {
         let right = x + width / 2.0;
         let infinity = 1_000_000.0;
 
+        // let top_left = Point2D;
+
         Self {
             context,
             x,
@@ -46,6 +45,10 @@ impl Road {
             right,
             top: -infinity,
             bottom: infinity,
+            borders: vec![
+                // [top_left, bottom_left],
+                // [tpo_right, bottom_right],
+            ],
         }
     }
 

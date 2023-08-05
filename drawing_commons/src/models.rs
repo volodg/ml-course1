@@ -195,25 +195,15 @@ fn expand_path<T: Point2DView>(path: &DrawingPaths<T>, size: i32) -> DrawingPath
         .collect::<Vec<_>>();
 
     let bounds = min_max_n_points(&points)
-        .map(|(min, max)| Bounds {
-            left: min[0],
-            right: max[0],
-            top: min[1],
-            bottom: max[1],
-        })
-        .unwrap_or(Bounds {
-            left: 0.0,
-            right: 0.0,
-            top: 0.0,
-            bottom: 0.0,
-        });
+        .map(|(min, max)| Bounds::create(min[0], max[0], min[1], max[1]))
+        .unwrap_or(Bounds::create(0.0, 0.0, 0.0, 0.0));
 
     path.iter()
         .map(|x| {
             x.iter()
                 .map(|x| {
-                    let new_x = inv_lerp(bounds.left, bounds.right, x.x()) * size as f64;
-                    let new_y = inv_lerp(bounds.top, bounds.bottom, x.y()) * size as f64;
+                    let new_x = inv_lerp(bounds.left(), bounds.right(), x.x()) * size as f64;
+                    let new_y = inv_lerp(bounds.top(), bounds.bottom(), x.y()) * size as f64;
                     [new_x, new_y]
                 })
                 .collect::<Vec<_>>()
