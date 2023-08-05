@@ -1,26 +1,33 @@
 use crate::car::Car;
-use commons::geometry::{Point2D, Point2DView};
+use commons::geometry::{Line2D, Point2D, Point2DView};
 use commons::math::lerp::lerp;
-use commons::math::Bounds;
 use std::cell::RefCell;
 use std::f64::consts::FRAC_PI_4;
 use std::rc::Rc;
+use wasm_bindgen::JsValue;
+use web_sys::CanvasRenderingContext2d;
 
 pub struct Sensor {
+    context: CanvasRenderingContext2d,
     car: Rc<RefCell<Car>>,
     ray_count: usize,
     ray_length: f64,
     ray_spread: f64,
-    rays: Vec<Bounds>,
+    rays: Vec<Line2D>,
 }
 
 impl Sensor {
-    pub fn create(car: Rc<RefCell<Car>>) -> Self {
-        Self::create_with_ray_count(car, 3)
+    pub fn create(context: CanvasRenderingContext2d, car: Rc<RefCell<Car>>) -> Self {
+        Self::create_with_ray_count(context, car, 3)
     }
 
-    fn create_with_ray_count(car: Rc<RefCell<Car>>, ray_count: usize) -> Self {
+    fn create_with_ray_count(
+        context: CanvasRenderingContext2d,
+        car: Rc<RefCell<Car>>,
+        ray_count: usize,
+    ) -> Self {
         Self {
+            context,
             car,
             ray_count,
             ray_length: 100.0,
@@ -46,11 +53,22 @@ impl Sensor {
                     car.position.y - ray_angle.cos() * self.ray_length,
                 );
 
-                Bounds {
-                    top_left: start.clone(),
-                    bottom_right: end,
+                Line2D {
+                    start: start.clone(),
+                    end,
                 }
             })
             .collect()
+    }
+
+    pub fn draw(&self) {
+        for ray in &self.rays {
+            self.context.begin_path();
+            self.context.set_line_width(2.0);
+            self.context.set_stroke_style(&JsValue::from_str("yellow"));
+            self.context.move_to(ray.start.x, ray.start.y);
+            self.context.line_to(ray.end.x, ray.end.y);
+            self.context.stroke();
+        }
     }
 }

@@ -280,29 +280,21 @@ impl Chart {
 
     fn update_data_bounds(&mut self, offset: Point2D, scale: f64) {
         // TODO add method - offset
-        self.data_bounds
-            .set_left(self.default_data_bounds.left() + offset.x);
-        self.data_bounds
-            .set_right(self.default_data_bounds.right() + offset.x);
-        self.data_bounds
-            .set_top(self.default_data_bounds.top() + offset.y);
-        self.data_bounds
-            .set_bottom(self.default_data_bounds.bottom() + offset.y);
+        self.data_bounds.left = self.default_data_bounds.left + offset.x;
+        self.data_bounds.right = self.default_data_bounds.right + offset.x;
+        self.data_bounds.top = self.default_data_bounds.top + offset.y;
+        self.data_bounds.bottom = self.default_data_bounds.bottom + offset.y;
 
         let center = Point2D {
-            x: lerp(self.data_bounds.left(), self.data_bounds.right(), 0.5),
-            y: lerp(self.data_bounds.top(), self.data_bounds.bottom(), 0.5),
+            x: lerp(self.data_bounds.left, self.data_bounds.right, 0.5),
+            y: lerp(self.data_bounds.top, self.data_bounds.bottom, 0.5),
         };
 
         // TODO add method - scale or lerp
-        self.data_bounds
-            .set_left(lerp(center.x, self.data_bounds.left(), scale * scale));
-        self.data_bounds
-            .set_right(lerp(center.x, self.data_bounds.right(), scale * scale));
-        self.data_bounds
-            .set_top(lerp(center.y, self.data_bounds.top(), scale * scale));
-        self.data_bounds
-            .set_bottom(lerp(center.y, self.data_bounds.bottom(), scale * scale));
+        self.data_bounds.left = lerp(center.x, self.data_bounds.left, scale * scale);
+        self.data_bounds.right = lerp(center.x, self.data_bounds.right, scale * scale);
+        self.data_bounds.top = lerp(center.y, self.data_bounds.top, scale * scale);
+        self.data_bounds.bottom = lerp(center.y, self.data_bounds.bottom, scale * scale);
     }
 
     fn get_mouse(&self, event: &MouseEvent, is_data_space: bool) -> Point2D {
@@ -445,7 +437,7 @@ impl Chart {
                 self.options.axis_labels[0].as_str(),
                 &Point2D {
                     x: self.canvas.width() as f64 / 2.0,
-                    y: self.pixel_bounds.bottom() + self.margin / 2.0,
+                    y: self.pixel_bounds.bottom + self.margin / 2.0,
                 },
                 DrawTextParams {
                     size: (self.margin * 0.6) as u32,
@@ -458,7 +450,7 @@ impl Chart {
         {
             context.save();
             context.translate(
-                self.pixel_bounds.left() - self.margin / 2.0,
+                self.pixel_bounds.left - self.margin / 2.0,
                 self.canvas.height() as f64 / 2.0,
             )?;
             context.rotate(-FRAC_PI_2)?;
@@ -478,9 +470,9 @@ impl Chart {
         // Draw Axis
         {
             context.begin_path();
-            context.move_to(self.pixel_bounds.left(), self.pixel_bounds.top());
-            context.line_to(self.pixel_bounds.left(), self.pixel_bounds.bottom());
-            context.line_to(self.pixel_bounds.right(), self.pixel_bounds.bottom());
+            context.move_to(self.pixel_bounds.left, self.pixel_bounds.top);
+            context.line_to(self.pixel_bounds.left, self.pixel_bounds.bottom);
+            context.line_to(self.pixel_bounds.right, self.pixel_bounds.bottom);
             let array = Array::of2(&JsValue::from(5), &JsValue::from(4));
             context.set_line_dash(&array)?;
             context.set_line_width(2.0);
@@ -492,15 +484,15 @@ impl Chart {
         {
             // Draw x0 scale
             let data_min = remap_2d_point(
-                &vec![self.pixel_bounds.left(), self.pixel_bounds.bottom()],
+                &vec![self.pixel_bounds.left, self.pixel_bounds.bottom],
                 &self.pixel_bounds,
                 &self.data_bounds,
             );
             context.draw_text_with_params(
                 std::format!("{:.2}", data_min.x).as_str(),
                 &Point2D {
-                    x: self.pixel_bounds.left(),
-                    y: self.pixel_bounds.bottom(),
+                    x: self.pixel_bounds.left,
+                    y: self.pixel_bounds.bottom,
                 },
                 DrawTextParams {
                     size: (self.margin * 0.3) as u32,
@@ -512,7 +504,7 @@ impl Chart {
 
             // Draw y0 scale
             context.save();
-            context.translate(self.pixel_bounds.left(), self.pixel_bounds.bottom())?;
+            context.translate(self.pixel_bounds.left, self.pixel_bounds.bottom)?;
             context.rotate(-FRAC_PI_2)?;
             context.draw_text_with_params(
                 std::format!("{:.2}", data_min.y).as_str(),
@@ -531,15 +523,15 @@ impl Chart {
         {
             // Draw x[-1] scale
             let data_max = remap_2d_point(
-                &vec![self.pixel_bounds.right(), self.pixel_bounds.top()],
+                &vec![self.pixel_bounds.right, self.pixel_bounds.top],
                 &self.pixel_bounds,
                 &self.data_bounds,
             );
             context.draw_text_with_params(
                 std::format!("{:.2}", data_max.x).as_str(),
                 &Point2D {
-                    x: self.pixel_bounds.right(),
-                    y: self.pixel_bounds.bottom(),
+                    x: self.pixel_bounds.right,
+                    y: self.pixel_bounds.bottom,
                 },
                 DrawTextParams {
                     size: (self.margin * 0.3) as u32,
@@ -551,7 +543,7 @@ impl Chart {
 
             // Draw y[-1] scale
             context.save();
-            context.translate(self.pixel_bounds.left(), self.pixel_bounds.top())?;
+            context.translate(self.pixel_bounds.left, self.pixel_bounds.top)?;
             context.rotate(-FRAC_PI_2)?;
             context.draw_text_with_params(
                 std::format!("{:.2}", data_max.y).as_str(),

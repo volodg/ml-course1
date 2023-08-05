@@ -59,6 +59,12 @@ impl Point2DView for Point2D {
     }
 }
 
+#[derive(Clone)]
+pub struct Line2D {
+    pub start: Point2D,
+    pub end: Point2D,
+}
+
 pub fn euclidean_distance(a: &[f64], b: &[f64]) -> f64 {
     if a.len() != b.len() {
         panic!("incompatible points")
@@ -78,8 +84,8 @@ pub type PolygonN = Vec<PointN>;
 
 pub fn remap_2d_point(point: &PointN, from: &Bounds, to: &Bounds) -> Point2D {
     Point2D {
-        x: remap(from.left(), from.right(), to.left(), to.right(), point[0]),
-        y: remap(from.top(), from.bottom(), to.top(), to.bottom(), point[1]),
+        x: remap(from.left, from.right, to.left, to.right, point[0]),
+        y: remap(from.top, from.bottom, to.top, to.bottom, point[1]),
     }
 }
 

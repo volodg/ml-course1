@@ -37,67 +37,20 @@ impl std::ops::Add<Point2D> for Point2D {
 
 #[derive(Default, Clone, Debug, PartialEq)]
 pub struct Bounds {
-    pub top_left: Point2D,
-    pub bottom_right: Point2D,
+    pub left: f64,
+    pub right: f64,
+    pub top: f64,
+    pub bottom: f64,
 }
 
 impl Bounds {
     pub fn create(left: f64, right: f64, top: f64, bottom: f64) -> Self {
         Self {
-            top_left: Point2D { x: left, y: top },
-            bottom_right: Point2D {
-                x: right,
-                y: bottom,
-            },
+            left,
+            right,
+            top,
+            bottom,
         }
-    }
-
-    pub fn left(&self) -> f64 {
-        self.top_left.x
-    }
-
-    pub fn right(&self) -> f64 {
-        self.bottom_right.x
-    }
-
-    pub fn top(&self) -> f64 {
-        self.top_left.y
-    }
-
-    pub fn bottom(&self) -> f64 {
-        self.bottom_right.y
-    }
-
-    pub fn left_mut(&mut self) -> &mut f64 {
-        &mut self.top_left.x
-    }
-
-    pub fn right_mut(&mut self) -> &mut f64 {
-        &mut self.bottom_right.x
-    }
-
-    pub fn top_mut(&mut self) -> &mut f64 {
-        &mut self.top_left.y
-    }
-
-    pub fn bottom_mut(&mut self) -> &mut f64 {
-        &mut self.bottom_right.y
-    }
-
-    pub fn set_left(&mut self, value: f64) {
-        self.top_left.x = value
-    }
-
-    pub fn set_right(&mut self, value: f64) {
-        self.bottom_right.x = value
-    }
-
-    pub fn set_top(&mut self, value: f64) {
-        self.top_left.y = value
-    }
-
-    pub fn set_bottom(&mut self, value: f64) {
-        self.bottom_right.y = value
     }
 }
 

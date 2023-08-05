@@ -202,8 +202,8 @@ fn expand_path<T: Point2DView>(path: &DrawingPaths<T>, size: i32) -> DrawingPath
         .map(|x| {
             x.iter()
                 .map(|x| {
-                    let new_x = inv_lerp(bounds.left(), bounds.right(), x.x()) * size as f64;
-                    let new_y = inv_lerp(bounds.top(), bounds.bottom(), x.y()) * size as f64;
+                    let new_x = inv_lerp(bounds.left, bounds.right, x.x()) * size as f64;
+                    let new_y = inv_lerp(bounds.top, bounds.bottom, x.y()) * size as f64;
                     [new_x, new_y]
                 })
                 .collect::<Vec<_>>()
