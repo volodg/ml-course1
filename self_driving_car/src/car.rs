@@ -4,6 +4,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
+use web_commons::log;
 
 pub struct Car {
     context: CanvasRenderingContext2d,
@@ -11,6 +12,8 @@ pub struct Car {
     y: f64,
     width: f64,
     height: f64,
+    speed: f64,
+    acceleration: f64,
     controls: Rc<RefCell<Controls>>,
 }
 
@@ -30,6 +33,8 @@ impl Car {
             y,
             width,
             height,
+            speed: 0.0,
+            acceleration: 0.2,
             controls,
         }))
         .ok()
@@ -50,13 +55,11 @@ impl Car {
         let controls = self.controls.borrow();
 
         if controls.forward {
-            self.y -= 2.0;
+            self.speed += self.acceleration;
         } else if controls.reverse {
-            self.y += 2.0;
-        } else if controls.left {
-            self.x -= 2.0;
-        } else if controls.right {
-            self.x += 2.0;
+            self.speed -= self.acceleration;
         }
+        log(std::format!("speed: {:?}", self.speed).as_str());
+        self.y -= self.speed;
     }
 }
