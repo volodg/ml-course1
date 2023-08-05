@@ -2,7 +2,6 @@ use commons::utils::OkExt;
 use std::cell::RefCell;
 use std::rc::{Rc, Weak};
 use wasm_bindgen::JsValue;
-use web_commons::log;
 use web_commons::subscribers::AddListener;
 use web_sys::{window, KeyboardEvent};
 
@@ -52,7 +51,6 @@ impl Controls {
             let mut controls = controls.borrow_mut();
             controls.set_direction(event.key().as_str(), true);
             event.prevent_default();
-            log(std::format!("{:?}", controls).as_str());
 
             Ok(())
         })?;
@@ -63,7 +61,6 @@ impl Controls {
             let mut controls = binding.borrow_mut();
             controls.set_direction(event.key().as_str(), false);
             event.prevent_default();
-            log(std::format!("{:?}", controls).as_str());
 
             Ok(())
         })

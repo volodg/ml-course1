@@ -3,8 +3,8 @@ use commons::utils::OkExt;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
-use web_sys::CanvasRenderingContext2d;
 use web_commons::log;
+use web_sys::CanvasRenderingContext2d;
 
 pub struct Car {
     context: CanvasRenderingContext2d,
@@ -47,6 +47,10 @@ impl Car {
     }
 
     pub fn update(&mut self) {
+        self.move_by_controls()
+    }
+
+    fn move_by_controls(&mut self) {
         let controls = self.controls.borrow();
 
         if controls.forward {
