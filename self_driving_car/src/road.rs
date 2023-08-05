@@ -48,16 +48,11 @@ impl Road {
         self.context.set_stroke_style(&JsValue::from_str("white"));
 
         self.context.begin_path();
-        log(std::format!("left: {}", self.left).as_str());
         self.context.move_to(self.left, self.top);
         self.context.line_to(self.left, self.bottom);
         self.context.stroke();
 
-        self.context.set_line_width(5.0);
-        self.context.set_stroke_style(&JsValue::from_str("white"));
-
         self.context.begin_path();
-        log(std::format!("right: {}", self.right).as_str());
         self.context.move_to(self.right, self.top);
         self.context.line_to(self.right, self.bottom);
         self.context.stroke();

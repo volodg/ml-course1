@@ -8,8 +8,6 @@ use web_commons::animations::animate_with_callback;
 
 impl DrawWithState for HtmlDom {
     fn draw(&self, _app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
-        self.canvas.set_width(200);
-
         let window = self.window.clone();
         let canvas = self.canvas.clone();
         let car = self.car.clone();

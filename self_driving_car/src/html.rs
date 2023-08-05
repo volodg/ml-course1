@@ -23,6 +23,7 @@ impl HtmlDom {
 
         let canvas = document.get_element_by_id("myCanvas").unwrap();
         let canvas = canvas.dyn_into::<HtmlCanvasElement>()?;
+        canvas.set_width(200);
 
         let context = canvas
             .get_context("2d")?
