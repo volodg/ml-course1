@@ -5,10 +5,11 @@ use commons::geometry::{Line2D, Point2D, Point2DView};
 use std::cell::RefCell;
 use std::f64::consts::TAU;
 use std::rc::Rc;
+use web_commons::subscribers::AddListener;
 use wasm_bindgen::JsValue;
 use web_commons::animations::animate_with_callback;
 use web_commons::log;
-use web_sys::CanvasRenderingContext2d;
+use web_sys::{CanvasRenderingContext2d, MouseEvent};
 
 impl DrawWithState for HtmlDom {
     fn draw(&self, _app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
@@ -18,13 +19,31 @@ impl DrawWithState for HtmlDom {
         self.canvas
             .set_height(self.window.inner_height().expect("").as_f64().unwrap() as u32);
 
+        let mouse = Rc::new(RefCell::new(Point2D {
+            x: 0.0,
+            y: 0.0,
+        }));
+
+        let doc_mouse = mouse.clone();
+        self.document
+            .add_listener("mousemove", move |event: MouseEvent| {
+                log("mousemove");
+                let mut mouse = doc_mouse.borrow_mut();
+                mouse.x = event.x().into();
+                mouse.y = event.y().into();
+                Ok(())
+            })?;
+
         let canvas = self.canvas.clone();
         let context = self.context.clone();
         animate_with_callback(move || {
             context.clear_rect(0.0, 0.0, canvas.width().into(), canvas.height().into());
 
-            let a = Point2D::create(200.0, 150.0);
-            let b = Point2D::create(150.0, 250.0);
+            let radius = 50.0;
+            let mouse = mouse.borrow();
+
+            let a = Point2D::create(mouse.x, mouse.y - radius);
+            let b = Point2D::create(mouse.x, mouse.y + radius);
             let c = Point2D::create(50.0, 100.0);
             let d = Point2D::create(250.0, 200.0);
 
