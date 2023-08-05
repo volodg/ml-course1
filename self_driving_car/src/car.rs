@@ -1,11 +1,11 @@
 use crate::controls::Controls;
+use crate::sensor::Sensor;
 use commons::geometry::{Line2D, Point2D};
 use commons::utils::OkExt;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
-use crate::sensor::Sensor;
 
 pub struct Car {
     context: CanvasRenderingContext2d,
@@ -42,7 +42,7 @@ impl Car {
             acceleration: 0.2,
             angle: 0.0,
             controls,
-            sensor: sensor.clone()
+            sensor: sensor.clone(),
         }));
 
         car.ok()

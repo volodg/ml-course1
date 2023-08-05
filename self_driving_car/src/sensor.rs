@@ -13,7 +13,7 @@ pub struct Sensor {
     ray_length: f64,
     ray_spread: f64,
     rays: Vec<Line2D>,
-    readings: Vec<Intersection>,
+    readings: Vec<Option<Intersection>>,
 }
 
 impl Sensor {
@@ -39,21 +39,25 @@ impl Sensor {
     pub fn update(&mut self, car: &Car, borders: &Vec<Line2D>) {
         self.cast_rays(car);
 
-        self.readings = self.rays.iter().flat_map(|x| {
-            Self::get_reading(x, borders)
-        }).collect::<Vec<_>>();
+        self.readings = self
+            .rays
+            .iter()
+            .map(|x| Self::get_reading(x, borders))
+            .collect::<Vec<_>>();
     }
 
     fn get_reading(ray: &Line2D, borders: &Vec<Line2D>) -> Option<Intersection> {
-        borders.iter().flat_map(|border| {
-            ray.get_intersection(border)
-        }).fold((f64::MAX, None), |acc, el| {
-            if el.offset < acc.0 {
-                (el.offset, Some(el))
-            } else {
-                acc
-            }
-        }).1
+        borders
+            .iter()
+            .flat_map(|border| ray.get_intersection(border))
+            .fold((f64::MAX, None), |acc, el| {
+                if el.offset < acc.0 {
+                    (el.offset, Some(el))
+                } else {
+                    acc
+                }
+            })
+            .1
     }
 
     pub fn cast_rays(&mut self, car: &Car) {
@@ -85,12 +89,18 @@ impl Sensor {
     }
 
     pub fn draw(&self) {
-        for ray in &self.rays {
+        for (ray, reading) in self.rays.iter().zip(&self.readings) {
+            let end = if let Some(reading) = reading {
+                &reading.point
+            } else {
+                &ray.end
+            };
+
             self.context.begin_path();
             self.context.set_line_width(2.0);
             self.context.set_stroke_style(&JsValue::from_str("yellow"));
             self.context.move_to(ray.start.x, ray.start.y);
-            self.context.line_to(ray.end.x, ray.end.y);
+            self.context.line_to(end.x, end.y);
             self.context.stroke();
         }
     }

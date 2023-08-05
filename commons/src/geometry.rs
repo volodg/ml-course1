@@ -1,9 +1,9 @@
-use crate::math::lerp::remap;
+use crate::math::lerp::{lerp, remap};
 use crate::math::Bounds;
+use crate::utils::SomeExt;
 use binary_heap_plus::BinaryHeap as BinaryHeapExt;
 use std::cmp::Ordering;
 use std::f64::consts::{PI, TAU};
-use crate::utils::SomeExt;
 
 pub trait Point2DView {
     type PointT;
@@ -72,11 +72,29 @@ pub struct Intersection {
 }
 
 impl Line2D {
-    pub fn get_intersection(&self, _line: &Line2D) -> Option<Intersection> {
-        Intersection {
-            point: Point2D::create(0.0, 0.0),
-            offset: 0.0,
-        }.some()
+    pub fn get_intersection(&self, line: &Line2D) -> Option<Intersection> {
+        let a = &self.start;
+        let b = &self.end;
+        let c = &line.start;
+        let d = &line.end;
+
+        let t_top = (d.x - c.x) * (a.y - c.y) - (d.y - c.y) * (a.x - c.x);
+        let u_top = (c.y - a.y) * (a.x - b.x) - (c.x - a.x) * (a.y - b.y);
+        let bottom = (d.y - c.y) * (b.x - a.x) - (d.x - c.x) * (b.y - a.y);
+
+        if bottom != 0.0 {
+            let t = t_top / bottom;
+            let u = u_top / bottom;
+            if t >= 0.0 && t <= 1.0 && u >= 0.0 && u <= 1.0 {
+                return Intersection {
+                    point: Point2D::create(lerp(a.x, b.x, t), lerp(a.y, b.y, t)),
+                    offset: t,
+                }
+                .some();
+            }
+        }
+
+        return None;
     }
 }
 
