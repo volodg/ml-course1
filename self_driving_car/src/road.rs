@@ -15,7 +15,7 @@ pub struct Road {
     right: f64,
     top: f64,
     bottom: f64,
-    borders: Vec<Line2D>,
+    pub borders: Vec<Line2D>,
 }
 
 impl Road {

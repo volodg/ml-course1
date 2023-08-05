@@ -1,5 +1,5 @@
 use crate::controls::Controls;
-use commons::geometry::Point2D;
+use commons::geometry::{Line2D, Point2D};
 use commons::utils::OkExt;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -48,9 +48,9 @@ impl Car {
         car.ok()
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self, borders: &Vec<Line2D>) {
         self.move_by_controls();
-        self.sensor.borrow_mut().update(self);
+        self.sensor.borrow_mut().update(self, borders);
     }
 
     fn move_by_controls(&mut self) {

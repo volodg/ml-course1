@@ -34,7 +34,11 @@ impl Sensor {
         Rc::new(RefCell::new(result))
     }
 
-    pub fn update(&mut self, car: &Car) {
+    pub fn update(&mut self, car: &Car, _borders: &Vec<Line2D>) {
+        self.cast_rays(car);
+    }
+
+    pub fn cast_rays(&mut self, car: &Car) {
         let start = &car.position;
 
         self.rays = (0..self.ray_count)

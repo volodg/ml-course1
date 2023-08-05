@@ -16,7 +16,7 @@ impl DrawWithState for HtmlDom {
 
         animate_with_callback(move || {
             let mut car = car.borrow_mut();
-            car.update();
+            car.update(&road.borders);
             canvas.set_height(window.inner_height()?.as_f64().expect("") as u32);
 
             context.save();
