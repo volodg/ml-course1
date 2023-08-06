@@ -85,7 +85,8 @@ impl Car {
             damaged: false,
             brain,
             use_brain: control_type == ControlType::AI,
-        })).ok()
+        }))
+        .ok()
     }
 
     pub fn update(&mut self, borders: &Vec<Line2D>, traffic: &[Rc<RefCell<Self>>]) {
