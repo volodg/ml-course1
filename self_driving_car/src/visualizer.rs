@@ -20,7 +20,23 @@ impl Visualizer {
         let width = canvas.width() as f64 - margin * 2.0;
         let height = canvas.height() as f64 - margin * 2.0;
 
-        Self::draw_level(&context, &network.levels[0], left, top, width, height);
+        let level_height = height / network.levels.len() as f64;
+        let levels_count = network.levels.len();
+
+        network.levels.iter().rev().zip(0..).for_each(|(level, index)| {
+            let index = levels_count - index - 1;
+            let level_top = top + lerp(
+                height - level_height,
+                0.0,
+                if levels_count == 1 {
+                    0.5
+                } else {
+                    index as f64 / (levels_count as f64 - 1.0)
+                }
+            );
+
+            Self::draw_level(&context, level, left, level_top, width, level_height);
+        })
     }
 
     fn draw_level(
