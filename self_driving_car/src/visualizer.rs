@@ -1,8 +1,8 @@
 use commons::math::lerp::lerp;
 use commons::network::{Level, NeuralNetwork};
 use itertools::Itertools;
-use std::f64::consts::TAU;
 use js_sys::Array;
+use std::f64::consts::TAU;
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
@@ -23,31 +23,45 @@ impl Visualizer {
         let level_height = height / network.levels.len() as f64;
         let levels_count = network.levels.len();
 
-        network.levels.iter().rev().zip(0..).for_each(|(level, index)| {
-            let index = levels_count - index - 1;
-            let level_top = top + lerp(
-                height - level_height,
-                0.0,
-                if levels_count == 1 {
-                    0.5
+        network
+            .levels
+            .iter()
+            .rev()
+            .zip(0..)
+            .for_each(|(level, index)| {
+                let index = levels_count - index - 1;
+                let level_top = top
+                    + lerp(
+                        height - level_height,
+                        0.0,
+                        if levels_count == 1 {
+                            0.5
+                        } else {
+                            index as f64 / (levels_count as f64 - 1.0)
+                        },
+                    );
+
+                let is_last = index == levels_count - 1;
+                let symbols = if is_last {
+                    vec!["↑", "←", "→", "↓"]
+                    // vec!["⬆️", "⬅️", "➡️", "⬇️"]
                 } else {
-                    index as f64 / (levels_count as f64 - 1.0)
-                }
-            );
+                    vec![]
+                };
 
-            let is_last = index == levels_count - 1;
-            let symbols = if is_last {
-                vec!["↑", "←", "→", "↓"]
-                // vec!["⬆️", "⬅️", "➡️", "⬇️"]
-            } else {
-                vec![]
-            };
+                let array = Array::of2(&JsValue::from(7), &JsValue::from(3));
+                context.set_line_dash(&array).expect("");
 
-            let array = Array::of2(&JsValue::from(7), &JsValue::from(3));
-            context.set_line_dash(&array).expect("");
-
-            Self::draw_level(&context, level, left, level_top, width, level_height, &symbols);
-        })
+                Self::draw_level(
+                    &context,
+                    level,
+                    left,
+                    level_top,
+                    width,
+                    level_height,
+                    &symbols,
+                );
+            })
     }
 
     fn draw_level(
@@ -57,7 +71,7 @@ impl Visualizer {
         top: f64,
         width: f64,
         height: f64,
-        output_labels: &[&str]
+        output_labels: &[&str],
     ) {
         let right = left + width;
         let bottom = top + height;
@@ -98,7 +112,9 @@ impl Visualizer {
             context.fill();
 
             context.begin_path();
-            context.arc(x, bottom, node_radius * 0.6, 0.0, TAU).expect("");
+            context
+                .arc(x, bottom, node_radius * 0.6, 0.0, TAU)
+                .expect("");
             context.set_fill_style(&JsValue::from_str(get_rgba(*input).as_str()));
             context.fill();
         });
@@ -137,9 +153,9 @@ impl Visualizer {
                     context.set_fill_style(&JsValue::from_str("black"));
                     context.set_stroke_style(&JsValue::from_str("white"));
                     context.set_font(std::format!("{}px Arial", node_radius * 1.5).as_str());
-                    context.fill_text(output_labels[index], x, top);
+                    context.fill_text(output_labels[index], x, top).expect("");
                     context.set_line_width(0.5);
-                    context.stroke_text(output_labels[index], x, top);
+                    context.stroke_text(output_labels[index], x, top).expect("");
                 }
             });
     }

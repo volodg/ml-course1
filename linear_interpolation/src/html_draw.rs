@@ -97,7 +97,7 @@ impl DrawWithState for HtmlDom {
 
         let html = self.clone();
 
-        animate_with_callback(move || {
+        animate_with_callback(move |_| {
             html.animation(app_state.clone(), point_a.clone(), point_b.clone())
         });
 

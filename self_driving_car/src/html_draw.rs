@@ -31,7 +31,7 @@ impl DrawWithState for HtmlDom {
             2.0,
         )?];
 
-        animate_with_callback(move || {
+        animate_with_callback(move |time| {
             for car in &traffic {
                 car.borrow_mut().update(&road.borders, &[]);
             }
@@ -54,6 +54,7 @@ impl DrawWithState for HtmlDom {
             car_context.restore();
 
             if let Some(brain) = &car.brain {
+                network_context.set_line_dash_offset(-time / 80.0);
                 Visualizer::draw_network(&network_canvas, &network_context, brain)
             }
 
