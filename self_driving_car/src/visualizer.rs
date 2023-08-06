@@ -35,7 +35,14 @@ impl Visualizer {
                 }
             );
 
-            Self::draw_level(&context, level, left, level_top, width, level_height);
+            let is_last = index == levels_count - 1;
+            let symbols = if is_last {
+                vec!["↑", "←", "→", "↓"]
+            } else {
+                vec![]
+            };
+
+            Self::draw_level(&context, level, left, level_top, width, level_height, &symbols);
         })
     }
 
@@ -46,6 +53,7 @@ impl Visualizer {
         top: f64,
         width: f64,
         height: f64,
+        output_labels: &[&str]
     ) {
         let right = left + width;
         let bottom = top + height;
@@ -117,6 +125,18 @@ impl Visualizer {
                 context.set_line_dash(&array).expect("");
                 context.stroke();
                 context.set_line_dash(&Array::new()).expect("");
+
+                if output_labels.len() > 0 {
+                    context.begin_path();
+                    context.set_text_align("center");
+                    context.set_text_baseline("middle");
+                    context.set_fill_style(&JsValue::from_str("black"));
+                    context.set_stroke_style(&JsValue::from_str("white"));
+                    context.set_font(std::format!("{}px Arial", node_radius * 1.5).as_str());
+                    context.fill_text(output_labels[index], x, top);
+                    context.set_line_width(0.5);
+                    context.stroke_text(output_labels[index], x, top);
+                }
             });
     }
 
