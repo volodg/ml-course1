@@ -110,13 +110,22 @@ pub fn get_intersection(
 
 pub fn polygons_are_intersecting(polygon1: &[Point2D], polygon2: &[Point2D]) -> bool {
     let polygon1 = polygon1.iter().zip(polygon1.iter().cycle().skip(1));
-
     let polygon2 = polygon2.iter().zip(polygon2.iter().cycle().skip(1));
 
     polygon1
         .cartesian_product(polygon2)
         .find(|(line1, line2)| get_intersection(line1.0, line1.1, line2.0, line2.1).is_some())
         .is_some()
+}
+
+pub fn polygons_intersections(polygon1: &[Point2D], polygon2: &[Point2D]) -> Vec<Intersection> {
+    let polygon1 = polygon1.iter().zip(polygon1.iter().cycle().skip(1));
+    let polygon2 = polygon2.iter().zip(polygon2.iter().cycle().skip(1));
+
+    polygon1
+        .cartesian_product(polygon2)
+        .flat_map(|(line1, line2)| get_intersection(line1.0, line1.1, line2.0, line2.1))
+        .collect()
 }
 
 impl Line2D {
@@ -126,6 +135,14 @@ impl Line2D {
             .zip(polygon.iter().cycle().skip(1))
             .find(|(from, to)| get_intersection(&self.start, &self.end, from, to).is_some())
             .is_some()
+    }
+
+    pub fn polygon_intersections(&self, polygon: &[Point2D]) -> Vec<Intersection> {
+        polygon
+            .iter()
+            .zip(polygon.iter().cycle().skip(1))
+            .flat_map(|(from, to)| get_intersection(&self.start, &self.end, from, to))
+            .collect()
     }
 
     pub fn get_intersection(&self, line: &Line2D) -> Option<Intersection> {

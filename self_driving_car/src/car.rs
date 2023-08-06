@@ -21,7 +21,7 @@ pub struct Car {
     pub angle: f64,
     controls: Rc<RefCell<Controls>>,
     sensor: Option<Rc<RefCell<Sensor>>>,
-    polygon: Vec<Point2D>,
+    pub polygon: Vec<Point2D>,
     damaged: bool,
 }
 
