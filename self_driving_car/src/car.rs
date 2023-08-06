@@ -8,6 +8,7 @@ use std::cell::RefCell;
 use std::f64::consts::PI;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
+use web_commons::log;
 use web_sys::CanvasRenderingContext2d;
 
 pub struct Car {
@@ -94,7 +95,19 @@ impl Car {
         }
 
         if let Some(sensor) = &self.sensor {
-            sensor.borrow_mut().update(self, borders, traffic);
+            let mut sensor = sensor.borrow_mut();
+            sensor.update(self, borders, traffic);
+
+            if let Some(brain) = &mut self.brain {
+                let offsets = sensor
+                    .readings
+                    .iter()
+                    .map(|reading| reading.as_ref().map(|v| 1.0 - v.offset).unwrap_or(0.0))
+                    .collect::<Vec<_>>();
+
+                let outputs = brain.feed_forward(offsets);
+                log(std::format!("outputs: {:?}", &outputs).as_str());
+            }
         }
     }
 

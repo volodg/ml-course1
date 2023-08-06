@@ -13,7 +13,7 @@ pub struct Sensor {
     ray_length: f64,
     ray_spread: f64,
     rays: Vec<Line2D>,
-    readings: Vec<Option<Intersection>>,
+    pub readings: Vec<Option<Intersection>>,
 }
 
 impl Sensor {

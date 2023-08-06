@@ -16,7 +16,7 @@ impl NeuralNetwork {
         Self { levels }
     }
 
-    fn feed_forward(&mut self, given_inputs: Vec<f64>) -> Vec<f64> {
+    pub fn feed_forward(&mut self, given_inputs: Vec<f64>) -> Vec<f64> {
         self.levels
             .iter_mut()
             .fold(given_inputs, |acc, el| el.feed_forward(acc).to_vec())
