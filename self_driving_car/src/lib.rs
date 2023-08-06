@@ -7,6 +7,7 @@ mod html;
 mod html_draw;
 mod road;
 mod sensor;
+mod storage;
 mod subscribe_state;
 mod visualizer;
 
