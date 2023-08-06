@@ -71,7 +71,12 @@ pub struct Intersection {
     pub offset: f64,
 }
 
-pub fn get_intersection_params(a: &Point2D, b: &Point2D, c: &Point2D, d: &Point2D) -> (f64, f64, f64) {
+pub fn get_intersection_params(
+    a: &Point2D,
+    b: &Point2D,
+    c: &Point2D,
+    d: &Point2D,
+) -> (f64, f64, f64) {
     let t_top = (d.x - c.x) * (a.y - c.y) - (d.y - c.y) * (a.x - c.x);
     let u_top = (c.y - a.y) * (a.x - b.x) - (c.x - a.x) * (a.y - b.y);
     let bottom = (d.y - c.y) * (b.x - a.x) - (d.x - c.x) * (b.y - a.y);
@@ -79,7 +84,12 @@ pub fn get_intersection_params(a: &Point2D, b: &Point2D, c: &Point2D, d: &Point2
     (t_top, u_top, bottom)
 }
 
-pub fn get_intersection(a: &Point2D, b: &Point2D, c: &Point2D, d: &Point2D) -> Option<Intersection> {
+pub fn get_intersection(
+    a: &Point2D,
+    b: &Point2D,
+    c: &Point2D,
+    d: &Point2D,
+) -> Option<Intersection> {
     let (t_top, u_top, bottom) = get_intersection_params(a, b, c, d);
 
     if bottom != 0.0 {
@@ -90,7 +100,7 @@ pub fn get_intersection(a: &Point2D, b: &Point2D, c: &Point2D, d: &Point2D) -> O
                 point: Point2D::create(lerp(a.x, b.x, t), lerp(a.y, b.y, t)),
                 offset: t,
             }
-                .some();
+            .some();
         }
     }
 
@@ -102,13 +112,7 @@ impl Line2D {
         polygon
             .iter()
             .zip(polygon.iter().cycle().skip(1))
-            .find(|(from, to)| {
-                self.get_intersection(&Line2D {
-                    start: (*from).clone(),
-                    end: (*to).clone(),
-                })
-                .is_some()
-            })
+            .find(|(from, to)| get_intersection(&self.start, &self.end, from, to).is_some())
             .is_some()
     }
 
