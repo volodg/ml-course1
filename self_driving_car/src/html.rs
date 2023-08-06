@@ -15,7 +15,7 @@ pub struct HtmlDom {
     pub car_context: CanvasRenderingContext2d,
     pub network_canvas: HtmlCanvasElement,
     pub network_context: CanvasRenderingContext2d,
-    pub car: Rc<RefCell<Car>>,
+    pub cars: Rc<Vec<Rc<RefCell<Car>>>>,
     pub road: Road,
 }
 
@@ -48,13 +48,7 @@ impl HtmlDom {
             car_canvas.width() as f64 * 0.9,
         );
 
-        let car = Car::create(
-            car_context.clone(),
-            Point2D::create(road.get_lane_center(1), 100.0),
-            30.0,
-            50.0,
-            ControlType::AI, // ControlType::Keys,
-        )?;
+        let cars = Rc::new(Self::generate_cars(&car_context, &road, 100));
 
         Self {
             window,
@@ -63,9 +57,21 @@ impl HtmlDom {
             car_context,
             network_canvas,
             network_context,
-            car,
+            cars,
             road,
         }
         .ok()
+    }
+
+    fn generate_cars(car_context: &CanvasRenderingContext2d, road: &Road, number: usize) -> Vec<Rc<RefCell<Car>>> {
+        (0..number).flat_map(|_| {
+            Car::create(
+                car_context.clone(),
+                Point2D::create(road.get_lane_center(1), 100.0),
+                30.0,
+                50.0,
+                ControlType::AI,
+            )
+        }).collect()
     }
 }
