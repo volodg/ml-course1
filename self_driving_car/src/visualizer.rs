@@ -38,9 +38,13 @@ impl Visualizer {
             let is_last = index == levels_count - 1;
             let symbols = if is_last {
                 vec!["↑", "←", "→", "↓"]
+                // vec!["⬆️", "⬅️", "➡️", "⬇️"]
             } else {
                 vec![]
             };
+
+            let array = Array::of2(&JsValue::from(7), &JsValue::from(3));
+            context.set_line_dash(&array).expect("");
 
             Self::draw_level(&context, level, left, level_top, width, level_height, &symbols);
         })
