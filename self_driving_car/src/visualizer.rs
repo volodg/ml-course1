@@ -1,4 +1,3 @@
-use commons::geometry::{Point2D, Point2DView};
 use commons::math::lerp::lerp;
 use commons::network::{Level, NeuralNetwork};
 use itertools::Itertools;
@@ -44,7 +43,7 @@ impl Visualizer {
             .iter()
             .zip(0..)
             .cartesian_product(level.outputs.iter().zip(0..))
-            .for_each(|((input, i), (output, j))| {
+            .for_each(|((_, i), (_, j))| {
                 context.begin_path();
 
                 let x = Self::get_node_x(i, inputs_size, left, right);
@@ -55,23 +54,8 @@ impl Visualizer {
 
                 context.set_line_width(2.0);
 
-                let value = level.weights[i][j];
-                let red = if value < 0.0 {
-                    0.0
-                } else {
-                    255.0
-                };
-                let green = red;
-                let blue = if value > 0.0 {
-                    0.0
-                } else {
-                    255.0
-                };
-                let alpha = value.abs();
-
-                context.set_stroke_style(&JsValue::from_str(
-                    std::format!("rgba({red},{green},{blue},{alpha})").as_str()
-                ));
+                context
+                    .set_stroke_style(&JsValue::from_str(get_rgba(level.weights[i][j]).as_str()));
 
                 context.stroke();
             });
@@ -85,14 +69,25 @@ impl Visualizer {
             context.fill();
         });
 
-        level.outputs.iter().zip(0..).for_each(|(_, index)| {
-            let x = Self::get_node_x(index, output_size, left, right);
+        level
+            .outputs
+            .iter()
+            .zip(&level.biases)
+            .zip(0..)
+            .for_each(|((_, bias), index)| {
+                let x = Self::get_node_x(index, output_size, left, right);
 
-            context.begin_path();
-            context.arc(x, top, node_radius, 0.0, TAU).expect("");
-            context.set_fill_style(&JsValue::from_str("white"));
-            context.fill();
-        });
+                context.begin_path();
+                context.arc(x, top, node_radius * 0.6, 0.0, TAU).expect("");
+                context.set_fill_style(&JsValue::from_str("white"));
+                context.fill();
+
+                context.begin_path();
+                context.set_line_width(2.0);
+                context.arc(x, top, node_radius, 0.0, TAU).expect("");
+                context.set_stroke_style(&JsValue::from_str(get_rgba(*bias).as_str()));
+                context.stroke();
+            });
     }
 
     fn get_node_x(index: usize, inputs_size: usize, left: f64, right: f64) -> f64 {
@@ -106,4 +101,13 @@ impl Visualizer {
             },
         )
     }
+}
+
+fn get_rgba(value: f64) -> String {
+    let red = if value < 0.0 { 0.0 } else { 255.0 };
+    let green = red;
+    let blue = if value > 0.0 { 0.0 } else { 255.0 };
+    let alpha = value.abs();
+
+    std::format!("rgba({red},{green},{blue},{alpha})")
 }
