@@ -9,7 +9,8 @@ impl NeuralNetwork {
         let levels = neuron_counts
             .iter()
             .take(neuron_counts.len() - 1)
-            .map(|index| Level::create(neuron_counts[*index], neuron_counts[*index + 1]))
+            .zip(neuron_counts.iter().skip(1))
+            .map(|(count, next_count)| Level::create(*count, *next_count))
             .collect();
 
         Self { levels }
