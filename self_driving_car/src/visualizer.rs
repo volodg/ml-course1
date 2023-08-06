@@ -61,7 +61,7 @@ impl Visualizer {
                 context.stroke();
             });
 
-        level.inputs.iter().zip(0..).for_each(|(_, index)| {
+        level.inputs.iter().zip(0..).for_each(|(input, index)| {
             let x = Self::get_node_x(index, inputs_size, left, right);
 
             context.begin_path();
@@ -71,7 +71,7 @@ impl Visualizer {
 
             context.begin_path();
             context.arc(x, bottom, node_radius * 0.6, 0.0, TAU).expect("");
-            context.set_fill_style(&JsValue::from_str("white"));
+            context.set_fill_style(&JsValue::from_str(get_rgba(*input).as_str()));
             context.fill();
         });
 
@@ -80,7 +80,7 @@ impl Visualizer {
             .iter()
             .zip(&level.biases)
             .zip(0..)
-            .for_each(|((_, bias), index)| {
+            .for_each(|((output, bias), index)| {
                 let x = Self::get_node_x(index, output_size, left, right);
 
                 context.begin_path();
@@ -90,7 +90,7 @@ impl Visualizer {
 
                 context.begin_path();
                 context.arc(x, top, node_radius * 0.6, 0.0, TAU).expect("");
-                context.set_fill_style(&JsValue::from_str("white"));
+                context.set_fill_style(&JsValue::from_str(get_rgba(*output).as_str()));
                 context.fill();
 
                 context.begin_path();
