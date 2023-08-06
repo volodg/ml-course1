@@ -3,7 +3,7 @@ use wasm_bindgen::JsValue;
 use web_sys::window;
 
 #[allow(dead_code)]
-pub fn save(brain: &NeuralNetwork) -> Result<(), JsValue> {
+pub fn save_best_brain(brain: &NeuralNetwork) -> Result<(), JsValue> {
     let window = window().expect("");
 
     let storage = window.local_storage()?.unwrap();
@@ -14,4 +14,13 @@ pub fn save(brain: &NeuralNetwork) -> Result<(), JsValue> {
     storage.set_item("bestBrain", &json)?;
 
     Ok(())
+}
+
+#[allow(dead_code)]
+pub fn discard_best_brain() -> Result<(), JsValue> {
+    let window = window().expect("");
+
+    let storage = window.local_storage()?.unwrap();
+
+    storage.remove_item("bestBrain")
 }

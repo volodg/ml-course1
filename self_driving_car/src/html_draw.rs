@@ -11,7 +11,7 @@ use wasm_bindgen::JsValue;
 use web_commons::animations::animate_with_callback;
 
 impl DrawWithState for HtmlDom {
-    fn draw(&self, _app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
+    fn draw(&self, app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
         let window = self.window.clone();
         let car_canvas = self.car_canvas.clone();
         let car_context = self.car_context.clone();
@@ -32,15 +32,13 @@ impl DrawWithState for HtmlDom {
             2.0,
         )?];
 
-        // ???
-
+        let app_state = app_state.clone();
         animate_with_callback(move |time| {
             for car in &traffic {
                 car.borrow_mut().update(&road.borders, &[]);
             }
 
             for car in cars.deref() {
-                // let mut car = car.borrow_mut();
                 car.borrow_mut().update(&road.borders, &traffic);
             }
 
@@ -64,6 +62,9 @@ impl DrawWithState for HtmlDom {
                 )?;
                 best_car_position
             };
+
+            // save best car brain
+            app_state.borrow_mut().best_car = cars[best_car_position].borrow().brain.clone();
 
             road.draw()?;
 
