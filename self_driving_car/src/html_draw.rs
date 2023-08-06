@@ -48,8 +48,8 @@ impl DrawWithState for HtmlDom {
             network_canvas.set_height(window.inner_height()?.as_f64().expect("") as u32);
 
             car_context.save();
-            let position = {
-                let position = cars
+            let best_car_position = {
+                let best_car_position = cars
                     .deref()
                     .iter()
                     .zip(0..)
@@ -60,9 +60,9 @@ impl DrawWithState for HtmlDom {
                     .unwrap_or(0);
                 car_context.translate(
                     0.0,
-                    -cars[position].borrow().position.y + car_canvas.height() as f64 * 0.7,
+                    -cars[best_car_position].borrow().position.y + car_canvas.height() as f64 * 0.7,
                 )?;
-                position
+                best_car_position
             };
 
             road.draw()?;
@@ -76,11 +76,11 @@ impl DrawWithState for HtmlDom {
                 car.borrow().draw("blue", false)?;
             }
             car_context.set_global_alpha(1.0);
-            cars[position].borrow().draw("blue", true)?;
+            cars[best_car_position].borrow().draw("blue", true)?;
 
             car_context.restore();
 
-            if let Some(brain) = &cars[position].borrow().brain {
+            if let Some(brain) = &cars[best_car_position].borrow().brain {
                 network_context.set_line_dash_offset(-time / 80.0);
                 Visualizer::draw_network(&network_canvas, &network_context, brain)
             }
