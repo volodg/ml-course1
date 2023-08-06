@@ -9,7 +9,7 @@ use web_sys::CanvasRenderingContext2d;
 
 pub struct Sensor {
     context: CanvasRenderingContext2d,
-    ray_count: usize,
+    pub ray_count: usize,
     ray_length: f64,
     ray_spread: f64,
     rays: Vec<Line2D>,

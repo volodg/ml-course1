@@ -1,11 +1,11 @@
 use rand::Rng;
 
-struct NeuralNetwork {
+pub struct NeuralNetwork {
     levels: Vec<Level>,
 }
 
 impl NeuralNetwork {
-    fn create(neuron_counts: &[usize]) -> Self {
+    pub fn create(neuron_counts: &[usize]) -> Self {
         let levels = neuron_counts
             .iter()
             .take(neuron_counts.len() - 1)
@@ -15,13 +15,10 @@ impl NeuralNetwork {
         Self { levels }
     }
 
-    fn feed_forward(&mut self, given_inputs: Vec<f64>) {
-        let result = self
-            .levels
+    fn feed_forward(&mut self, given_inputs: Vec<f64>) -> Vec<f64> {
+        self.levels
             .iter_mut()
-            .fold(given_inputs, |acc, el| el.feed_forward(acc).to_vec());
-
-        // self.levels[1].feed_forward(&outputs);
+            .fold(given_inputs, |acc, el| el.feed_forward(acc).to_vec())
     }
 }
 

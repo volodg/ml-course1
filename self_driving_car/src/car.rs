@@ -1,6 +1,7 @@
 use crate::controls::Controls;
 use crate::sensor::Sensor;
 use commons::geometry::{polygons_are_intersecting, Line2D, Point2D};
+use commons::network::NeuralNetwork;
 use commons::utils::{OkExt, SomeExt};
 use js_sys::Math::hypot;
 use std::cell::RefCell;
@@ -23,6 +24,7 @@ pub struct Car {
     sensor: Option<Rc<RefCell<Sensor>>>,
     pub polygon: Vec<Point2D>,
     damaged: bool,
+    brain: Option<NeuralNetwork>,
 }
 
 #[derive(Clone, Copy)]
@@ -52,9 +54,16 @@ impl Car {
     ) -> Result<Rc<RefCell<Self>>, JsValue> {
         let controls = Controls::create(control_type)?;
 
-        let sensor = match control_type {
-            ControlType::Keys => Sensor::create(context.clone()).some(),
-            ControlType::Dummy => None,
+        let (sensor, brain) = match control_type {
+            ControlType::Keys => {
+                let sensor = Sensor::create(context.clone());
+                let ray_count = sensor.borrow().ray_count;
+                (
+                    sensor.some(),
+                    NeuralNetwork::create(&[ray_count, 6, 4]).some(),
+                )
+            }
+            ControlType::Dummy => (None, None),
         };
 
         let car = Rc::new(RefCell::new(Self {
@@ -71,6 +80,7 @@ impl Car {
             sensor,
             polygon: vec![],
             damaged: false,
+            brain,
         }));
 
         car.ok()

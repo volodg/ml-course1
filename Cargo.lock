@@ -115,6 +115,7 @@ name = "commons"
 version = "0.1.0"
 dependencies = [
  "binary-heap-plus",
+ "getrandom 0.2.10",
  "itertools",
  "rand 0.8.5",
 ]
