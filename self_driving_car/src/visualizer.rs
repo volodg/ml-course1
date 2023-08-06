@@ -1,3 +1,5 @@
+use std::f64::consts::TAU;
+use wasm_bindgen::JsValue;
 use commons::geometry::{Point2D, Point2DView};
 use commons::network::{Level, NeuralNetwork};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
@@ -37,5 +39,10 @@ fn draw_level(
         } else {
             index as f64 / (inputs_size as f64 - 1.0)
         });
+
+        context.begin_path();
+        context.arc(x, bottom, node_radius, 0.0, TAU).expect("");
+        context.set_fill_style(&JsValue::from_str("white"));
+        context.fill();
     })
 }
