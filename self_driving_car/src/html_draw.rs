@@ -25,17 +25,38 @@ impl DrawWithState for HtmlDom {
             cars[0].borrow_mut().brain = Some(best_brain);
         }
 
-        let traffic = vec![Car::create_with_max_speed(
-            car_context.clone(),
-            Point2D {
-                x: road.get_lane_center(1),
-                y: -100.0,
-            },
-            30.0,
-            50.0,
-            ControlType::Dummy,
-            2.0,
-        )?];
+        let traffic = vec![
+            Car::create_with_max_speed(
+                car_context.clone(),
+                Point2D {
+                    x: road.get_lane_center(1),
+                    y: -100.0,
+                },
+                30.0,
+                50.0,
+                ControlType::Dummy,
+                2.0,)?,
+            Car::create_with_max_speed(
+                car_context.clone(),
+                Point2D {
+                    x: road.get_lane_center(0),
+                    y: -300.0,
+                },
+                30.0,
+                50.0,
+                ControlType::Dummy,
+                2.0,)?,
+            Car::create_with_max_speed(
+                car_context.clone(),
+                Point2D {
+                    x: road.get_lane_center(2),
+                    y: -300.0,
+                },
+                30.0,
+                50.0,
+                ControlType::Dummy,
+                2.0,)?,
+        ];
 
         let app_state = app_state.clone();
         animate_with_callback(move |time| {

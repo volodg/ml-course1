@@ -18,6 +18,9 @@ button {
     margin: 2px;
     cursor: pointer;
 }
+button:hover {
+    background: blue;
+}
 #networkCanvas {
     background: black;
 }
