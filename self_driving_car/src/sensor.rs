@@ -48,14 +48,18 @@ impl Sensor {
         self.readings = readings;
     }
 
-    fn get_reading(ray: &Line2D, borders: &[Line2D], traffic: &[Rc<RefCell<Car>>]) -> Option<Intersection> {
+    fn get_reading(
+        ray: &Line2D,
+        borders: &[Line2D],
+        traffic: &[Rc<RefCell<Car>>],
+    ) -> Option<Intersection> {
         borders
             .iter()
             .flat_map(|border| ray.get_intersection(border))
             .chain(
-                traffic.iter().flat_map(|x| {
-                    ray.polygon_intersections(&x.borrow().polygon)
-                })
+                traffic
+                    .iter()
+                    .flat_map(|x| ray.polygon_intersections(&x.borrow().polygon)),
             )
             .fold((f64::MAX, None), |acc, el| {
                 if el.offset < acc.0 {
