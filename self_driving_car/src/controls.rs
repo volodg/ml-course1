@@ -11,8 +11,6 @@ pub struct Controls {
     pub left: bool,
     pub right: bool,
     pub reverse: bool,
-    #[allow(dead_code)]
-    control_type: ControlType,
     weak_self: Weak<RefCell<Controls>>,
 }
 
@@ -23,14 +21,16 @@ impl Controls {
             left: false,
             right: false,
             reverse: false,
-            control_type,
             weak_self: Weak::new(),
         };
 
         let result = Rc::new(RefCell::new(result));
         result.borrow_mut().weak_self = Rc::downgrade(&result);
 
-        result.borrow().add_keyboard_listeners()?;
+        match control_type {
+            ControlType::Dummy => result.borrow_mut().forward = true,
+            ControlType::Keys => result.borrow().add_keyboard_listeners()?
+        }
 
         result.ok()
     }
