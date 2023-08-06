@@ -2,7 +2,6 @@ use commons::network::NeuralNetwork;
 use wasm_bindgen::JsValue;
 use web_sys::window;
 
-#[allow(dead_code)]
 pub fn save_best_brain(brain: &NeuralNetwork) -> Result<(), JsValue> {
     let window = window().expect("");
 
@@ -34,7 +33,6 @@ pub fn load_best_brain() -> Result<Option<NeuralNetwork>, JsValue> {
     }
 }
 
-#[allow(dead_code)]
 pub fn discard_best_brain() -> Result<(), JsValue> {
     let window = window().expect("");
 
