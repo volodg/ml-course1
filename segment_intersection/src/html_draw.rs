@@ -35,7 +35,7 @@ impl DrawWithState for HtmlDom {
 
         let canvas = self.canvas.clone();
         let context = self.context.clone();
-        animate_with_callback(move || {
+        animate_with_callback(move |_| {
             context.clear_rect(0.0, 0.0, canvas.width().into(), canvas.height().into());
 
             let radius = 50.0;

@@ -49,10 +49,19 @@ impl DrawWithState for HtmlDom {
 
             car_context.save();
             let position = {
-                let position = cars.deref().iter().zip(0..).min_by(|(a, _), (b, _)| {
-                    a.borrow().position.y.total_cmp(&b.borrow().position.y)
-                }).map(|(_, i)| i).unwrap_or(0);
-                car_context.translate(0.0, -cars[position].borrow().position.y + car_canvas.height() as f64 * 0.7)?;
+                let position = cars
+                    .deref()
+                    .iter()
+                    .zip(0..)
+                    .min_by(|(a, _), (b, _)| {
+                        a.borrow().position.y.total_cmp(&b.borrow().position.y)
+                    })
+                    .map(|(_, i)| i)
+                    .unwrap_or(0);
+                car_context.translate(
+                    0.0,
+                    -cars[position].borrow().position.y + car_canvas.height() as f64 * 0.7,
+                )?;
                 position
             };
 
@@ -61,9 +70,13 @@ impl DrawWithState for HtmlDom {
             for car in &traffic {
                 car.borrow().draw("red")?;
             }
+
+            car_context.set_global_alpha(0.2);
             for car in cars.deref() {
                 car.borrow().draw("blue")?;
             }
+            car_context.set_global_alpha(1.0);
+            cars[position].borrow().draw("blue")?;
 
             car_context.restore();
 

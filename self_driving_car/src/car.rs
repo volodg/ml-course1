@@ -8,7 +8,6 @@ use std::cell::RefCell;
 use std::f64::consts::PI;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
-use web_commons::log;
 use web_sys::CanvasRenderingContext2d;
 
 pub struct Car {
@@ -110,7 +109,6 @@ impl Car {
                     .collect::<Vec<_>>();
 
                 let outputs = brain.feed_forward(offsets);
-                log(std::format!("outputs: {:?}", &outputs).as_str());
 
                 if self.use_brain {
                     let mut controls = self.controls.borrow_mut();

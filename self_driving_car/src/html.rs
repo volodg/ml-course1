@@ -63,15 +63,21 @@ impl HtmlDom {
         .ok()
     }
 
-    fn generate_cars(car_context: &CanvasRenderingContext2d, road: &Road, number: usize) -> Vec<Rc<RefCell<Car>>> {
-        (0..number).flat_map(|_| {
-            Car::create(
-                car_context.clone(),
-                Point2D::create(road.get_lane_center(1), 100.0),
-                30.0,
-                50.0,
-                ControlType::AI,
-            )
-        }).collect()
+    fn generate_cars(
+        car_context: &CanvasRenderingContext2d,
+        road: &Road,
+        number: usize,
+    ) -> Vec<Rc<RefCell<Car>>> {
+        (0..number)
+            .flat_map(|_| {
+                Car::create(
+                    car_context.clone(),
+                    Point2D::create(road.get_lane_center(1), 100.0),
+                    30.0,
+                    50.0,
+                    ControlType::AI,
+                )
+            })
+            .collect()
     }
 }
