@@ -2,6 +2,7 @@ use crate::math::lerp::{lerp, remap};
 use crate::math::Bounds;
 use crate::utils::SomeExt;
 use binary_heap_plus::BinaryHeap as BinaryHeapExt;
+use itertools::Itertools;
 use std::cmp::Ordering;
 use std::f64::consts::{PI, TAU};
 
@@ -105,6 +106,17 @@ pub fn get_intersection(
     }
 
     return None;
+}
+
+pub fn polygons_are_intersecting(polygon1: &[Point2D], polygon2: &[Point2D]) -> bool {
+    let polygon1 = polygon1.iter().zip(polygon1.iter().cycle().skip(1));
+
+    let polygon2 = polygon2.iter().zip(polygon2.iter().cycle().skip(1));
+
+    polygon1
+        .cartesian_product(polygon2)
+        .find(|(line1, line2)| get_intersection(line1.0, line1.1, line2.0, line2.1).is_some())
+        .is_some()
 }
 
 impl Line2D {

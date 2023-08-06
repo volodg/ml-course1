@@ -1,6 +1,6 @@
 use crate::controls::Controls;
 use crate::sensor::Sensor;
-use commons::geometry::{Line2D, Point2D};
+use commons::geometry::{polygons_are_intersecting, Line2D, Point2D};
 use commons::utils::{OkExt, SomeExt};
 use js_sys::Math::hypot;
 use std::cell::RefCell;
@@ -76,12 +76,19 @@ impl Car {
         car.ok()
     }
 
-    pub fn update(&mut self, borders: &Vec<Line2D>, _traffic: &[Rc<RefCell<Self>>]) {
+    pub fn update(&mut self, borders: &Vec<Line2D>, traffic: &[Rc<RefCell<Self>>]) {
         if !self.damaged {
             self.move_by_controls();
             self.polygon = self.create_polygon();
 
-            self.damaged = self.assess_damage(borders);
+            self.damaged = traffic
+                .iter()
+                .find(|x| polygons_are_intersecting(&self.polygon, &x.borrow().polygon))
+                .is_some();
+
+            if !self.damaged {
+                self.damaged = self.assess_damage(borders);
+            }
         }
 
         if let Some(sensor) = &self.sensor {
