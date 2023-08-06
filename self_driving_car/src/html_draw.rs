@@ -2,6 +2,7 @@ use crate::app_state::AppState;
 use crate::car::{Car, ControlType};
 use crate::draw::DrawWithState;
 use crate::html::HtmlDom;
+use crate::storage::load_best_brain;
 use crate::visualizer::Visualizer;
 use commons::geometry::Point2D;
 use std::cell::RefCell;
@@ -9,7 +10,6 @@ use std::ops::Deref;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
 use web_commons::animations::animate_with_callback;
-use crate::storage::load_best_brain;
 
 impl DrawWithState for HtmlDom {
     fn draw(&self, app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {

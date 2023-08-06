@@ -14,6 +14,7 @@ mod visualizer;
 use crate::app_state::AppState;
 use crate::draw::DrawWithState;
 use crate::html::HtmlDom;
+use crate::subscribe_state::StateSubscriber;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::wasm_bindgen;
@@ -27,6 +28,8 @@ fn start() -> Result<(), JsValue> {
 
     let app_state = Rc::new(RefCell::new(app_state));
     app_state.borrow().draw(&app_state)?;
+
+    app_state.borrow().html.subscribe(app_state.clone())?;
 
     Ok(())
 }

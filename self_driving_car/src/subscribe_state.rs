@@ -1,12 +1,12 @@
 use crate::app_state::AppState;
 use crate::html::HtmlDom;
-use std::cell::RefCell;
-use wasm_bindgen::JsCast;
-use std::rc::Rc;
-use web_commons::subscribers::AddListener;
-use wasm_bindgen::JsValue;
-use web_sys::HtmlButtonElement;
 use crate::storage::{discard_best_brain, save_best_brain};
+use std::cell::RefCell;
+use std::rc::Rc;
+use wasm_bindgen::JsCast;
+use wasm_bindgen::JsValue;
+use web_commons::subscribers::AddListener;
+use web_sys::HtmlButtonElement;
 
 pub trait StateSubscriber {
     fn subscribe(&self, app_state: Rc<RefCell<AppState>>) -> Result<(), JsValue>;
@@ -34,9 +34,7 @@ impl StateSubscriber for HtmlDom {
             .unwrap()
             .dyn_into::<HtmlButtonElement>()?;
 
-        discard_btn.on_click(move |_| {
-            discard_best_brain()
-        })?;
+        discard_btn.on_click(move |_| discard_best_brain())?;
 
         Ok(())
     }
