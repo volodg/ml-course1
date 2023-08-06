@@ -11,13 +11,13 @@ use web_commons::animations::animate_with_callback;
 impl DrawWithState for HtmlDom {
     fn draw(&self, _app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
         let window = self.window.clone();
-        let canvas = self.canvas.clone();
-        let context = self.context.clone();
+        let car_canvas = self.car_canvas.clone();
+        let car_context = self.car_context.clone();
         let car = self.car.clone();
         let road = self.road.clone();
 
         let traffic = vec![Car::create_with_max_speed(
-            context.clone(),
+            car_context.clone(),
             Point2D {
                 x: road.get_lane_center(1),
                 y: -100.0,
@@ -35,10 +35,10 @@ impl DrawWithState for HtmlDom {
 
             let mut car = car.borrow_mut();
             car.update(&road.borders, &traffic);
-            canvas.set_height(window.inner_height()?.as_f64().expect("") as u32);
+            car_canvas.set_height(window.inner_height()?.as_f64().expect("") as u32);
 
-            context.save();
-            context.translate(0.0, -car.position.y + canvas.height() as f64 * 0.7)?;
+            car_context.save();
+            car_context.translate(0.0, -car.position.y + car_canvas.height() as f64 * 0.7)?;
 
             road.draw()?;
 
@@ -47,7 +47,7 @@ impl DrawWithState for HtmlDom {
             }
             car.draw("blue")?;
 
-            context.restore();
+            car_context.restore();
             Ok(())
         });
 

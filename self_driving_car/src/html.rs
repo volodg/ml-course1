@@ -11,8 +11,8 @@ use web_sys::{window, CanvasRenderingContext2d, Document, HtmlCanvasElement, Win
 pub struct HtmlDom {
     pub window: Window,
     pub document: Document,
-    pub canvas: HtmlCanvasElement,
-    pub context: CanvasRenderingContext2d,
+    pub car_canvas: HtmlCanvasElement,
+    pub car_context: CanvasRenderingContext2d,
     pub car: Rc<RefCell<Car>>,
     pub road: Road,
 }
@@ -22,23 +22,23 @@ impl HtmlDom {
         let window = window().unwrap();
         let document = window.document().unwrap();
 
-        let canvas = document.get_element_by_id("myCanvas").unwrap();
-        let canvas = canvas.dyn_into::<HtmlCanvasElement>()?;
-        canvas.set_width(200);
+        let car_canvas = document.get_element_by_id("carCanvas").unwrap();
+        let car_canvas = car_canvas.dyn_into::<HtmlCanvasElement>()?;
+        car_canvas.set_width(200);
 
-        let context = canvas
+        let car_context = car_canvas
             .get_context("2d")?
             .unwrap()
             .dyn_into::<CanvasRenderingContext2d>()?;
 
         let road = Road::create(
-            context.clone(),
-            canvas.width() as f64 / 2.0,
-            canvas.width() as f64 * 0.9,
+            car_context.clone(),
+            car_canvas.width() as f64 / 2.0,
+            car_canvas.width() as f64 * 0.9,
         );
 
         let car = Car::create(
-            context.clone(),
+            car_context.clone(),
             Point2D::create(road.get_lane_center(1), 100.0),
             30.0,
             50.0,
@@ -48,8 +48,8 @@ impl HtmlDom {
         Self {
             window,
             document,
-            canvas,
-            context,
+            car_canvas,
+            car_context,
             car,
             road,
         }
