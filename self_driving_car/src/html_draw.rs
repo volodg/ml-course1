@@ -9,6 +9,7 @@ use std::ops::Deref;
 use std::rc::Rc;
 use wasm_bindgen::JsValue;
 use web_commons::animations::animate_with_callback;
+use crate::storage::load_best_brain;
 
 impl DrawWithState for HtmlDom {
     fn draw(&self, app_state: &Rc<RefCell<AppState>>) -> Result<(), JsValue> {
@@ -19,6 +20,10 @@ impl DrawWithState for HtmlDom {
         let network_context = self.network_context.clone();
         let cars = self.cars.clone();
         let road = self.road.clone();
+
+        if let Some(best_brain) = load_best_brain()? {
+            cars[0].borrow_mut().brain = Some(best_brain);
+        }
 
         let traffic = vec![Car::create_with_max_speed(
             car_context.clone(),
