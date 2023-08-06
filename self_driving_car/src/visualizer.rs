@@ -2,6 +2,7 @@ use commons::math::lerp::lerp;
 use commons::network::{Level, NeuralNetwork};
 use itertools::Itertools;
 use std::f64::consts::TAU;
+use js_sys::Array;
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
@@ -65,6 +66,11 @@ impl Visualizer {
 
             context.begin_path();
             context.arc(x, bottom, node_radius, 0.0, TAU).expect("");
+            context.set_fill_style(&JsValue::from_str("black"));
+            context.fill();
+
+            context.begin_path();
+            context.arc(x, bottom, node_radius * 0.6, 0.0, TAU).expect("");
             context.set_fill_style(&JsValue::from_str("white"));
             context.fill();
         });
@@ -78,15 +84,23 @@ impl Visualizer {
                 let x = Self::get_node_x(index, output_size, left, right);
 
                 context.begin_path();
+                context.arc(x, top, node_radius, 0.0, TAU).expect("");
+                context.set_fill_style(&JsValue::from_str("black"));
+                context.fill();
+
+                context.begin_path();
                 context.arc(x, top, node_radius * 0.6, 0.0, TAU).expect("");
                 context.set_fill_style(&JsValue::from_str("white"));
                 context.fill();
 
                 context.begin_path();
                 context.set_line_width(2.0);
-                context.arc(x, top, node_radius, 0.0, TAU).expect("");
+                context.arc(x, top, node_radius * 0.8, 0.0, TAU).expect("");
                 context.set_stroke_style(&JsValue::from_str(get_rgba(*bias).as_str()));
+                let array = Array::of2(&JsValue::from(3), &JsValue::from(3));
+                context.set_line_dash(&array).expect("");
                 context.stroke();
+                context.set_line_dash(&Array::new()).expect("");
             });
     }
 
