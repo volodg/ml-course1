@@ -71,8 +71,34 @@ pub struct Intersection {
     pub offset: f64,
 }
 
+pub fn get_intersection_params(a: &Point2D, b: &Point2D, c: &Point2D, d: &Point2D) -> (f64, f64, f64) {
+    let t_top = (d.x - c.x) * (a.y - c.y) - (d.y - c.y) * (a.x - c.x);
+    let u_top = (c.y - a.y) * (a.x - b.x) - (c.x - a.x) * (a.y - b.y);
+    let bottom = (d.y - c.y) * (b.x - a.x) - (d.x - c.x) * (b.y - a.y);
+
+    (t_top, u_top, bottom)
+}
+
+pub fn get_intersection(a: &Point2D, b: &Point2D, c: &Point2D, d: &Point2D) -> Option<Intersection> {
+    let (t_top, u_top, bottom) = get_intersection_params(a, b, c, d);
+
+    if bottom != 0.0 {
+        let t = t_top / bottom;
+        let u = u_top / bottom;
+        if t >= 0.0 && t <= 1.0 && u >= 0.0 && u <= 1.0 {
+            return Intersection {
+                point: Point2D::create(lerp(a.x, b.x, t), lerp(a.y, b.y, t)),
+                offset: t,
+            }
+                .some();
+        }
+    }
+
+    return None;
+}
+
 impl Line2D {
-    pub fn intersect_polygon(&self, polygon: &Vec<Point2D>) -> bool {
+    pub fn intersect_polygon(&self, polygon: &[Point2D]) -> bool {
         polygon
             .iter()
             .zip(polygon.iter().cycle().skip(1))
@@ -87,38 +113,14 @@ impl Line2D {
     }
 
     pub fn get_intersection(&self, line: &Line2D) -> Option<Intersection> {
-        let a = &self.start;
-        let b = &self.end;
-        let c = &line.start;
-        let d = &line.end;
-
-        let t_top = (d.x - c.x) * (a.y - c.y) - (d.y - c.y) * (a.x - c.x);
-        let u_top = (c.y - a.y) * (a.x - b.x) - (c.x - a.x) * (a.y - b.y);
-        let bottom = (d.y - c.y) * (b.x - a.x) - (d.x - c.x) * (b.y - a.y);
-
-        if bottom != 0.0 {
-            let t = t_top / bottom;
-            let u = u_top / bottom;
-            if t >= 0.0 && t <= 1.0 && u >= 0.0 && u <= 1.0 {
-                return Intersection {
-                    point: Point2D::create(lerp(a.x, b.x, t), lerp(a.y, b.y, t)),
-                    offset: t,
-                }
-                .some();
-            }
-        }
-
-        return None;
+        return get_intersection(&self.start, &self.end, &line.start, &line.end);
     }
 
     pub fn get_intersection_unlimited(&self, line: &Line2D) -> (Intersection, f64) {
         let a = &self.start;
         let b = &self.end;
-        let c = &line.start;
-        let d = &line.end;
 
-        let t_top = (d.x - c.x) * (a.y - c.y) - (d.y - c.y) * (a.x - c.x);
-        let bottom = (d.y - c.y) * (b.x - a.x) - (d.x - c.x) * (b.y - a.y);
+        let (t_top, _, bottom) = get_intersection_params(a, b, &line.start, &line.end);
 
         let t = t_top / bottom;
         return (

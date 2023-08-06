@@ -16,7 +16,7 @@ impl DrawWithState for HtmlDom {
         let car = self.car.clone();
         let road = self.road.clone();
 
-        let traffic = Box::new(vec![Car::create_with_max_speed(
+        let traffic = vec![Car::create_with_max_speed(
             context.clone(),
             Point2D {
                 x: road.get_lane_center(1),
@@ -26,15 +26,15 @@ impl DrawWithState for HtmlDom {
             50.0,
             ControlType::Dummy,
             2.0,
-        )?]);
+        )?];
 
         animate_with_callback(move || {
-            for car in traffic.as_ref() {
-                car.borrow_mut().update(&road.borders);
+            for car in &traffic {
+                car.borrow_mut().update(&road.borders, &[]);
             }
 
             let mut car = car.borrow_mut();
-            car.update(&road.borders);
+            car.update(&road.borders, &traffic);
             canvas.set_height(window.inner_height()?.as_f64().expect("") as u32);
 
             context.save();
@@ -42,7 +42,7 @@ impl DrawWithState for HtmlDom {
 
             road.draw()?;
 
-            for car in traffic.as_ref() {
+            for car in &traffic {
                 car.borrow().draw()?;
             }
             car.draw()?;

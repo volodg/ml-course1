@@ -76,10 +76,11 @@ impl Car {
         car.ok()
     }
 
-    pub fn update(&mut self, borders: &Vec<Line2D>) {
+    pub fn update(&mut self, borders: &Vec<Line2D>, _traffic: &[Rc<RefCell<Self>>]) {
         if !self.damaged {
             self.move_by_controls();
             self.polygon = self.create_polygon();
+
             self.damaged = self.assess_damage(borders);
         }
 
