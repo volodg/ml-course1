@@ -55,11 +55,19 @@ impl Visualizer {
 
                 context.set_line_width(2.0);
 
-                let weight = level.weights[i][j];
-                let red = 120.0;
-                let green = 0.0;
-                let blue = 100.0;
-                let alpha = weight.abs();
+                let value = level.weights[i][j];
+                let red = if value < 0.0 {
+                    0.0
+                } else {
+                    255.0
+                };
+                let green = red;
+                let blue = if value > 0.0 {
+                    0.0
+                } else {
+                    255.0
+                };
+                let alpha = value.abs();
 
                 context.set_stroke_style(&JsValue::from_str(
                     std::format!("rgba({red},{green},{blue},{alpha})").as_str()
