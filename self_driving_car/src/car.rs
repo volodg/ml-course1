@@ -1,7 +1,7 @@
 use crate::controls::Controls;
 use crate::sensor::Sensor;
 use commons::geometry::{Line2D, Point2D};
-use commons::utils::OkExt;
+use commons::utils::{OkExt, SomeExt};
 use js_sys::Math::hypot;
 use std::cell::RefCell;
 use std::f64::consts::PI;
@@ -20,11 +20,12 @@ pub struct Car {
     acceleration: f64,
     pub angle: f64,
     controls: Rc<RefCell<Controls>>,
-    sensor: Rc<RefCell<Sensor>>,
+    sensor: Option<Rc<RefCell<Sensor>>>,
     polygon: Vec<Point2D>,
     damaged: bool,
 }
 
+#[derive(Clone, Copy)]
 pub enum ControlType {
     Keys,
     Dummy,
@@ -50,7 +51,11 @@ impl Car {
         max_speed: f64,
     ) -> Result<Rc<RefCell<Self>>, JsValue> {
         let controls = Controls::create(control_type)?;
-        let sensor = Sensor::create(context.clone());
+
+        let sensor = match control_type {
+            ControlType::Keys => Sensor::create(context.clone()).some(),
+            ControlType::Dummy => None,
+        };
 
         let car = Rc::new(RefCell::new(Self {
             context,
@@ -63,7 +68,7 @@ impl Car {
             acceleration: 0.2,
             angle: 0.0,
             controls,
-            sensor: sensor.clone(),
+            sensor,
             polygon: vec![],
             damaged: false,
         }));
@@ -78,7 +83,9 @@ impl Car {
             self.damaged = self.assess_damage(borders);
         }
 
-        self.sensor.borrow_mut().update(self, borders);
+        if let Some(sensor) = &self.sensor {
+            sensor.borrow_mut().update(self, borders);
+        }
     }
 
     fn assess_damage(&self, borders: &Vec<Line2D>) -> bool {
@@ -163,7 +170,9 @@ impl Car {
         }
         self.context.fill();
 
-        self.sensor.borrow().draw();
+        if let Some(sensor) = &self.sensor {
+            sensor.borrow().draw();
+        }
 
         Ok(())
     }
