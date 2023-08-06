@@ -1,9 +1,9 @@
+use commons::geometry::{Point2D, Point2DView};
+use commons::math::lerp::lerp;
+use commons::network::{Level, NeuralNetwork};
 use std::f64::consts::TAU;
 use wasm_bindgen::JsValue;
-use commons::geometry::{Point2D, Point2DView};
-use commons::network::{Level, NeuralNetwork};
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
-use commons::math::lerp::lerp;
 
 pub fn draw_network(
     canvas: &HtmlCanvasElement,
@@ -34,14 +34,35 @@ fn draw_level(
     let inputs_size = level.inputs.len();
 
     level.inputs.iter().zip(0..).for_each(|(input, index)| {
-        let x = lerp(left, right, if inputs_size == 1 {
-            0.5
-        } else {
-            index as f64 / (inputs_size as f64 - 1.0)
-        });
+        let x = lerp(
+            left,
+            right,
+            if inputs_size == 1 {
+                0.5
+            } else {
+                index as f64 / (inputs_size as f64 - 1.0)
+            },
+        );
 
         context.begin_path();
         context.arc(x, bottom, node_radius, 0.0, TAU).expect("");
+        context.set_fill_style(&JsValue::from_str("white"));
+        context.fill();
+    });
+
+    level.outputs.iter().zip(0..).for_each(|(input, index)| {
+        let x = lerp(
+            left,
+            right,
+            if inputs_size == 1 {
+                0.5
+            } else {
+                index as f64 / (inputs_size as f64 - 1.0)
+            },
+        );
+
+        context.begin_path();
+        context.arc(x, top, node_radius, 0.0, TAU).expect("");
         context.set_fill_style(&JsValue::from_str("white"));
         context.fill();
     })
