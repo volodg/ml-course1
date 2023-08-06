@@ -25,14 +25,20 @@ pub struct Car {
     damaged: bool,
 }
 
+pub enum ControlType {
+    Keys,
+    Dummy,
+}
+
 impl Car {
     pub fn create(
         context: CanvasRenderingContext2d,
         position: Point2D,
         width: f64,
         height: f64,
+        control_type: ControlType,
     ) -> Result<Rc<RefCell<Self>>, JsValue> {
-        let controls = Controls::create()?;
+        let controls = Controls::create(control_type)?;
         let sensor = Sensor::create(context.clone());
 
         let car = Rc::new(RefCell::new(Self {
@@ -65,9 +71,10 @@ impl Car {
     }
 
     fn assess_damage(&self, borders: &Vec<Line2D>) -> bool {
-        borders.iter().find(|x| {
-            x.intersect_polygon(&self.polygon)
-        }).is_some()
+        borders
+            .iter()
+            .find(|x| x.intersect_polygon(&self.polygon))
+            .is_some()
     }
 
     fn create_polygon(&self) -> Vec<Point2D> {
@@ -134,11 +141,7 @@ impl Car {
     }
 
     pub fn draw(&self) -> Result<(), JsValue> {
-        let color = if self.damaged {
-            "gray"
-        } else {
-            "black"
-        };
+        let color = if self.damaged { "gray" } else { "black" };
         self.context.set_fill_style(&JsValue::from_str(color));
 
         self.context.begin_path();

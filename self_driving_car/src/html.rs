@@ -1,4 +1,4 @@
-use crate::car::Car;
+use crate::car::{Car, ControlType};
 use crate::road::Road;
 use commons::geometry::{Point2D, Point2DView};
 use commons::utils::OkExt;
@@ -42,6 +42,7 @@ impl HtmlDom {
             Point2D::create(road.get_lane_center(1), 100.0),
             30.0,
             50.0,
+            ControlType::Keys,
         )?;
 
         Self {

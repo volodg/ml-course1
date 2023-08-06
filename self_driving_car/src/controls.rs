@@ -4,24 +4,27 @@ use std::rc::{Rc, Weak};
 use wasm_bindgen::JsValue;
 use web_commons::subscribers::AddListener;
 use web_sys::{window, KeyboardEvent};
+use crate::car::ControlType;
 
-#[derive(Debug)]
 pub struct Controls {
     pub forward: bool,
     pub left: bool,
     pub right: bool,
     pub reverse: bool,
+    #[allow(dead_code)]
+    control_type: ControlType,
     weak_self: Weak<RefCell<Controls>>,
 }
 
 impl Controls {
-    pub fn create() -> Result<Rc<RefCell<Self>>, JsValue> {
+    pub fn create(control_type: ControlType,) -> Result<Rc<RefCell<Self>>, JsValue> {
         let result = Self {
-            weak_self: Weak::new(),
             forward: false,
             left: false,
             right: false,
             reverse: false,
+            control_type,
+            weak_self: Weak::new(),
         };
 
         let result = Rc::new(RefCell::new(result));

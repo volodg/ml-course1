@@ -73,12 +73,17 @@ pub struct Intersection {
 
 impl Line2D {
     pub fn intersect_polygon(&self, polygon: &Vec<Point2D>) -> bool {
-        polygon.iter().zip(polygon.iter().cycle().skip(1)).find(|(from, to)| {
-            self.get_intersection(&Line2D {
-                start: (*from).clone(),
-                end: (*to).clone(),
-            }).is_some()
-        }).is_some()
+        polygon
+            .iter()
+            .zip(polygon.iter().cycle().skip(1))
+            .find(|(from, to)| {
+                self.get_intersection(&Line2D {
+                    start: (*from).clone(),
+                    end: (*to).clone(),
+                })
+                .is_some()
+            })
+            .is_some()
     }
 
     pub fn get_intersection(&self, line: &Line2D) -> Option<Intersection> {
