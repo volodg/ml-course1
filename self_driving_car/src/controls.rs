@@ -30,6 +30,7 @@ impl Controls {
         match control_type {
             ControlType::Dummy => result.borrow_mut().forward = true,
             ControlType::Keys => result.borrow().add_keyboard_listeners()?,
+            ControlType::AI => result.borrow().add_keyboard_listeners()?,
         }
 
         result.ok()

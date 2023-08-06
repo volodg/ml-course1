@@ -42,7 +42,7 @@ impl HtmlDom {
             Point2D::create(road.get_lane_center(1), 100.0),
             30.0,
             50.0,
-            ControlType::Keys,
+            ControlType::AI,
         )?;
 
         Self {

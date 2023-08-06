@@ -26,12 +26,15 @@ pub struct Car {
     pub polygon: Vec<Point2D>,
     damaged: bool,
     brain: Option<NeuralNetwork>,
+    use_brain: bool,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum ControlType {
+    #[allow(dead_code)]
     Keys,
     Dummy,
+    AI,
 }
 
 impl Car {
@@ -56,7 +59,8 @@ impl Car {
         let controls = Controls::create(control_type)?;
 
         let (sensor, brain) = match control_type {
-            ControlType::Keys => {
+            ControlType::Dummy => (None, None),
+            ControlType::Keys | ControlType::AI => {
                 let sensor = Sensor::create(context.clone());
                 let ray_count = sensor.borrow().ray_count;
                 (
@@ -64,7 +68,6 @@ impl Car {
                     NeuralNetwork::create(&[ray_count, 6, 4]).some(),
                 )
             }
-            ControlType::Dummy => (None, None),
         };
 
         let car = Rc::new(RefCell::new(Self {
@@ -82,6 +85,7 @@ impl Car {
             polygon: vec![],
             damaged: false,
             brain,
+            use_brain: control_type == ControlType::AI,
         }));
 
         car.ok()
@@ -107,6 +111,14 @@ impl Car {
 
                 let outputs = brain.feed_forward(offsets);
                 log(std::format!("outputs: {:?}", &outputs).as_str());
+
+                if self.use_brain {
+                    let mut controls = self.controls.borrow_mut();
+                    controls.forward = outputs[0] == 1.0;
+                    controls.left = outputs[1] == 1.0;
+                    controls.right = outputs[2] == 1.0;
+                    controls.reverse = outputs[3] == 1.0;
+                }
             }
         }
     }
