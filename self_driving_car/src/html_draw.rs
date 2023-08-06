@@ -68,15 +68,15 @@ impl DrawWithState for HtmlDom {
             road.draw()?;
 
             for car in &traffic {
-                car.borrow().draw("red")?;
+                car.borrow().draw("red", false)?;
             }
 
             car_context.set_global_alpha(0.2);
             for car in cars.deref() {
-                car.borrow().draw("blue")?;
+                car.borrow().draw("blue", false)?;
             }
             car_context.set_global_alpha(1.0);
-            cars[position].borrow().draw("blue")?;
+            cars[position].borrow().draw("blue", true)?;
 
             car_context.restore();
 

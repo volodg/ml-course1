@@ -69,7 +69,7 @@ impl Car {
             }
         };
 
-        let car = Rc::new(RefCell::new(Self {
+        Rc::new(RefCell::new(Self {
             context,
             position,
             width,
@@ -85,9 +85,7 @@ impl Car {
             damaged: false,
             brain,
             use_brain: control_type == ControlType::AI,
-        }));
-
-        car.ok()
+        })).ok()
     }
 
     pub fn update(&mut self, borders: &Vec<Line2D>, traffic: &[Rc<RefCell<Self>>]) {
@@ -197,7 +195,7 @@ impl Car {
         self.position.y -= self.angle.cos() * self.speed;
     }
 
-    pub fn draw(&self, color: &str) -> Result<(), JsValue> {
+    pub fn draw(&self, color: &str, draw_sensors: bool) -> Result<(), JsValue> {
         let color = if self.damaged { "gray" } else { color };
         self.context.set_fill_style(&JsValue::from_str(color));
 
@@ -209,8 +207,10 @@ impl Car {
         }
         self.context.fill();
 
-        if let Some(sensor) = &self.sensor {
-            sensor.borrow().draw();
+        if draw_sensors {
+            if let Some(sensor) = &self.sensor {
+                sensor.borrow().draw();
+            }
         }
 
         Ok(())
