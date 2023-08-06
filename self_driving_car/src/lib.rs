@@ -8,6 +8,7 @@ mod html_draw;
 mod road;
 mod sensor;
 mod subscribe_state;
+mod visualizer;
 
 use crate::app_state::AppState;
 use crate::draw::DrawWithState;

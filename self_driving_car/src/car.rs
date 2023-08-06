@@ -25,7 +25,7 @@ pub struct Car {
     sensor: Option<Rc<RefCell<Sensor>>>,
     pub polygon: Vec<Point2D>,
     damaged: bool,
-    brain: Option<NeuralNetwork>,
+    pub brain: Option<NeuralNetwork>,
     use_brain: bool,
 }
 

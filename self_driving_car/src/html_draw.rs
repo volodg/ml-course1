@@ -2,6 +2,7 @@ use crate::app_state::AppState;
 use crate::car::{Car, ControlType};
 use crate::draw::DrawWithState;
 use crate::html::HtmlDom;
+use crate::visualizer::draw_network;
 use commons::geometry::Point2D;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -13,6 +14,8 @@ impl DrawWithState for HtmlDom {
         let window = self.window.clone();
         let car_canvas = self.car_canvas.clone();
         let car_context = self.car_context.clone();
+        let network_canvas = self.network_canvas.clone();
+        let network_context = self.network_context.clone();
         let car = self.car.clone();
         let road = self.road.clone();
 
@@ -36,6 +39,7 @@ impl DrawWithState for HtmlDom {
             let mut car = car.borrow_mut();
             car.update(&road.borders, &traffic);
             car_canvas.set_height(window.inner_height()?.as_f64().expect("") as u32);
+            network_canvas.set_height(window.inner_height()?.as_f64().expect("") as u32);
 
             car_context.save();
             car_context.translate(0.0, -car.position.y + car_canvas.height() as f64 * 0.7)?;
@@ -48,6 +52,11 @@ impl DrawWithState for HtmlDom {
             car.draw("blue")?;
 
             car_context.restore();
+
+            if let Some(brain) = &car.brain {
+                draw_network(&network_context, brain)
+            }
+
             Ok(())
         });
 

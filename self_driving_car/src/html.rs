@@ -13,6 +13,8 @@ pub struct HtmlDom {
     pub document: Document,
     pub car_canvas: HtmlCanvasElement,
     pub car_context: CanvasRenderingContext2d,
+    pub network_canvas: HtmlCanvasElement,
+    pub network_context: CanvasRenderingContext2d,
     pub car: Rc<RefCell<Car>>,
     pub road: Road,
 }
@@ -27,6 +29,15 @@ impl HtmlDom {
         car_canvas.set_width(200);
 
         let car_context = car_canvas
+            .get_context("2d")?
+            .unwrap()
+            .dyn_into::<CanvasRenderingContext2d>()?;
+
+        let network_canvas = document.get_element_by_id("networkCanvas").unwrap();
+        let network_canvas = network_canvas.dyn_into::<HtmlCanvasElement>()?;
+        network_canvas.set_width(300);
+
+        let network_context = network_canvas
             .get_context("2d")?
             .unwrap()
             .dyn_into::<CanvasRenderingContext2d>()?;
@@ -50,6 +61,8 @@ impl HtmlDom {
             document,
             car_canvas,
             car_context,
+            network_canvas,
+            network_context,
             car,
             road,
         }
