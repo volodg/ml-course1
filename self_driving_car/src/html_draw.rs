@@ -2,7 +2,7 @@ use crate::app_state::AppState;
 use crate::car::{Car, ControlType};
 use crate::draw::DrawWithState;
 use crate::html::HtmlDom;
-use crate::visualizer::draw_network;
+use crate::visualizer::Visualizer;
 use commons::geometry::Point2D;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -54,7 +54,7 @@ impl DrawWithState for HtmlDom {
             car_context.restore();
 
             if let Some(brain) = &car.brain {
-                draw_network(&network_canvas, &network_context, brain)
+                Visualizer::draw_network(&network_canvas, &network_context, brain)
             }
 
             Ok(())

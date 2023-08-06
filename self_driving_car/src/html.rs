@@ -35,7 +35,7 @@ impl HtmlDom {
 
         let network_canvas = document.get_element_by_id("networkCanvas").unwrap();
         let network_canvas = network_canvas.dyn_into::<HtmlCanvasElement>()?;
-        network_canvas.set_width(300);
+        network_canvas.set_width(400);
 
         let network_context = network_canvas
             .get_context("2d")?

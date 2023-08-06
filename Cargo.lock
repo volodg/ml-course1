@@ -1336,6 +1336,7 @@ name = "self_driving_car"
 version = "0.1.0"
 dependencies = [
  "commons",
+ "itertools",
  "js-sys",
  "wasm-bindgen",
  "web-sys",
