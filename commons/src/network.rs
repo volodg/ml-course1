@@ -1,7 +1,7 @@
 use rand::Rng;
 
 pub struct NeuralNetwork {
-    levels: Vec<Level>,
+    pub levels: Vec<Level>,
 }
 
 impl NeuralNetwork {
@@ -23,9 +23,9 @@ impl NeuralNetwork {
     }
 }
 
-struct Level {
+pub struct Level {
     // TODO - remove? generate it each time?
-    inputs: Vec<f64>,
+    pub inputs: Vec<f64>,
     // TODO - remove? generate it each time?
     outputs: Vec<f64>,
     biases: Vec<f64>,

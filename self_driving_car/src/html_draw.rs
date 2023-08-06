@@ -54,7 +54,7 @@ impl DrawWithState for HtmlDom {
             car_context.restore();
 
             if let Some(brain) = &car.brain {
-                draw_network(&network_context, brain)
+                draw_network(&network_canvas, &network_context, brain)
             }
 
             Ok(())
