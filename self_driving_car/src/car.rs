@@ -38,6 +38,17 @@ impl Car {
         height: f64,
         control_type: ControlType,
     ) -> Result<Rc<RefCell<Self>>, JsValue> {
+        Self::create_with_max_speed(context, position, width, height, control_type, 3.0)
+    }
+
+    pub fn create_with_max_speed(
+        context: CanvasRenderingContext2d,
+        position: Point2D,
+        width: f64,
+        height: f64,
+        control_type: ControlType,
+        max_speed: f64,
+    ) -> Result<Rc<RefCell<Self>>, JsValue> {
         let controls = Controls::create(control_type)?;
         let sensor = Sensor::create(context.clone());
 
@@ -47,7 +58,7 @@ impl Car {
             width,
             height,
             speed: 0.0,
-            max_speed: 3.0,
+            max_speed,
             friction: 0.05,
             acceleration: 0.2,
             angle: 0.0,

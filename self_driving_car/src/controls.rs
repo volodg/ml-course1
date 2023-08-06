@@ -1,10 +1,10 @@
+use crate::car::ControlType;
 use commons::utils::OkExt;
 use std::cell::RefCell;
 use std::rc::{Rc, Weak};
 use wasm_bindgen::JsValue;
 use web_commons::subscribers::AddListener;
 use web_sys::{window, KeyboardEvent};
-use crate::car::ControlType;
 
 pub struct Controls {
     pub forward: bool,
@@ -15,7 +15,7 @@ pub struct Controls {
 }
 
 impl Controls {
-    pub fn create(control_type: ControlType,) -> Result<Rc<RefCell<Self>>, JsValue> {
+    pub fn create(control_type: ControlType) -> Result<Rc<RefCell<Self>>, JsValue> {
         let result = Self {
             forward: false,
             left: false,
@@ -29,7 +29,7 @@ impl Controls {
 
         match control_type {
             ControlType::Dummy => result.borrow_mut().forward = true,
-            ControlType::Keys => result.borrow().add_keyboard_listeners()?
+            ControlType::Keys => result.borrow().add_keyboard_listeners()?,
         }
 
         result.ok()
