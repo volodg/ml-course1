@@ -29,7 +29,7 @@ pub struct Level {
     // TODO - remove? generate it each time?
     pub outputs: Vec<f64>,
     biases: Vec<f64>,
-    weights: Vec<Vec<f64>>,
+    pub weights: Vec<Vec<f64>>,
 }
 
 impl Level {

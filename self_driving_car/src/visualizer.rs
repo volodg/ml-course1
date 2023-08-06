@@ -54,7 +54,16 @@ impl Visualizer {
                 context.line_to(x, top);
 
                 context.set_line_width(2.0);
-                context.set_stroke_style(&JsValue::from_str("orange"));
+
+                let weight = level.weights[i][j];
+                let red = 120.0;
+                let green = 0.0;
+                let blue = 100.0;
+                let alpha = weight.abs();
+
+                context.set_stroke_style(&JsValue::from_str(
+                    std::format!("rgba({red},{green},{blue},{alpha})").as_str()
+                ));
 
                 context.stroke();
             });
