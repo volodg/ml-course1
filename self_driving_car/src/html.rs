@@ -1,7 +1,9 @@
 use crate::car::{Car, ControlType};
 use crate::road::Road;
 use commons::geometry::{Point2D, Point2DView};
+use commons::network::NeuralNetwork;
 use commons::utils::OkExt;
+use serde_json;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
@@ -79,5 +81,17 @@ impl HtmlDom {
                 )
             })
             .collect()
+    }
+
+    #[allow(dead_code)]
+    fn save(&self, brain: &NeuralNetwork) -> Result<(), JsValue> {
+        let storage = self.window.local_storage()?.unwrap();
+
+        let json = serde_json::to_string(&brain)
+            .map_err(|err| JsValue::from_str(std::format!("{:?}", err).as_str()))?;
+
+        storage.set_item("bestBrain", &json)?;
+
+        Ok(())
     }
 }

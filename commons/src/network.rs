@@ -1,5 +1,7 @@
 use rand::Rng;
+use serde::{Deserialize, Serialize};
 
+#[derive(Deserialize, Serialize)]
 pub struct NeuralNetwork {
     pub levels: Vec<Level>,
 }
@@ -23,10 +25,11 @@ impl NeuralNetwork {
     }
 }
 
+#[derive(Deserialize, Serialize)]
 pub struct Level {
-    // TODO - remove? generate it each time?
+    // need for debugging
     pub inputs: Vec<f64>,
-    // TODO - remove? generate it each time?
+    // need for debugging
     pub outputs: Vec<f64>,
     pub biases: Vec<f64>,
     pub weights: Vec<Vec<f64>>,

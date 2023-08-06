@@ -118,6 +118,8 @@ dependencies = [
  "getrandom 0.2.10",
  "itertools",
  "rand 0.8.5",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -1338,6 +1340,8 @@ dependencies = [
  "commons",
  "itertools",
  "js-sys",
+ "serde",
+ "serde_json",
  "wasm-bindgen",
  "web-sys",
  "web_commons",
