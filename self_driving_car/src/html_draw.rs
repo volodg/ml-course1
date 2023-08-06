@@ -43,9 +43,9 @@ impl DrawWithState for HtmlDom {
             road.draw()?;
 
             for car in &traffic {
-                car.borrow().draw()?;
+                car.borrow().draw("red")?;
             }
-            car.draw()?;
+            car.draw("blue")?;
 
             context.restore();
             Ok(())

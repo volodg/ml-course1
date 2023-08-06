@@ -164,8 +164,8 @@ impl Car {
         self.position.y -= self.angle.cos() * self.speed;
     }
 
-    pub fn draw(&self) -> Result<(), JsValue> {
-        let color = if self.damaged { "gray" } else { "black" };
+    pub fn draw(&self, color: &str) -> Result<(), JsValue> {
+        let color = if self.damaged { "gray" } else { color };
         self.context.set_fill_style(&JsValue::from_str(color));
 
         self.context.begin_path();
