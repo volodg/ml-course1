@@ -80,27 +80,25 @@ impl Car {
         if !self.damaged {
             self.move_by_controls();
             self.polygon = self.create_polygon();
-
-            self.damaged = traffic
-                .iter()
-                .find(|x| polygons_are_intersecting(&self.polygon, &x.borrow().polygon))
-                .is_some();
-
-            if !self.damaged {
-                self.damaged = self.assess_damage(borders);
-            }
+            self.damaged = self.assess_damage(borders, traffic);
         }
 
         if let Some(sensor) = &self.sensor {
-            sensor.borrow_mut().update(self, borders);
+            sensor.borrow_mut().update(self, borders, traffic);
         }
     }
 
-    fn assess_damage(&self, borders: &Vec<Line2D>) -> bool {
-        borders
+    fn assess_damage(&self, borders: &Vec<Line2D>, traffic: &[Rc<RefCell<Self>>]) -> bool {
+        let damaged = traffic
             .iter()
-            .find(|x| x.intersect_polygon(&self.polygon))
-            .is_some()
+            .find(|x| polygons_are_intersecting(&self.polygon, &x.borrow().polygon))
+            .is_some();
+
+        damaged
+            || borders
+                .iter()
+                .find(|x| x.intersect_polygon(&self.polygon))
+                .is_some()
     }
 
     fn create_polygon(&self) -> Vec<Point2D> {

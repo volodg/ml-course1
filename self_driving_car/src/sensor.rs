@@ -36,17 +36,19 @@ impl Sensor {
         Rc::new(RefCell::new(result))
     }
 
-    pub fn update(&mut self, car: &Car, borders: &Vec<Line2D>) {
+    pub fn update(&mut self, car: &Car, borders: &Vec<Line2D>, traffic: &[Rc<RefCell<Car>>]) {
         self.cast_rays(car);
 
-        self.readings = self
+        let mut readings = self
             .rays
             .iter()
             .map(|x| Self::get_reading(x, borders))
             .collect::<Vec<_>>();
+
+        self.readings = readings;
     }
 
-    fn get_reading(ray: &Line2D, borders: &Vec<Line2D>) -> Option<Intersection> {
+    fn get_reading(ray: &Line2D, borders: &[Line2D]) -> Option<Intersection> {
         borders
             .iter()
             .flat_map(|border| ray.get_intersection(border))
