@@ -22,40 +22,34 @@ impl DrawWithState for HtmlDom {
         let road = self.road.clone();
 
         if let Some(best_brain) = load_best_brain()? {
-            cars[0].borrow_mut().brain = Some(best_brain);
+            for car in cars.iter() {
+                let mut new_brain = best_brain.clone();
+                new_brain.mutate(0.1);
+                car.borrow_mut().brain = Some(new_brain);
+            }
         }
 
+        let create_traffic_car = |lane: usize, y: f64| -> Result<Rc<RefCell<Car>>, JsValue> {
+            Car::create_with_max_speed(
+                car_context.clone(),
+                Point2D {
+                    x: road.get_lane_center(lane),
+                    y,
+                },
+                30.0,
+                50.0,
+                ControlType::Dummy,
+                2.0,)
+        };
+
         let traffic = vec![
-            Car::create_with_max_speed(
-                car_context.clone(),
-                Point2D {
-                    x: road.get_lane_center(1),
-                    y: -100.0,
-                },
-                30.0,
-                50.0,
-                ControlType::Dummy,
-                2.0,)?,
-            Car::create_with_max_speed(
-                car_context.clone(),
-                Point2D {
-                    x: road.get_lane_center(0),
-                    y: -300.0,
-                },
-                30.0,
-                50.0,
-                ControlType::Dummy,
-                2.0,)?,
-            Car::create_with_max_speed(
-                car_context.clone(),
-                Point2D {
-                    x: road.get_lane_center(2),
-                    y: -300.0,
-                },
-                30.0,
-                50.0,
-                ControlType::Dummy,
-                2.0,)?,
+            create_traffic_car(1, -100.0)?,
+            create_traffic_car(0, -300.0)?,
+            create_traffic_car(2, -300.0)?,
+            create_traffic_car(0, -500.0)?,
+            create_traffic_car(1, -500.0)?,
+            create_traffic_car(1, -700.0)?,
+            create_traffic_car(2, -700.0)?,
         ];
 
         let app_state = app_state.clone();
