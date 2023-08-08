@@ -1,6 +1,6 @@
+use crate::math::lerp::lerp;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
-use crate::math::lerp::lerp;
 
 #[derive(Deserialize, Serialize, Clone)]
 pub struct NeuralNetwork {
@@ -29,9 +29,7 @@ impl NeuralNetwork {
     pub fn mutate(&mut self, amount: f64) {
         self.levels
             .iter_mut()
-            .for_each(|level| {
-                level.mutate(amount)
-            })
+            .for_each(|level| level.mutate(amount))
     }
 }
 
@@ -96,22 +94,13 @@ impl Level {
     // amount from 0 to 1 (aka percent)
     pub fn mutate(&mut self, amount: f64) {
         let mut rng = rand::thread_rng();
-        self.biases.iter_mut().for_each(|bias| {
-            *bias = lerp(
-                *bias,
-                rng.gen_range(-1.0..=1.0),
-                amount
-            )
-        });
+        self.biases
+            .iter_mut()
+            .for_each(|bias| *bias = lerp(*bias, rng.gen_range(-1.0..=1.0), amount));
 
         self.weights.iter_mut().for_each(|arr| {
-            arr.iter_mut().for_each(|weight| {
-                *weight = lerp(
-                    *weight,
-                    rng.gen_range(-1.0..=1.0),
-                    amount
-                )
-            })
+            arr.iter_mut()
+                .for_each(|weight| *weight = lerp(*weight, rng.gen_range(-1.0..=1.0), amount))
         });
     }
 }

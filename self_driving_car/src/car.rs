@@ -90,26 +90,28 @@ impl Car {
     }
 
     pub fn update(&mut self, borders: &Vec<Line2D>, traffic: &[Rc<RefCell<Self>>]) {
-        if !self.damaged {
-            self.move_by_controls();
-            self.polygon = self.create_polygon();
-            self.damaged = self.assess_damage(borders, traffic);
+        if self.damaged {
+            return;
         }
+
+        self.move_by_controls();
+        self.polygon = self.create_polygon();
+        self.damaged = self.assess_damage(borders, traffic);
 
         if let Some(sensor) = &self.sensor {
             let mut sensor = sensor.borrow_mut();
             sensor.update(self, borders, traffic);
 
-            if let Some(brain) = &mut self.brain {
-                let offsets = sensor
-                    .readings
-                    .iter()
-                    .map(|reading| reading.as_ref().map(|v| 1.0 - v.offset).unwrap_or(0.0))
-                    .collect::<Vec<_>>();
+            if self.use_brain {
+                if let Some(brain) = &mut self.brain {
+                    let offsets = sensor
+                        .readings
+                        .iter()
+                        .map(|reading| reading.as_ref().map(|v| 1.0 - v.offset).unwrap_or(0.0))
+                        .collect::<Vec<_>>();
 
-                let outputs = brain.feed_forward(offsets);
+                    let outputs = brain.feed_forward(offsets);
 
-                if self.use_brain {
                     let mut controls = self.controls.borrow_mut();
                     controls.forward = outputs[0] == 1.0;
                     controls.left = outputs[1] == 1.0;

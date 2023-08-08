@@ -22,9 +22,11 @@ impl DrawWithState for HtmlDom {
         let road = self.road.clone();
 
         if let Some(best_brain) = load_best_brain()? {
-            for car in cars.iter() {
+            for (car, index) in cars.iter().zip(0..) {
                 let mut new_brain = best_brain.clone();
-                new_brain.mutate(0.1);
+                if index != 0 {
+                    new_brain.mutate(0.1);
+                }
                 car.borrow_mut().brain = Some(new_brain);
             }
         }
@@ -39,7 +41,8 @@ impl DrawWithState for HtmlDom {
                 30.0,
                 50.0,
                 ControlType::Dummy,
-                2.0,)
+                2.0,
+            )
         };
 
         let traffic = vec![

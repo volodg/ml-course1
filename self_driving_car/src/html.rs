@@ -48,7 +48,8 @@ impl HtmlDom {
             car_canvas.width() as f64 * 0.9,
         );
 
-        let cars = Rc::new(Self::generate_cars(&car_context, &road, 100));
+        let car_count = 200;
+        let cars = Rc::new(Self::generate_cars(&car_context, &road, car_count));
 
         Self {
             window,
